@@ -2,7 +2,6 @@ import logging
 
 import h5py
 import numpy as np
-from ligo import segments as ligo_segments
 from pesummary.gw import conversions
 from pycbc import init_logging, vetoes, waveform
 from pycbc.events import EventManagerCoherent
@@ -10,13 +9,13 @@ from pycbc.events import coherent as coh
 from pycbc.events import ranking
 from pycbc.events.eventmgr import H5FileSyntSugar
 from pycbc.filter import MatchedFilterControl
-from pycbc.psd.estimate import interpolate, welch
 from pycbc.strain import StrainSegments
 from pycbc.types import complex64, float32, zeros
 
 from colens.coincident import get_coinc_indexes
 from colens.detector import MyDetector, calculate_antenna_pattern
 from colens.injection import get_strain_list_from_simulation
+from colens.psd import associate_psd_to_segments
 from colens.sky import sky_grid
 from colens.strain import process_strain_dict
 
@@ -360,52 +359,16 @@ del strain_segments_dict
 # Associate PSDs to segments for all IFOs when using the multi-detector CLI
 logging.info("Associating PSDs to them")
 for ifo in INSTRUMENTS:
-    _strain = strain_dict[ifo]
-    _segments = segments[ifo]
-    seg_stride = int(PSD_SEGMENT_STRIDE * SAMPLE_RATE)
-    seg_len = int(PSD_SEGMENT_LENGTH * SAMPLE_RATE)
-    input_data_len = len(_strain)
-    num_segments = int(PSD_NUM_SEGMENTS)
-    psd_data_len = (num_segments - 1) * seg_stride + seg_len
-    num_psd_measurements = int(2 * (input_data_len - 1) / psd_data_len)
-    psd_stride = int((input_data_len - psd_data_len) / num_psd_measurements)
-    psds_and_times = []
-    for idx in range(num_psd_measurements):
-        if idx == (num_psd_measurements - 1):
-            start_idx = input_data_len - psd_data_len
-            end_idx = input_data_len
-        else:
-            start_idx = psd_stride * idx
-            end_idx = psd_data_len + psd_stride * idx
-        strain_part = _strain[start_idx:end_idx]
-        sample_rate = (flen - 1) * 2 * delta_f
-        _psd = welch(
-            _strain,
-            avg_method="median",
-            seg_len=int(PSD_SEGMENT_LENGTH * sample_rate + 0.5),
-            seg_stride=int(PSD_SEGMENT_STRIDE * sample_rate + 0.5),
-            num_segments=PSD_NUM_SEGMENTS,
-            require_exact_data_fit=False,
-        )
-
-        if delta_f != _psd.delta_f:
-            _psd = interpolate(_psd, delta_f, flen)
-        _psd = _psd.astype(float32)
-        psds_and_times.append((start_idx, end_idx, _psd))
-    for fd_segment in _segments:
-        best_psd = None
-        psd_overlap = 0
-        inp_seg = ligo_segments.segment(
-            fd_segment.seg_slice.start, fd_segment.seg_slice.stop
-        )
-        for start_idx, end_idx, _psd in psds_and_times:
-            psd_seg = ligo_segments.segment(start_idx, end_idx)
-            if psd_seg.intersects(inp_seg):
-                curr_overlap = abs(inp_seg & psd_seg)
-                if curr_overlap > psd_overlap:
-                    psd_overlap = curr_overlap
-                    best_psd = _psd
-        fd_segment.psd = best_psd
+    associate_psd_to_segments(
+        strain_dict[ifo],
+        segments[ifo],
+        PSD_SEGMENT_STRIDE,
+        SAMPLE_RATE,
+        PSD_SEGMENT_LENGTH,
+        PSD_NUM_SEGMENTS,
+        flen,
+        delta_f,
+    )
 
 logging.info("Determining time slide shifts and time delays")
 # Create a dictionary of time slide shifts; IFO 0 is unshifted

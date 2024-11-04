@@ -165,39 +165,18 @@ class MyEventManagerCoherent(EventManagerCoherent):
             if len(ifo_events):
                 f["snr"] = abs(ifo_events["snr"])
                 f["event_id"] = ifo_events["event_id"]
-                try:
-                    # Precessing
-                    f["u_vals"] = ifo_events["u_vals"]
-                    f["coa_phase"] = ifo_events["coa_phase"]
-                    f["hplus_cross_corr"] = ifo_events["hplus_cross_corr"]
-                except Exception:
-                    f["coa_phase"] = np.angle(ifo_events["snr"])
+                f["coa_phase"] = np.angle(ifo_events["snr"])
                 f["chisq"] = ifo_events["chisq"]
                 f["end_time"] = (
                     ifo_events["time_index"] / float(SAMPLE_RATE) + GPS_START[ifo]
                 )
                 f["time_index"] = ifo_events["time_index"]
                 f["slide_id"] = ifo_events["slide_id"]
-                try:
-                    # Precessing
-                    template_sigmasq_plus = np.array(
-                        [t["sigmasq_plus"] for t in self.template_params],
-                        dtype=np.float32,
-                    )
-                    f["sigmasq_plus"] = template_sigmasq_plus[tid]
-                    template_sigmasq_cross = np.array(
-                        [t["sigmasq_cross"] for t in self.template_params],
-                        dtype=np.float32,
-                    )
-                    f["sigmasq_cross"] = template_sigmasq_cross[tid]
-                    f["sigmasq"] = template_sigmasq_plus[tid]
-                except Exception:
-                    # Not precessing
-                    template_sigmasq = np.array(
-                        [t["sigmasq"][ifo] for t in self.template_params],
-                        dtype=np.float32,
-                    )
-                    f["sigmasq"] = template_sigmasq[tid]
+                template_sigmasq = np.array(
+                    [t["sigmasq"][ifo] for t in self.template_params],
+                    dtype=np.float32,
+                )
+                f["sigmasq"] = template_sigmasq[tid]
 
                 if "chisq_dof" in ifo_events.dtype.names:
                     f["chisq_dof"] = ifo_events["chisq_dof"] / 2 + 1
@@ -206,22 +185,8 @@ class MyEventManagerCoherent(EventManagerCoherent):
 
                 f["template_hash"] = th[tid]
             f["search/time_slides"] = np.array(self.time_slides[ifo])
-            if TRIG_START_TIME:
-                f["search/start_time"] = np.array(
-                    [TRIG_START_TIME[ifo]], dtype=np.int32
-                )
-            else:
-                f["search/start_time"] = np.array(
-                    [GPS_START[ifo] + START_PAD],
-                    dtype=np.int32,
-                )
-            if TRIG_END_TIME:
-                f["search/end_time"] = np.array([TRIG_END_TIME[ifo]], dtype=np.int32)
-            else:
-                f["search/end_time"] = np.array(
-                    [GPS_END[ifo] - END_PAD[ifo]],
-                    dtype=np.int32,
-                )
+            f["search/start_time"] = np.array([TRIG_START_TIME[ifo]], dtype=np.int32)
+            f["search/end_time"] = np.array([TRIG_END_TIME[ifo]], dtype=np.int32)
 
 
 init_logging(True)

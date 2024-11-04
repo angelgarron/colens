@@ -190,10 +190,6 @@ class MyEventManagerCoherent(EventManagerCoherent):
                         dtype=np.float32,
                     )
                     f["sigmasq_cross"] = template_sigmasq_cross[tid]
-                    # FIXME: I want to put something here, but I haven't yet
-                    #      figured out what it should be. I think we would also
-                    #      need information from the plus and cross correlation
-                    #      (both real and imaginary(?)) to get this.
                     f["sigmasq"] = template_sigmasq_plus[tid]
                 except Exception:
                     # Not precessing
@@ -202,16 +198,6 @@ class MyEventManagerCoherent(EventManagerCoherent):
                         dtype=np.float32,
                     )
                     f["sigmasq"] = template_sigmasq[tid]
-
-                # FIXME: Can we get this value from the autochisq instance?
-                # cont_dof = self.opt.autochi_number_points
-                # if self.opt.autochi_onesided is None:
-                #     cont_dof = cont_dof * 2
-                # if self.opt.autochi_two_phase:
-                #     cont_dof = cont_dof * 2
-                # if self.opt.autochi_max_valued_dof:
-                #     cont_dof = self.opt.autochi_max_valued_dof
-                # f['cont_chisq_dof'] = np.repeat(cont_dof, len(ifo_events))
 
                 if "chisq_dof" in ifo_events.dtype.names:
                     f["chisq_dof"] = ifo_events["chisq_dof"] / 2 + 1
@@ -224,38 +210,17 @@ class MyEventManagerCoherent(EventManagerCoherent):
                 f["search/start_time"] = np.array(
                     [TRIG_START_TIME[ifo]], dtype=np.int32
                 )
-                search_start_time = float(TRIG_START_TIME[ifo])
             else:
                 f["search/start_time"] = np.array(
                     [GPS_START[ifo] + START_PAD],
                     dtype=np.int32,
                 )
-                search_start_time = float(GPS_START[ifo] + START_PAD)
             if TRIG_END_TIME:
                 f["search/end_time"] = np.array([TRIG_END_TIME[ifo]], dtype=np.int32)
-                search_end_time = float(TRIG_END_TIME[ifo])
             else:
                 f["search/end_time"] = np.array(
                     [GPS_END[ifo] - END_PAD[ifo]],
                     dtype=np.int32,
-                )
-                search_end_time = float(GPS_END[ifo] - END_PAD[ifo])
-
-            if self.write_performance:
-                self.analysis_time = search_end_time - search_start_time
-                time_ratio = np.array(
-                    [float(self.analysis_time) / float(self.run_time)]
-                )
-                temps_per_core = float(self.ntemplates) / float(self.ncores)
-                filters_per_core = float(self.nfilters) / float(self.ncores)
-                f["search/templates_per_core"] = np.array(
-                    [float(temps_per_core) * float(time_ratio)]
-                )
-                f["search/filter_rate_per_core"] = np.array(
-                    [filters_per_core / float(self.run_time)]
-                )
-                f["search/setup_time_fraction"] = np.array(
-                    [float(self.setup_time) / float(self.run_time)]
                 )
 
 

@@ -4,12 +4,12 @@ import h5py
 import numpy as np
 from ligo import segments as ligo_segments
 from pesummary.gw import conversions
-from pycbc import DYN_RANGE_FAC, init_logging, vetoes, waveform
+from pycbc import init_logging, vetoes, waveform
 from pycbc.events import EventManagerCoherent
 from pycbc.events import coherent as coh
 from pycbc.events import ranking
 from pycbc.events.eventmgr import H5FileSyntSugar
-from pycbc.filter import MatchedFilterControl, highpass, resample_to_delta_t
+from pycbc.filter import MatchedFilterControl
 from pycbc.psd.estimate import interpolate, welch
 from pycbc.strain import StrainSegments
 from pycbc.types import complex64, float32, zeros
@@ -18,6 +18,7 @@ from colens.coincident import get_coinc_indexes
 from colens.detector import MyDetector, calculate_antenna_pattern
 from colens.injection import get_strain_list_from_simulation
 from colens.sky import sky_grid
+from colens.strain import process_strain_dict
 
 FRAME_FILES = {
     "H1": "H-H1_GWOSC_4KHZ_R1-1185387760-4096.gwf",
@@ -259,20 +260,6 @@ class MyEventManagerCoherent(EventManagerCoherent):
                 )
 
 
-def process_strain_dict(strain_dict):
-    for ifo in strain_dict:
-        strain_tmp = highpass(strain_dict[ifo], frequency=STRAIN_HIGH_PASS)
-        strain_tmp = resample_to_delta_t(strain_tmp, 1.0 / SAMPLE_RATE, method="ldas")
-        strain_tmp = (strain_tmp * DYN_RANGE_FAC).astype(float32)
-        strain_tmp = highpass(strain_tmp, frequency=STRAIN_HIGH_PASS)
-        start = int(PAD * SAMPLE_RATE)
-        end = int(len(strain_tmp) - SAMPLE_RATE * PAD)
-        strain_tmp = strain_tmp[start:end]
-        strain_tmp.gating_info = dict()
-        strain_dict[ifo] = strain_tmp
-    return strain_dict
-
-
 init_logging(True)
 
 injection_parameters = dict(
@@ -335,7 +322,7 @@ print("COINCIDENCE SNR", rho)
 
 num_slides = slide_limiter()
 
-strain_dict = process_strain_dict(strain_dict)
+strain_dict = process_strain_dict(strain_dict, STRAIN_HIGH_PASS, SAMPLE_RATE, PAD)
 
 # Create a dictionary of Python slice objects that indicate where the segments
 # start and end for each detector timeseries.

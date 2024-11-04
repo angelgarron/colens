@@ -12,6 +12,7 @@ from pycbc.filter import MatchedFilterControl
 from pycbc.strain import StrainSegments
 from pycbc.types import complex64, float32, zeros
 
+from colens.background import slide_limiter
 from colens.coincident import get_coinc_indexes
 from colens.detector import MyDetector, calculate_antenna_pattern
 from colens.injection import get_strain_list_from_simulation
@@ -106,27 +107,6 @@ with h5py.File(BANK_FILE, "w") as file:
         file.create_dataset(
             key, data=[value], compression="gzip", compression_opts=9, shuffle=True
         )
-
-
-def slide_limiter():
-    """
-    This function computes the number of shortslides used by the coherent
-    matched filter statistic to obtain as most background triggers as
-    possible.
-
-    It bounds the number of slides to avoid counting triggers more than once.
-    If the data is not time slid, there is a single slide for the zero-lag.
-    """
-    low, upp = 1, SEGMENT_LENGTH
-    n_ifos = len(LENSED_INSTRUMENTS)
-    stride_dur = SEGMENT_LENGTH / 2
-    num_slides = np.int32(1 + np.floor(stride_dur / (SLIDE_SHIFT * (n_ifos - 1))))
-    assert np.logical_and(num_slides >= low, num_slides <= upp), (
-        "the combination (slideshift, segment_dur)"
-        f" = ({SLIDE_SHIFT:.2f},{stride_dur*2:.2f})"
-        f" goes over the allowed upper bound {upp}"
-    )
-    return num_slides
 
 
 class MyEventManagerCoherent(EventManagerCoherent):
@@ -249,7 +229,7 @@ print("NETWORK SNR", rho)
 rho = np.sqrt(sum(abs(matched_filter_snrs) ** 2))
 print("COINCIDENCE SNR", rho)
 
-num_slides = slide_limiter()
+num_slides = slide_limiter(SEGMENT_LENGTH, SLIDE_SHIFT, LENSED_INSTRUMENTS)
 
 strain_dict = process_strain_dict(strain_dict, STRAIN_HIGH_PASS, SAMPLE_RATE, PAD)
 

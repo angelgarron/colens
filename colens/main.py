@@ -1,6 +1,5 @@
 import logging
 
-import bilby
 import h5py
 import numpy as np
 from ligo import segments as ligo_segments
@@ -14,10 +13,10 @@ from pycbc.filter import MatchedFilterControl, highpass, resample_to_delta_t
 from pycbc.psd.estimate import interpolate, welch
 from pycbc.strain import StrainSegments
 from pycbc.types import complex64, float32, zeros
-from pycbc.types.timeseries import TimeSeries
 
 from colens.coincident import get_coinc_indexes
 from colens.detector import MyDetector, calculate_antenna_pattern
+from colens.injection import get_strain_list_from_simulation
 from colens.sky import sky_grid
 
 FRAME_FILES = {
@@ -274,56 +273,6 @@ def process_strain_dict(strain_dict):
     return strain_dict
 
 
-def get_strain_list_from_simulation(
-    injection_parameters, ifo_names, start_time, end_time
-):
-    sampling_frequency = 4096.0
-    duration = end_time - start_time
-
-    # Set up a random seed for result reproducibility.  This is optional!
-    bilby.core.utils.random.seed(123)
-
-    waveform_arguments = dict(
-        waveform_approximant="IMRPhenomD",
-        reference_frequency=50.0,
-        minimum_frequency=LOW_FREQUENCY_CUTOFF,
-    )
-
-    waveform_generator = bilby.gw.WaveformGenerator(
-        duration=duration,
-        sampling_frequency=sampling_frequency,
-        frequency_domain_source_model=bilby.gw.source.lal_binary_black_hole,
-        parameter_conversion=bilby.gw.conversion.convert_to_lal_binary_black_hole_parameters,
-        waveform_arguments=waveform_arguments,
-    )
-
-    ifos = bilby.gw.detector.InterferometerList(ifo_names)
-    ifos.set_strain_data_from_power_spectral_densities(
-        sampling_frequency=sampling_frequency,
-        duration=duration,
-        start_time=start_time,
-    )
-
-    ifos.inject_signal(
-        waveform_generator=waveform_generator, parameters=injection_parameters
-    )
-    strains = []
-    for i in range(len(ifo_names)):
-        strain_tmp = TimeSeries(
-            initial_array=ifos[i].time_domain_strain,
-            delta_t=ifos[i].time_array[1] - ifos[i].time_array[0],
-            epoch=start_time,
-        )
-        strains.append(strain_tmp)
-    optimal_snrs = [ifos.meta_data[ifo_name]["optimal_SNR"] for ifo_name in ifo_names]
-
-    matched_filter_snrs = [
-        ifos.meta_data[ifo_name]["matched_filter_SNR"] for ifo_name in ifo_names
-    ]
-
-    return optimal_snrs, matched_filter_snrs, strains
-
-
 init_logging(True)
 
 injection_parameters = dict(
@@ -348,6 +297,7 @@ return_value = get_strain_list_from_simulation(
     ["H1", "L1"],
     start_time=GPS_START["H1"] - PAD,
     end_time=GPS_END["H1"] + PAD,
+    low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
 )
 optimal_snrs = return_value[0]
 matched_filter_snrs = return_value[1]
@@ -359,6 +309,7 @@ return_value = get_strain_list_from_simulation(
     ["H1", "L1"],
     start_time=GPS_START["H1_lensed"] - PAD,
     end_time=GPS_END["H1_lensed"] + PAD,
+    low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
 )
 optimal_snrs += return_value[0]
 matched_filter_snrs += return_value[1]

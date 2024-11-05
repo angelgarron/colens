@@ -1,4 +1,5 @@
-"Functions related to the coincident analysis."
+"""Functions related to the coincident analysis."""
+
 import numpy as np
 
 

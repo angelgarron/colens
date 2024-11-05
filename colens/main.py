@@ -94,6 +94,9 @@ ANGULAR_SPACING = 1.8 * np.pi / 180  # radians
 SKY_ERROR = 0.1 * np.pi / 180  # radians
 
 
+init_logging(True)
+
+logging.info("Creating template bank")
 with h5py.File(BANK_FILE, "w") as file:
     for key, value in {
         "appoximant": APPROXIMANT,
@@ -108,8 +111,7 @@ with h5py.File(BANK_FILE, "w") as file:
         )
 
 
-init_logging(True)
-
+logging.info("Injecting simulated signals on gaussian noise")
 injection_parameters = dict(
     mass_1=79.45,
     mass_2=48.5,
@@ -164,9 +166,9 @@ rho = conversions.network_matched_filter_snr(
     abs(matched_filter_snrs),
     optimal_snrs,
 )
-print("NETWORK SNR", rho)
+logging.info(f"NETWORK SNR {rho}")
 rho = np.sqrt(sum(abs(matched_filter_snrs) ** 2))
-print("COINCIDENCE SNR", rho)
+logging.info(f"COINCIDENCE SNR {rho}")
 
 num_slides = slide_limiter(SEGMENT_LENGTH, SLIDE_SHIFT, LENSED_INSTRUMENTS)
 

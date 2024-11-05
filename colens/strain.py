@@ -1,3 +1,5 @@
+"""Functions related to the processing of the strain."""
+
 from pycbc import DYN_RANGE_FAC
 from pycbc.filter import highpass, resample_to_delta_t
 from pycbc.types import float32

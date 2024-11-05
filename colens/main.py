@@ -4,10 +4,8 @@ import h5py
 import numpy as np
 from pesummary.gw import conversions
 from pycbc import init_logging, vetoes, waveform
-from pycbc.events import EventManagerCoherent
 from pycbc.events import coherent as coh
 from pycbc.events import ranking
-from pycbc.events.eventmgr import H5FileSyntSugar
 from pycbc.filter import MatchedFilterControl
 from pycbc.strain import StrainSegments
 from pycbc.types import complex64, float32, zeros
@@ -16,6 +14,7 @@ from colens.background import slide_limiter
 from colens.coincident import get_coinc_indexes
 from colens.detector import MyDetector, calculate_antenna_pattern
 from colens.injection import get_strain_list_from_simulation
+from colens.manager import MyEventManagerCoherent
 from colens.psd import associate_psd_to_segments
 from colens.sky import sky_grid
 from colens.strain import process_strain_dict
@@ -107,66 +106,6 @@ with h5py.File(BANK_FILE, "w") as file:
         file.create_dataset(
             key, data=[value], compression="gzip", compression_opts=9, shuffle=True
         )
-
-
-class MyEventManagerCoherent(EventManagerCoherent):
-    def write_to_hdf(self, outname):
-        self.events.sort(order="template_id")
-        th = np.array([p["tmplt"].template_hash for p in self.template_params])
-        f = H5FileSyntSugar(outname)
-        self.write_gating_info_to_hdf(f)
-        # Output network stuff
-        f.prefix = "network"
-        network_events = np.array(
-            [e for e in self.network_events], dtype=self.network_event_dtype
-        )
-        for col in network_events.dtype.names:
-            if col == "time_index":
-                f["end_time_gc"] = (
-                    network_events[col] / float(SAMPLE_RATE) + GPS_START[self.ifos[0]]
-                )
-            else:
-                f[col] = network_events[col]
-        starts = []
-        ends = []
-        for seg in self.segments[self.ifos[0]]:
-            starts.append(seg.start_time.gpsSeconds)
-            ends.append(seg.end_time.gpsSeconds)
-        f["search/segments/start_times"] = starts
-        f["search/segments/end_times"] = ends
-        # Individual ifo stuff
-        for i, ifo in enumerate(self.ifos):
-            tid = self.events["template_id"][self.events["ifo"] == i]
-            f.prefix = ifo
-            ifo_events = np.array(
-                [e for e in self.events if e["ifo"] == self.ifo_dict[ifo]],
-                dtype=self.event_dtype,
-            )
-            if len(ifo_events):
-                f["snr"] = abs(ifo_events["snr"])
-                f["event_id"] = ifo_events["event_id"]
-                f["coa_phase"] = np.angle(ifo_events["snr"])
-                f["chisq"] = ifo_events["chisq"]
-                f["end_time"] = (
-                    ifo_events["time_index"] / float(SAMPLE_RATE) + GPS_START[ifo]
-                )
-                f["time_index"] = ifo_events["time_index"]
-                f["slide_id"] = ifo_events["slide_id"]
-                template_sigmasq = np.array(
-                    [t["sigmasq"][ifo] for t in self.template_params],
-                    dtype=np.float32,
-                )
-                f["sigmasq"] = template_sigmasq[tid]
-
-                if "chisq_dof" in ifo_events.dtype.names:
-                    f["chisq_dof"] = ifo_events["chisq_dof"] / 2 + 1
-                else:
-                    f["chisq_dof"] = np.zeros(len(ifo_events))
-
-                f["template_hash"] = th[tid]
-            f["search/time_slides"] = np.array(self.time_slides[ifo])
-            f["search/start_time"] = np.array([TRIG_START_TIME[ifo]], dtype=np.int32)
-            f["search/end_time"] = np.array([TRIG_END_TIME[ifo]], dtype=np.int32)
 
 
 init_logging(True)
@@ -759,6 +698,6 @@ for t_num, template in enumerate(bank):
 logging.info("Filtering completed")
 
 logging.info("Writing output")
-event_mgr.write_events(OUTPUT)
+event_mgr.write_to_hdf(OUTPUT, SAMPLE_RATE, GPS_START, TRIG_START_TIME, TRIG_END_TIME)
 
 logging.info("Finished")

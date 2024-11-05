@@ -190,7 +190,7 @@ for ifo in INSTRUMENTS:
 
 # Set some convenience variables: number of IFOs, lower frequency,
 # GRB time, sky positions to search (either a grid or single sky point)
-nifo = len(INSTRUMENTS[:])
+nifo = len(INSTRUMENTS)
 sky_positions = sky_grid(
     ra=RA, dec=DEC, sky_error=SKY_ERROR, angular_spacing=ANGULAR_SPACING
 )

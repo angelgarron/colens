@@ -376,9 +376,7 @@ logging.info("Starting the filtering...")
 # Loop over templates
 for t_num, template in enumerate(bank):
     # Loop over segments
-    # ANGEL: this doesn't make any sense, looping with variable `stilde` and
-    # defining variable `stilde` inside the loop body??
-    for s_num, stilde in enumerate(segments[INSTRUMENTS[0]]):
+    for s_num in range(len(segments[INSTRUMENTS[0]])):
         stilde = {ifo: segments[ifo][s_num] for ifo in INSTRUMENTS}
         # Find how loud the template is in each detector, i.e., its
         # unnormalized matched-filter with itself. This quantity is

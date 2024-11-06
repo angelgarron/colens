@@ -9,7 +9,7 @@ from colens.coincident import get_coinc_indexes
 
 def filter_template(
     segments,
-    INSTRUMENTS,
+    instruments,
     template,
     event_mgr,
     t_num,
@@ -18,56 +18,56 @@ def filter_template(
     num_slides,
     sky_pos_indices,
     time_delay_idx,
-    LENSED_INSTRUMENTS,
+    lensed_instruments,
     nifo,
-    COINC_THRESHOLD,
+    coinc_threshold,
     antenna_pattern,
-    DO_NULL_CUT,
-    NULL_MIN,
-    NULL_GRAD,
-    NULL_STEP,
+    do_null_cut,
+    null_min,
+    null_grad,
+    null_step,
     power_chisq,
-    CHISQ_INDEX,
-    CHISQ_NHIGH,
+    chisq_index,
+    chisq_nhigh,
     ifo_out_vals,
     network_out_vals,
     ifo_names,
     sky_positions,
-    CLUSTER_WINDOW,
-    SAMPLE_RATE,
+    cluster_window,
+    sample_rate,
     network_names,
 ):
     # Loop over segments
-    for s_num in range(len(segments[INSTRUMENTS[0]])):
-        stilde = {ifo: segments[ifo][s_num] for ifo in INSTRUMENTS}
+    for s_num in range(len(segments[instruments[0]])):
+        stilde = {ifo: segments[ifo][s_num] for ifo in instruments}
         # Find how loud the template is in each detector, i.e., its
         # unnormalized matched-filter with itself. This quantity is
         # used to normalize matched-filters with the data.
         sigmasq = {
-            ifo: template.sigmasq(segments[ifo][s_num].psd) for ifo in INSTRUMENTS
+            ifo: template.sigmasq(segments[ifo][s_num].psd) for ifo in instruments
         }
-        sigma = {ifo: np.sqrt(sigmasq[ifo]) for ifo in INSTRUMENTS}
+        sigma = {ifo: np.sqrt(sigmasq[ifo]) for ifo in instruments}
         # Every time s_num is zero, run new_template to increment the
         # template index
         if s_num == 0:
             event_mgr.new_template(tmplt=template.params, sigmasq=sigmasq)
         logging.info(
-            "Analyzing segment %d/%d", s_num + 1, len(segments[INSTRUMENTS[0]])
+            "Analyzing segment %d/%d", s_num + 1, len(segments[instruments[0]])
         )
         # The following dicts with IFOs as keys are created to store
         # copies of the matched filtering results computed below.
         # - Complex SNR time series
-        snr_dict = dict.fromkeys(INSTRUMENTS)
+        snr_dict = dict.fromkeys(instruments)
         # - Its normalization
-        norm_dict = dict.fromkeys(INSTRUMENTS)
+        norm_dict = dict.fromkeys(instruments)
         # - The correlation vector frequency series
         #   It is the FFT of the SNR (so inverse FFT it to get the SNR)
-        corr_dict = dict.fromkeys(INSTRUMENTS)
+        corr_dict = dict.fromkeys(instruments)
         # - The trigger indices list (idx_dict will be created out of this)
-        idx = dict.fromkeys(INSTRUMENTS)
+        idx = dict.fromkeys(instruments)
         # - The list of normalized SNR values at the trigger locations
-        snr = dict.fromkeys(INSTRUMENTS)
-        for ifo in INSTRUMENTS:
+        snr = dict.fromkeys(instruments)
+        for ifo in instruments:
             logging.info("  Filtering template %d/%d, ifo %s", t_num + 1, n_bank, ifo)
             # The following lines unpack and store copies of the matched
             # filtering results for the current template, segment, and IFO.
@@ -85,7 +85,7 @@ def filter_template(
             snr[ifo] = snrv * norm
 
         # Move onto next segment if there are no triggers.
-        n_trigs = [len(snr[ifo]) for ifo in INSTRUMENTS]
+        n_trigs = [len(snr[ifo]) for ifo in instruments]
         if not any(n_trigs):
             continue
 
@@ -114,7 +114,7 @@ def filter_template(
                             < len(snr_dict[ifo]),
                         )
                     ]
-                    for ifo in INSTRUMENTS
+                    for ifo in instruments
                 }
                 # Find triggers that are coincident (in geocent time) in
                 # multiple IFOs. If a single IFO analysis then just use the
@@ -123,7 +123,7 @@ def filter_template(
                 # namely, triggers must have at least 2 IFO SNRs above
                 # args.sngl_snr_threshold.
                 coinc_idx = get_coinc_indexes(
-                    idx_dict, time_delay_idx[slide][position_index], LENSED_INSTRUMENTS
+                    idx_dict, time_delay_idx[slide][position_index], lensed_instruments
                 )
                 logging.info("        Found %d coincident triggers", len(coinc_idx))
                 # Calculate the coincident and coherent SNR.
@@ -138,7 +138,7 @@ def filter_template(
                     ) = coh.coincident_snr(
                         snr_dict,
                         coinc_idx,
-                        COINC_THRESHOLD,
+                        coinc_threshold,
                         time_delay_idx[slide][position_index],
                     )
                     logging.info(
@@ -162,11 +162,11 @@ def filter_template(
                     # Plus and cross antenna pattern dictionaries
                     fp = {
                         ifo: antenna_pattern[ifo][position_index][0]
-                        for ifo in INSTRUMENTS
+                        for ifo in instruments
                     }
                     fc = {
                         ifo: antenna_pattern[ifo][position_index][1]
-                        for ifo in INSTRUMENTS
+                        for ifo in instruments
                     }
                     project = coh.get_projection_matrix(
                         fp, fc, sigma, projection="standard"
@@ -179,7 +179,7 @@ def filter_template(
                     ) = coh.coherent_snr(
                         coinc_triggers,
                         coinc_idx,
-                        COINC_THRESHOLD,
+                        coinc_threshold,
                         project,
                         rho_coinc,
                     )
@@ -201,10 +201,10 @@ def filter_template(
                         ) = coh.null_snr(
                             rho_coh,
                             rho_coinc,
-                            apply_cut=DO_NULL_CUT,
-                            null_min=NULL_MIN,
-                            null_grad=NULL_GRAD,
-                            null_step=NULL_STEP,
+                            apply_cut=do_null_cut,
+                            null_min=null_min,
+                            null_grad=null_grad,
+                            null_step=null_step,
                             snrv=coinc_triggers,
                             index=coinc_idx,
                         )
@@ -227,20 +227,20 @@ def filter_template(
                     coinc_idx_det_frame = {
                         ifo: (coinc_idx + time_delay_idx[slide][position_index][ifo])
                         % len(snr_dict[ifo])
-                        for ifo in INSTRUMENTS
+                        for ifo in instruments
                     }
                     # Build dictionary with per-IFO complex SNR time series
                     # of the most recent set of triggers
                     coherent_ifo_trigs = {
                         ifo: snr_dict[ifo][coinc_idx_det_frame[ifo]]
-                        for ifo in INSTRUMENTS
+                        for ifo in instruments
                     }
                     # Calculate the powerchi2 values of remaining triggers
                     # (this uses the SNR timeseries before the time delay,
                     # so we undo it; the same holds for normalisation)
                     chisq = {}
                     chisq_dof = {}
-                    for ifo in INSTRUMENTS:
+                    for ifo in instruments:
                         chisq[ifo], chisq_dof[ifo] = power_chisq.values(
                             corr_dict[ifo],
                             coherent_ifo_trigs[ifo] / norm_dict[ifo],
@@ -258,39 +258,39 @@ def filter_template(
                         reweighted_snr = ranking.newsnr(
                             rho_coh,
                             network_chisq_dict,
-                            q=CHISQ_INDEX,
-                            n=CHISQ_NHIGH,
+                            q=chisq_index,
+                            n=chisq_nhigh,
                         )
                         # Calculate null reweighted SNR
                         reweighted_snr = coh.reweight_snr_by_null(
                             reweighted_snr,
                             null,
                             rho_coh,
-                            null_min=NULL_MIN,
-                            null_grad=NULL_GRAD,
-                            null_step=NULL_STEP,
+                            null_min=null_min,
+                            null_grad=null_grad,
+                            null_step=null_step,
                         )
                     elif nifo == 2:
                         reweighted_snr = ranking.newsnr(
                             rho_coinc,
                             network_chisq_dict,
-                            q=CHISQ_INDEX,
-                            n=CHISQ_NHIGH,
+                            q=chisq_index,
+                            n=chisq_nhigh,
                         )
                     else:
                         rho_sngl = abs(
-                            snr[INSTRUMENTS[0]][coinc_idx_det_frame[INSTRUMENTS[0]]]
+                            snr[instruments[0]][coinc_idx_det_frame[instruments[0]]]
                         )
                         reweighted_snr = ranking.newsnr(
                             rho_sngl,
                             network_chisq_dict,
-                            q=CHISQ_INDEX,
-                            n=CHISQ_NHIGH,
+                            q=chisq_index,
+                            n=chisq_nhigh,
                         )
                     # All out vals must be the same length, so single
                     # value entries are repeated once per event
                     num_events = len(reweighted_snr)
-                    for ifo in INSTRUMENTS:
+                    for ifo in instruments:
                         ifo_out_vals["chisq"] = chisq[ifo]
                         ifo_out_vals["chisq_dof"] = chisq_dof[ifo]
                         ifo_out_vals["time_index"] = (
@@ -313,7 +313,7 @@ def filter_template(
                         network_out_vals["coherent_snr"] = rho_coinc
                     else:
                         network_out_vals["coherent_snr"] = abs(
-                            snr[INSTRUMENTS[0]][coinc_idx_det_frame[INSTRUMENTS[0]]]
+                            snr[instruments[0]][coinc_idx_det_frame[instruments[0]]]
                         )
                     network_out_vals["reweighted_snr"] = reweighted_snr
                     network_out_vals["my_network_chisq"] = np.real(network_chisq_dict)
@@ -335,12 +335,14 @@ def filter_template(
         # Left loops over sky positions and time-slides,
         # but not loops over segments and templates.
         # The triggers can be clustered
-        cluster_window = int(CLUSTER_WINDOW * SAMPLE_RATE)
         # Cluster template events by slide
         for slide in range(num_slides):
             logging.info("  Clustering slide %d", slide)
             event_mgr.cluster_template_network_events(
-                "time_index", "reweighted_snr", cluster_window, slide=slide
+                "time_index",
+                "reweighted_snr",
+                int(cluster_window * sample_rate),
+                slide=slide,
             )
     # Left loop over segments
     event_mgr.finalize_template_events()

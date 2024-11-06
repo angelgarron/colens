@@ -92,10 +92,7 @@ ANGULAR_SPACING = 1.8 * np.pi / 180  # radians
 SKY_ERROR = 0.1 * np.pi / 180  # radians
 
 
-def main():
-    init_logging(True)
-
-    logging.info("Creating template bank")
+def create_filter_bank():
     with h5py.File(BANK_FILE, "w") as file:
         for key, value in {
             "appoximant": APPROXIMANT,
@@ -108,6 +105,13 @@ def main():
             file.create_dataset(
                 key, data=[value], compression="gzip", compression_opts=9, shuffle=True
             )
+
+
+def main():
+    init_logging(True)
+
+    logging.info("Creating template bank")
+    create_filter_bank()
 
     logging.info("Injecting simulated signals on gaussian noise")
     injection_parameters = dict(

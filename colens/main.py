@@ -175,7 +175,7 @@ def main():
     create_filter_bank()
 
     logging.info("Injecting simulated signals on gaussian noise")
-    create_injections()
+    strain_dict = create_injections()
 
     num_slides = slide_limiter(SEGMENT_LENGTH, SLIDE_SHIFT, LENSED_INSTRUMENTS)
 

@@ -373,7 +373,6 @@ antenna_pattern = calculate_antenna_pattern(
 )
 
 logging.info("Starting the filtering...")
-# Loop over templates
 for t_num, template in enumerate(bank):
     # Loop over segments
     for s_num in range(len(segments[INSTRUMENTS[0]])):
@@ -680,7 +679,7 @@ for t_num, template in enumerate(bank):
             )
     # Left loop over segments
     event_mgr.finalize_template_events()
-# Left loop over templates
+
 logging.info("Filtering completed")
 
 logging.info("Writing output")

@@ -165,6 +165,7 @@ def create_injections():
     logging.info(f"NETWORK SNR {rho}")
     rho = np.sqrt(sum(abs(matched_filter_snrs) ** 2))
     logging.info(f"COINCIDENCE SNR {rho}")
+    strain_dict = process_strain_dict(strain_dict, STRAIN_HIGH_PASS, SAMPLE_RATE, PAD)
     return strain_dict
 
 
@@ -178,8 +179,6 @@ def main():
     strain_dict = create_injections()
 
     num_slides = slide_limiter(SEGMENT_LENGTH, SLIDE_SHIFT, LENSED_INSTRUMENTS)
-
-    strain_dict = process_strain_dict(strain_dict, STRAIN_HIGH_PASS, SAMPLE_RATE, PAD)
 
     # Create a dictionary of Python slice objects that indicate where the segments
     # start and end for each detector timeseries.

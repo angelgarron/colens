@@ -191,7 +191,6 @@ def main():
             allow_zero_padding=False,
         )
 
-    nifo = len(INSTRUMENTS)
     sky_positions = sky_grid(
         ra=RA, dec=DEC, sky_error=SKY_ERROR, angular_spacing=ANGULAR_SPACING
     )

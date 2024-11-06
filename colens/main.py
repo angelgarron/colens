@@ -190,15 +190,11 @@ for ifo in INSTRUMENTS:
     )
 
 
-# Set some convenience variables: number of IFOs, lower frequency,
-# GRB time, sky positions to search (either a grid or single sky point)
 nifo = len(INSTRUMENTS)
 sky_positions = sky_grid(
     ra=RA, dec=DEC, sky_error=SKY_ERROR, angular_spacing=ANGULAR_SPACING
 )
 sky_pos_indices = np.arange(sky_positions.shape[1])
-# the sampling rate, flen, tlen and delta_f agree for all detectors
-# taking the zeroth detector in the list as a reference.
 flen = strain_segments_dict[INSTRUMENTS[0]].freq_len
 tlen = strain_segments_dict[INSTRUMENTS[0]].time_len
 delta_f = strain_segments_dict[INSTRUMENTS[0]].delta_f
@@ -207,7 +203,6 @@ delta_f = strain_segments_dict[INSTRUMENTS[0]].delta_f
 logging.info("Making frequency-domain data segments")
 segments = {ifo: strain_segments_dict[ifo].fourier_segments() for ifo in INSTRUMENTS}
 del strain_segments_dict
-# Associate PSDs to segments for all IFOs when using the multi-detector CLI
 logging.info("Associating PSDs to them")
 for ifo in INSTRUMENTS:
     associate_psd_to_segments(
@@ -267,9 +262,6 @@ time_delay_idx = {
 del time_delay_idx_zerolag
 
 logging.info("Setting up MatchedFilterControl at each IFO")
-# Prototype container for the output of MatchedFilterControl and
-# waveform.FilterBank (see below).
-# Use tlen of the first IFO as it is the same across IFOs.
 template_mem = zeros(tlen, dtype=complex64)
 
 # All MatchedFilterControl instances are initialized in the same way.
@@ -298,20 +290,15 @@ matched_filter = {
     for ifo in INSTRUMENTS
 }
 
-# Chi-squares
 logging.info("Initializing signal-based vetoes: power")
-# Directly use existing SingleDetPowerChisq to calculate single detector chi-squares for
-# multiple IFOs
 power_chisq = vetoes.SingleDetPowerChisq(CHISQ_BINS)
 
-# Overwhiten all frequency-domain segments by dividing by the PSD estimate
 logging.info("Overwhitening frequency-domain data segments")
 for ifo in INSTRUMENTS:
     for seg in segments[ifo]:
         seg /= seg.psd
 
 logging.info("Setting up event manager")
-# But first build dictionaries to initialize and feed the event manager
 ifo_out_types = {
     "time_index": int,
     "ifo": int,  # IFO is stored as an int internally!
@@ -364,7 +351,6 @@ event_mgr = MyEventManagerCoherent(
     gating_info={det: strain_dict[det].gating_info for det in strain_dict},
 )
 
-# Template bank: filtering and thinning
 logging.info("Read in template bank")
 bank = waveform.FilterBank(
     BANK_FILE,

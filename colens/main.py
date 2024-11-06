@@ -94,286 +94,7 @@ ANGULAR_SPACING = 1.8 * np.pi / 180  # radians
 SKY_ERROR = 0.1 * np.pi / 180  # radians
 
 
-init_logging(True)
-
-logging.info("Creating template bank")
-with h5py.File(BANK_FILE, "w") as file:
-    for key, value in {
-        "appoximant": APPROXIMANT,
-        "f_lower": LOW_FREQUENCY_CUTOFF,
-        "mass1": 79.45,
-        "mass2": 48.50,
-        "spin1z": 0.60,
-        "spin2z": 0.05,
-    }.items():
-        file.create_dataset(
-            key, data=[value], compression="gzip", compression_opts=9, shuffle=True
-        )
-
-
-logging.info("Injecting simulated signals on gaussian noise")
-injection_parameters = dict(
-    mass_1=79.45,
-    mass_2=48.5,
-    a_1=0.6,
-    a_2=0.05,
-    tilt_1=0.0,
-    tilt_2=0.0,
-    phi_12=0.0,
-    phi_jl=0.0,
-    luminosity_distance=2000.0,
-    theta_jn=0.0,
-    psi=0.0,
-    phase=0.0,
-    geocent_time=TIME_GPS_PAST,
-    ra=6.0,
-    dec=-1.2,
-)
-return_value = get_strain_list_from_simulation(
-    injection_parameters,
-    ["H1", "L1"],
-    start_time=GPS_START["H1"] - PAD,
-    end_time=GPS_END["H1"] + PAD,
-    low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
-)
-optimal_snrs = return_value[0]
-matched_filter_snrs = return_value[1]
-strain_dict = dict(zip(["H1", "L1"], return_value[2]))
-# the lensed image
-injection_parameters["geocent_time"] = TIME_GPS_FUTURE
-return_value = get_strain_list_from_simulation(
-    injection_parameters,
-    ["H1", "L1"],
-    start_time=GPS_START["H1_lensed"] - PAD,
-    end_time=GPS_END["H1_lensed"] + PAD,
-    low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
-)
-optimal_snrs += return_value[0]
-matched_filter_snrs += return_value[1]
-strain_dict.update(
-    dict(
-        zip(
-            ["H1_lensed", "L1_lensed"],
-            return_value[2],
-        )
-    )
-)
-
-optimal_snrs = np.array(optimal_snrs)
-matched_filter_snrs = np.array(matched_filter_snrs)
-
-rho = conversions.network_matched_filter_snr(
-    abs(matched_filter_snrs),
-    optimal_snrs,
-)
-logging.info(f"NETWORK SNR {rho}")
-rho = np.sqrt(sum(abs(matched_filter_snrs) ** 2))
-logging.info(f"COINCIDENCE SNR {rho}")
-
-num_slides = slide_limiter(SEGMENT_LENGTH, SLIDE_SHIFT, LENSED_INSTRUMENTS)
-
-strain_dict = process_strain_dict(strain_dict, STRAIN_HIGH_PASS, SAMPLE_RATE, PAD)
-
-# Create a dictionary of Python slice objects that indicate where the segments
-# start and end for each detector timeseries.
-strain_segments_dict = dict()
-for ifo in INSTRUMENTS:
-    strain_segments_dict[ifo] = StrainSegments(
-        strain_dict[ifo],
-        segment_length=SEGMENT_LENGTH,
-        segment_start_pad=START_PAD,
-        segment_end_pad=END_PAD,
-        trigger_start=TRIG_START_TIME[ifo],
-        trigger_end=TRIG_END_TIME[ifo],
-        filter_inj_only=False,
-        allow_zero_padding=False,
-    )
-
-
-nifo = len(INSTRUMENTS)
-sky_positions = sky_grid(
-    ra=RA, dec=DEC, sky_error=SKY_ERROR, angular_spacing=ANGULAR_SPACING
-)
-sky_pos_indices = np.arange(sky_positions.shape[1])
-flen = strain_segments_dict[INSTRUMENTS[0]].freq_len
-tlen = strain_segments_dict[INSTRUMENTS[0]].time_len
-delta_f = strain_segments_dict[INSTRUMENTS[0]].delta_f
-# segments is a dictionary of frequency domain objects, each one of which
-# is the Fourier transform of the segments in strain_segments_dict
-logging.info("Making frequency-domain data segments")
-segments = {ifo: strain_segments_dict[ifo].fourier_segments() for ifo in INSTRUMENTS}
-del strain_segments_dict
-logging.info("Associating PSDs to them")
-for ifo in INSTRUMENTS:
-    associate_psd_to_segments(
-        strain_dict[ifo],
-        segments[ifo],
-        PSD_SEGMENT_STRIDE,
-        SAMPLE_RATE,
-        PSD_SEGMENT_LENGTH,
-        PSD_NUM_SEGMENTS,
-        flen,
-        delta_f,
-    )
-
-logging.info("Determining time slide shifts and time delays")
-# Create a dictionary of time slide shifts; IFO 0 is unshifted
-# ANGEL: Just lensed detectors are shifted
-slide_ids = np.arange(num_slides)
-time_slides = {
-    ifo: SLIDE_SHIFT * slide_ids * ifo_idx
-    for ifo_idx, ifo in enumerate(LENSED_INSTRUMENTS)
-}
-time_slides.update(
-    {ifo: time_slides[LENSED_INSTRUMENTS[0]] for ifo in UNLENSED_INSTRUMENTS}
-)
-# Given the time delays wrt to IFO 0 in time_slides, create a dictionary
-# for time delay indices evaluated wrt the geocenter, in units of samples,
-# i.e. (time delay from geocenter + time slide)*sampling_rate
-time_delay_idx_zerolag = {
-    position_index: {
-        ifo: MyDetector(ifo).time_delay_from_earth_center(
-            sky_positions[0][position_index],
-            sky_positions[1][position_index],
-            TRIGGER_TIMES[ifo],
-        )
-        for ifo in INSTRUMENTS
-    }
-    for position_index in sky_pos_indices
-}
-time_delay_idx = {
-    slide: {
-        position_index: {
-            ifo: int(
-                round(
-                    (
-                        time_delay_idx_zerolag[position_index][ifo]
-                        + time_slides[ifo][slide]
-                    )
-                    * SAMPLE_RATE
-                )
-            )
-            for ifo in INSTRUMENTS
-        }
-        for position_index in sky_pos_indices
-    }
-    for slide in slide_ids
-}
-del time_delay_idx_zerolag
-
-logging.info("Setting up MatchedFilterControl at each IFO")
-template_mem = zeros(tlen, dtype=complex64)
-
-# All MatchedFilterControl instances are initialized in the same way.
-# This allows to track where the single detector SNR timeseries are
-# greater than args.sngl_snr_threshold. Later, coh.get_coinc_indexes
-# will enforce the requirement that at least two single detector SNR
-# are above args.sngl_snr_threshold, rescuing, where necessary, SNR
-# timeseries points for detectors below that threshold.
-# NOTE: Do not cluster here for a coherent search (use_cluster=False).
-#       Clustering happens at the end of the template loop.
-matched_filter = {
-    ifo: MatchedFilterControl(
-        LOW_FREQUENCY_CUTOFF,
-        None,
-        SNGL_SNR_THRESHOLD,
-        tlen,
-        delta_f,
-        complex64,
-        segments[ifo],
-        template_mem,
-        use_cluster=False,
-        downsample_factor=DOWNSAMPLE_FACTOR,
-        upsample_threshold=UPSAMPLE_THRESHOLD,
-        upsample_method=UPSAMPLE_METHOD,
-    )
-    for ifo in INSTRUMENTS
-}
-
-logging.info("Initializing signal-based vetoes: power")
-power_chisq = vetoes.SingleDetPowerChisq(CHISQ_BINS)
-
-logging.info("Overwhitening frequency-domain data segments")
-for ifo in INSTRUMENTS:
-    for seg in segments[ifo]:
-        seg /= seg.psd
-
-logging.info("Setting up event manager")
-ifo_out_types = {
-    "time_index": int,
-    "ifo": int,  # IFO is stored as an int internally!
-    "snr": complex64,
-    "chisq": float32,
-    "chisq_dof": int,
-    "slide_id": int,
-}
-ifo_out_vals = {
-    "time_index": None,
-    "ifo": None,
-    "snr": None,
-    "chisq": None,
-    "chisq_dof": None,
-    "slide_id": None,
-}
-ifo_names = sorted(ifo_out_vals.keys())
-network_out_types = {
-    "dec": float32,
-    "ra": float32,
-    "time_index": int,
-    "coherent_snr": float32,
-    "null_snr": float32,
-    "nifo": int,
-    "my_network_chisq": float32,
-    "reweighted_snr": float32,
-    "slide_id": int,
-}
-network_out_vals = {
-    "dec": None,
-    "ra": None,
-    "time_index": None,
-    "coherent_snr": None,
-    "null_snr": None,
-    "nifo": None,
-    "my_network_chisq": None,
-    "reweighted_snr": None,
-    "slide_id": None,
-}
-network_names = sorted(network_out_vals.keys())
-event_mgr = MyEventManagerCoherent(
-    [],
-    INSTRUMENTS,
-    ifo_names,
-    [ifo_out_types[n] for n in ifo_names],
-    network_names,
-    [network_out_types[n] for n in network_names],
-    segments=segments,
-    time_slides=time_slides,
-    gating_info={det: strain_dict[det].gating_info for det in strain_dict},
-)
-
-logging.info("Read in template bank")
-bank = waveform.FilterBank(
-    BANK_FILE,
-    flen,
-    delta_f,
-    complex64,
-    low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
-    phase_order=ORDER,
-    taper=TAPER_TEMPLATE,
-    approximant=APPROXIMANT,
-    out=template_mem,
-)
-
-n_bank = len(bank)
-logging.info("Full template bank size: %d", n_bank)
-
-logging.info("Calculating antenna pattern functions at every sky position")
-antenna_pattern = calculate_antenna_pattern(
-    sky_pos_indices, INSTRUMENTS, sky_positions, TRIGGER_TIMES
-)
-
-logging.info("Starting the filtering...")
-for t_num, template in enumerate(bank):
+def filter_template():
     # Loop over segments
     for s_num in range(len(segments[INSTRUMENTS[0]])):
         stilde = {ifo: segments[ifo][s_num] for ifo in INSTRUMENTS}
@@ -388,7 +109,9 @@ for t_num, template in enumerate(bank):
         # template index
         if s_num == 0:
             event_mgr.new_template(tmplt=template.params, sigmasq=sigmasq)
-        logging.info("Analyzing segment %d/%d", s_num + 1, len(segments[ifo]))
+        logging.info(
+            "Analyzing segment %d/%d", s_num + 1, len(segments[INSTRUMENTS[0]])
+        )
         # The following dicts with IFOs as keys are created to store
         # copies of the matched filtering results computed below.
         # - Complex SNR time series
@@ -679,6 +402,289 @@ for t_num, template in enumerate(bank):
             )
     # Left loop over segments
     event_mgr.finalize_template_events()
+
+
+init_logging(True)
+
+logging.info("Creating template bank")
+with h5py.File(BANK_FILE, "w") as file:
+    for key, value in {
+        "appoximant": APPROXIMANT,
+        "f_lower": LOW_FREQUENCY_CUTOFF,
+        "mass1": 79.45,
+        "mass2": 48.50,
+        "spin1z": 0.60,
+        "spin2z": 0.05,
+    }.items():
+        file.create_dataset(
+            key, data=[value], compression="gzip", compression_opts=9, shuffle=True
+        )
+
+
+logging.info("Injecting simulated signals on gaussian noise")
+injection_parameters = dict(
+    mass_1=79.45,
+    mass_2=48.5,
+    a_1=0.6,
+    a_2=0.05,
+    tilt_1=0.0,
+    tilt_2=0.0,
+    phi_12=0.0,
+    phi_jl=0.0,
+    luminosity_distance=2000.0,
+    theta_jn=0.0,
+    psi=0.0,
+    phase=0.0,
+    geocent_time=TIME_GPS_PAST,
+    ra=6.0,
+    dec=-1.2,
+)
+return_value = get_strain_list_from_simulation(
+    injection_parameters,
+    ["H1", "L1"],
+    start_time=GPS_START["H1"] - PAD,
+    end_time=GPS_END["H1"] + PAD,
+    low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
+)
+optimal_snrs = return_value[0]
+matched_filter_snrs = return_value[1]
+strain_dict = dict(zip(["H1", "L1"], return_value[2]))
+# the lensed image
+injection_parameters["geocent_time"] = TIME_GPS_FUTURE
+return_value = get_strain_list_from_simulation(
+    injection_parameters,
+    ["H1", "L1"],
+    start_time=GPS_START["H1_lensed"] - PAD,
+    end_time=GPS_END["H1_lensed"] + PAD,
+    low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
+)
+optimal_snrs += return_value[0]
+matched_filter_snrs += return_value[1]
+strain_dict.update(
+    dict(
+        zip(
+            ["H1_lensed", "L1_lensed"],
+            return_value[2],
+        )
+    )
+)
+
+optimal_snrs = np.array(optimal_snrs)
+matched_filter_snrs = np.array(matched_filter_snrs)
+
+rho = conversions.network_matched_filter_snr(
+    abs(matched_filter_snrs),
+    optimal_snrs,
+)
+logging.info(f"NETWORK SNR {rho}")
+rho = np.sqrt(sum(abs(matched_filter_snrs) ** 2))
+logging.info(f"COINCIDENCE SNR {rho}")
+
+num_slides = slide_limiter(SEGMENT_LENGTH, SLIDE_SHIFT, LENSED_INSTRUMENTS)
+
+strain_dict = process_strain_dict(strain_dict, STRAIN_HIGH_PASS, SAMPLE_RATE, PAD)
+
+# Create a dictionary of Python slice objects that indicate where the segments
+# start and end for each detector timeseries.
+strain_segments_dict = dict()
+for ifo in INSTRUMENTS:
+    strain_segments_dict[ifo] = StrainSegments(
+        strain_dict[ifo],
+        segment_length=SEGMENT_LENGTH,
+        segment_start_pad=START_PAD,
+        segment_end_pad=END_PAD,
+        trigger_start=TRIG_START_TIME[ifo],
+        trigger_end=TRIG_END_TIME[ifo],
+        filter_inj_only=False,
+        allow_zero_padding=False,
+    )
+
+
+nifo = len(INSTRUMENTS)
+sky_positions = sky_grid(
+    ra=RA, dec=DEC, sky_error=SKY_ERROR, angular_spacing=ANGULAR_SPACING
+)
+sky_pos_indices = np.arange(sky_positions.shape[1])
+flen = strain_segments_dict[INSTRUMENTS[0]].freq_len
+tlen = strain_segments_dict[INSTRUMENTS[0]].time_len
+delta_f = strain_segments_dict[INSTRUMENTS[0]].delta_f
+# segments is a dictionary of frequency domain objects, each one of which
+# is the Fourier transform of the segments in strain_segments_dict
+logging.info("Making frequency-domain data segments")
+segments = {ifo: strain_segments_dict[ifo].fourier_segments() for ifo in INSTRUMENTS}
+del strain_segments_dict
+logging.info("Associating PSDs to them")
+for ifo in INSTRUMENTS:
+    associate_psd_to_segments(
+        strain_dict[ifo],
+        segments[ifo],
+        PSD_SEGMENT_STRIDE,
+        SAMPLE_RATE,
+        PSD_SEGMENT_LENGTH,
+        PSD_NUM_SEGMENTS,
+        flen,
+        delta_f,
+    )
+
+logging.info("Determining time slide shifts and time delays")
+# Create a dictionary of time slide shifts; IFO 0 is unshifted
+# ANGEL: Just lensed detectors are shifted
+slide_ids = np.arange(num_slides)
+time_slides = {
+    ifo: SLIDE_SHIFT * slide_ids * ifo_idx
+    for ifo_idx, ifo in enumerate(LENSED_INSTRUMENTS)
+}
+time_slides.update(
+    {ifo: time_slides[LENSED_INSTRUMENTS[0]] for ifo in UNLENSED_INSTRUMENTS}
+)
+# Given the time delays wrt to IFO 0 in time_slides, create a dictionary
+# for time delay indices evaluated wrt the geocenter, in units of samples,
+# i.e. (time delay from geocenter + time slide)*sampling_rate
+time_delay_idx_zerolag = {
+    position_index: {
+        ifo: MyDetector(ifo).time_delay_from_earth_center(
+            sky_positions[0][position_index],
+            sky_positions[1][position_index],
+            TRIGGER_TIMES[ifo],
+        )
+        for ifo in INSTRUMENTS
+    }
+    for position_index in sky_pos_indices
+}
+time_delay_idx = {
+    slide: {
+        position_index: {
+            ifo: int(
+                round(
+                    (
+                        time_delay_idx_zerolag[position_index][ifo]
+                        + time_slides[ifo][slide]
+                    )
+                    * SAMPLE_RATE
+                )
+            )
+            for ifo in INSTRUMENTS
+        }
+        for position_index in sky_pos_indices
+    }
+    for slide in slide_ids
+}
+del time_delay_idx_zerolag
+
+logging.info("Setting up MatchedFilterControl at each IFO")
+template_mem = zeros(tlen, dtype=complex64)
+
+# All MatchedFilterControl instances are initialized in the same way.
+# This allows to track where the single detector SNR timeseries are
+# greater than args.sngl_snr_threshold. Later, coh.get_coinc_indexes
+# will enforce the requirement that at least two single detector SNR
+# are above args.sngl_snr_threshold, rescuing, where necessary, SNR
+# timeseries points for detectors below that threshold.
+# NOTE: Do not cluster here for a coherent search (use_cluster=False).
+#       Clustering happens at the end of the template loop.
+matched_filter = {
+    ifo: MatchedFilterControl(
+        LOW_FREQUENCY_CUTOFF,
+        None,
+        SNGL_SNR_THRESHOLD,
+        tlen,
+        delta_f,
+        complex64,
+        segments[ifo],
+        template_mem,
+        use_cluster=False,
+        downsample_factor=DOWNSAMPLE_FACTOR,
+        upsample_threshold=UPSAMPLE_THRESHOLD,
+        upsample_method=UPSAMPLE_METHOD,
+    )
+    for ifo in INSTRUMENTS
+}
+
+logging.info("Initializing signal-based vetoes: power")
+power_chisq = vetoes.SingleDetPowerChisq(CHISQ_BINS)
+
+logging.info("Overwhitening frequency-domain data segments")
+for ifo in INSTRUMENTS:
+    for seg in segments[ifo]:
+        seg /= seg.psd
+
+logging.info("Setting up event manager")
+ifo_out_types = {
+    "time_index": int,
+    "ifo": int,  # IFO is stored as an int internally!
+    "snr": complex64,
+    "chisq": float32,
+    "chisq_dof": int,
+    "slide_id": int,
+}
+ifo_out_vals = {
+    "time_index": None,
+    "ifo": None,
+    "snr": None,
+    "chisq": None,
+    "chisq_dof": None,
+    "slide_id": None,
+}
+ifo_names = sorted(ifo_out_vals.keys())
+network_out_types = {
+    "dec": float32,
+    "ra": float32,
+    "time_index": int,
+    "coherent_snr": float32,
+    "null_snr": float32,
+    "nifo": int,
+    "my_network_chisq": float32,
+    "reweighted_snr": float32,
+    "slide_id": int,
+}
+network_out_vals = {
+    "dec": None,
+    "ra": None,
+    "time_index": None,
+    "coherent_snr": None,
+    "null_snr": None,
+    "nifo": None,
+    "my_network_chisq": None,
+    "reweighted_snr": None,
+    "slide_id": None,
+}
+network_names = sorted(network_out_vals.keys())
+event_mgr = MyEventManagerCoherent(
+    [],
+    INSTRUMENTS,
+    ifo_names,
+    [ifo_out_types[n] for n in ifo_names],
+    network_names,
+    [network_out_types[n] for n in network_names],
+    segments=segments,
+    time_slides=time_slides,
+    gating_info={det: strain_dict[det].gating_info for det in strain_dict},
+)
+
+logging.info("Read in template bank")
+bank = waveform.FilterBank(
+    BANK_FILE,
+    flen,
+    delta_f,
+    complex64,
+    low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
+    phase_order=ORDER,
+    taper=TAPER_TEMPLATE,
+    approximant=APPROXIMANT,
+    out=template_mem,
+)
+
+n_bank = len(bank)
+logging.info("Full template bank size: %d", n_bank)
+
+logging.info("Calculating antenna pattern functions at every sky position")
+antenna_pattern = calculate_antenna_pattern(
+    sky_pos_indices, INSTRUMENTS, sky_positions, TRIGGER_TIMES
+)
+
+logging.info("Starting the filtering...")
+for t_num, template in enumerate(bank):
+    filter_template()
 
 logging.info("Filtering completed")
 

@@ -19,7 +19,6 @@ def filter_template(
     sky_pos_indices,
     time_delay_idx,
     lensed_instruments,
-    nifo,
     coinc_threshold,
     antenna_pattern,
     do_null_cut,
@@ -37,6 +36,7 @@ def filter_template(
     sample_rate,
     network_names,
 ):
+    nifo = len(instruments)
     # Loop over segments
     for s_num in range(len(segments[instruments[0]])):
         stilde = {ifo: segments[ifo][s_num] for ifo in instruments}

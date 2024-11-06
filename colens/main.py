@@ -384,7 +384,6 @@ for t_num, template in enumerate(bank):
         sky_pos_indices,
         time_delay_idx,
         LENSED_INSTRUMENTS,
-        nifo,
         COINC_THRESHOLD,
         antenna_pattern,
         DO_NULL_CUT,

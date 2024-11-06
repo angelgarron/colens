@@ -8,8 +8,8 @@ from pycbc.filter import MatchedFilterControl
 from pycbc.strain import StrainSegments
 from pycbc.types import complex64, float32, zeros
 
-from colens.background import slide_limiter
-from colens.detector import MyDetector, calculate_antenna_pattern
+from colens.background import get_time_delay_indices, slide_limiter
+from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_template
 from colens.injection import get_strain_list_from_simulation
 from colens.manager import MyEventManagerCoherent
@@ -215,49 +215,18 @@ for ifo in INSTRUMENTS:
     )
 
 logging.info("Determining time slide shifts and time delays")
-# Create a dictionary of time slide shifts; IFO 0 is unshifted
-# ANGEL: Just lensed detectors are shifted
-slide_ids = np.arange(num_slides)
-time_slides = {
-    ifo: SLIDE_SHIFT * slide_ids * ifo_idx
-    for ifo_idx, ifo in enumerate(LENSED_INSTRUMENTS)
-}
-time_slides.update(
-    {ifo: time_slides[LENSED_INSTRUMENTS[0]] for ifo in UNLENSED_INSTRUMENTS}
+
+time_slides, time_delay_idx = get_time_delay_indices(
+    num_slides,
+    SLIDE_SHIFT,
+    LENSED_INSTRUMENTS,
+    UNLENSED_INSTRUMENTS,
+    sky_positions,
+    TRIGGER_TIMES,
+    INSTRUMENTS,
+    sky_pos_indices,
+    SAMPLE_RATE,
 )
-# Given the time delays wrt to IFO 0 in time_slides, create a dictionary
-# for time delay indices evaluated wrt the geocenter, in units of samples,
-# i.e. (time delay from geocenter + time slide)*sampling_rate
-time_delay_idx_zerolag = {
-    position_index: {
-        ifo: MyDetector(ifo).time_delay_from_earth_center(
-            sky_positions[0][position_index],
-            sky_positions[1][position_index],
-            TRIGGER_TIMES[ifo],
-        )
-        for ifo in INSTRUMENTS
-    }
-    for position_index in sky_pos_indices
-}
-time_delay_idx = {
-    slide: {
-        position_index: {
-            ifo: int(
-                round(
-                    (
-                        time_delay_idx_zerolag[position_index][ifo]
-                        + time_slides[ifo][slide]
-                    )
-                    * SAMPLE_RATE
-                )
-            )
-            for ifo in INSTRUMENTS
-        }
-        for position_index in sky_pos_indices
-    }
-    for slide in slide_ids
-}
-del time_delay_idx_zerolag
 
 logging.info("Setting up MatchedFilterControl at each IFO")
 template_mem = zeros(tlen, dtype=complex64)

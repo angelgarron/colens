@@ -12,8 +12,6 @@ def filter_template(
     instruments,
     template,
     event_mgr,
-    t_num,
-    n_bank,
     matched_filter,
     num_slides,
     sky_pos_indices,
@@ -68,7 +66,7 @@ def filter_template(
         # - The list of normalized SNR values at the trigger locations
         snr = dict.fromkeys(instruments)
         for ifo in instruments:
-            logging.info("  Filtering template %d/%d, ifo %s", t_num + 1, n_bank, ifo)
+            logging.info("  Filtering ifo %s", ifo)
             # The following lines unpack and store copies of the matched
             # filtering results for the current template, segment, and IFO.
             # No clustering happens in the coherent search until the end.

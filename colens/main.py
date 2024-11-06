@@ -107,13 +107,7 @@ def create_filter_bank():
             )
 
 
-def main():
-    init_logging(True)
-
-    logging.info("Creating template bank")
-    create_filter_bank()
-
-    logging.info("Injecting simulated signals on gaussian noise")
+def create_injections():
     injection_parameters = dict(
         mass_1=79.45,
         mass_2=48.5,
@@ -171,6 +165,17 @@ def main():
     logging.info(f"NETWORK SNR {rho}")
     rho = np.sqrt(sum(abs(matched_filter_snrs) ** 2))
     logging.info(f"COINCIDENCE SNR {rho}")
+    return strain_dict
+
+
+def main():
+    init_logging(True)
+
+    logging.info("Creating template bank")
+    create_filter_bank()
+
+    logging.info("Injecting simulated signals on gaussian noise")
+    create_injections()
 
     num_slides = slide_limiter(SEGMENT_LENGTH, SLIDE_SHIFT, LENSED_INSTRUMENTS)
 

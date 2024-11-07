@@ -12,14 +12,16 @@ def process_strain_dict(
     sample_rate: int,
     pad_seconds: int | float,
 ) -> None:
-    """Modify (in-place) the `strain_dict` to apply filters to the timeseries.
+    """Modify (in-place) the `strain_dict` to apply filters to the timeseries
+    and discard `pad_seconds` of corrupted data at the start and end after filtering and
+    also applying the `DYN_RANGE_FAC`.
 
     Args:
         strain_dict (dict[str, TimeSeries]): Dictionary of timeseries for each detector.
         strain_high_pass_hertz (int | float): Lower frequency for the high-pass filters.
         sample_rate (int): Sample rate to resample the timeseries.
-        pad_seconds (int | float): Padding (in seconds) that should be added at the beginning and
-        ending of each timeseries.
+        pad_seconds (int | float): Padding (in seconds) that should be added at the start and
+        end of each timeseries.
     """
     for ifo in strain_dict:
         strain_tmp = highpass(strain_dict[ifo], frequency=strain_high_pass_hertz)

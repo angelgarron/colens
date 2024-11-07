@@ -1,6 +1,5 @@
 import logging
 
-import h5py
 import numpy as np
 from pesummary.gw import conversions
 from pycbc import init_logging, vetoes, waveform
@@ -12,6 +11,7 @@ from colens.background import get_time_delay_indices, slide_limiter
 from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_template
 from colens.injection import get_strain_list_from_simulation
+from colens.io import create_filter_bank
 from colens.manager import MyEventManagerCoherent
 from colens.psd import associate_psd_to_segments
 from colens.sky import sky_grid
@@ -92,23 +92,6 @@ ANGULAR_SPACING = 1.8 * np.pi / 180  # radians
 SKY_ERROR = 0.1 * np.pi / 180  # radians
 
 
-def create_filter_bank(
-    mass1: float, mass2: float, spin1z: float, spin2z: float
-) -> None:
-    with h5py.File(BANK_FILE, "w") as file:
-        for key, value in {
-            "appoximant": APPROXIMANT,
-            "f_lower": LOW_FREQUENCY_CUTOFF,
-            "mass1": mass1,
-            "mass2": mass2,
-            "spin1z": spin1z,
-            "spin2z": spin2z,
-        }.items():
-            file.create_dataset(
-                key, data=[value], compression="gzip", compression_opts=9, shuffle=True
-            )
-
-
 def create_injections(injection_parameters: dict[str, float]):
     return_value = get_strain_list_from_simulation(
         injection_parameters,
@@ -158,7 +141,9 @@ def main():
     init_logging(True)
 
     logging.info("Creating template bank")
-    create_filter_bank(79.45, 48.50, 0.60, 0.05)
+    create_filter_bank(
+        79.45, 48.50, 0.60, 0.05, BANK_FILE, APPROXIMANT, LOW_FREQUENCY_CUTOFF
+    )
 
     logging.info("Injecting simulated signals on gaussian noise")
     injection_parameters = dict(

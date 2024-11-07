@@ -29,13 +29,13 @@ CHANNELS = {
     "H1_lensed": "H1:GWOSC-4KHZ_R1_STRAIN",
     "L1_lensed": "L1:GWOSC-4KHZ_R1_STRAIN",
 }
-TIME_GPS_PAST = 1185389807
-TIME_GPS_FUTURE = 1185437144
-TRIGGER_TIMES = {
-    "H1": TIME_GPS_PAST,
-    "L1": TIME_GPS_PAST,
-    "H1_lensed": TIME_GPS_FUTURE,
-    "L1_lensed": TIME_GPS_FUTURE,
+TIME_GPS_PAST_SECONDS = 1185389807
+TIME_GPS_FUTURE_SECONDS = 1185437144
+TRIGGER_TIMES_SECONDS = {
+    "H1": TIME_GPS_PAST_SECONDS,
+    "L1": TIME_GPS_PAST_SECONDS,
+    "H1_lensed": TIME_GPS_FUTURE_SECONDS,
+    "L1_lensed": TIME_GPS_FUTURE_SECONDS,
 }
 RA, DEC = 6.0, -1.2
 SAMPLE_RATE = 4096.0
@@ -43,8 +43,8 @@ UNLENSED_INSTRUMENTS = ["H1", "L1"]
 LENSED_INSTRUMENTS = ["H1_lensed", "L1_lensed"]
 INSTRUMENTS = UNLENSED_INSTRUMENTS + LENSED_INSTRUMENTS
 INSTRUMENTS.sort()
-SEGMENT_LENGTH = 256
-SLIDE_SHIFT = 1
+SEGMENT_LENGTH_SECONDS = 256
+SLIDE_SHIFT_SECONDS = 1
 LOW_FREQUENCY_CUTOFF = 30.0
 SNGL_SNR_THRESHOLD = 3.0
 DOWNSAMPLE_FACTOR = 1
@@ -61,19 +61,19 @@ NULL_GRAD = 0.2
 NULL_STEP = 20.0
 CLUSTER_WINDOW = 0.1
 OUTPUT = "GW170817_test_output.hdf"
-PAD = 8
-GPS_START = dict()
-GPS_END = dict()
+PAD_SECONDS = 8
+GPS_START_SECONDS = dict()
+GPS_END_SECONDS = dict()
 for ifo in INSTRUMENTS:
-    GPS_START[ifo] = TRIGGER_TIMES[ifo] - 192 - PAD
-    GPS_END[ifo] = TRIGGER_TIMES[ifo] + 192 + PAD
-START_PAD = 111  # time in seconds to ignore of the beginning of each segment
-END_PAD = 17  # time in seconds to ignore at the end of each segment
-TRIG_START_TIME = dict()  # gps time to start recording triggers
-TRIG_END_TIME = dict()  # gps time to stop recording triggers
+    GPS_START_SECONDS[ifo] = TRIGGER_TIMES_SECONDS[ifo] - 192 - PAD_SECONDS
+    GPS_END_SECONDS[ifo] = TRIGGER_TIMES_SECONDS[ifo] + 192 + PAD_SECONDS
+START_PAD_SECONDS = 111  # time in seconds to ignore of the beginning of each segment
+END_PAD_SECONDS = 17  # time in seconds to ignore at the end of each segment
+TRIG_START_TIME_SECONDS = dict()  # gps time to start recording triggers
+TRIG_END_TIME_SECONDS = dict()  # gps time to stop recording triggers
 for ifo in INSTRUMENTS:
-    TRIG_START_TIME[ifo] = GPS_START[ifo] + START_PAD
-    TRIG_END_TIME[ifo] = GPS_END[ifo] - END_PAD
+    TRIG_START_TIME_SECONDS[ifo] = GPS_START_SECONDS[ifo] + START_PAD_SECONDS
+    TRIG_END_TIME_SECONDS[ifo] = GPS_END_SECONDS[ifo] - END_PAD_SECONDS
 CHISQ_BINS = "0.9*get_freq('fSEOBNRv4Peak',params.mass1,params.mass2,params.spin1z,params.spin2z)**(2./3.)"
 AUTOCHI_STRIDE = 0
 AUTOCHI_NUMBER_POINTS = 0
@@ -96,20 +96,20 @@ def create_injections(injection_parameters: dict[str, float]):
     return_value = get_strain_list_from_simulation(
         injection_parameters,
         ["H1", "L1"],
-        start_time=GPS_START["H1"] - PAD,
-        end_time=GPS_END["H1"] + PAD,
+        start_time=GPS_START_SECONDS["H1"] - PAD_SECONDS,
+        end_time=GPS_END_SECONDS["H1"] + PAD_SECONDS,
         low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
     )
     optimal_snrs = return_value[0]
     matched_filter_snrs = return_value[1]
     strain_dict = dict(zip(["H1", "L1"], return_value[2]))
     # the lensed image
-    injection_parameters["geocent_time"] = TIME_GPS_FUTURE
+    injection_parameters["geocent_time"] = TIME_GPS_FUTURE_SECONDS
     return_value = get_strain_list_from_simulation(
         injection_parameters,
         ["H1", "L1"],
-        start_time=GPS_START["H1_lensed"] - PAD,
-        end_time=GPS_END["H1_lensed"] + PAD,
+        start_time=GPS_START_SECONDS["H1_lensed"] - PAD_SECONDS,
+        end_time=GPS_END_SECONDS["H1_lensed"] + PAD_SECONDS,
         low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
     )
     optimal_snrs += return_value[0]
@@ -133,7 +133,9 @@ def create_injections(injection_parameters: dict[str, float]):
     logging.info(f"NETWORK SNR {rho}")
     rho = np.sqrt(sum(abs(matched_filter_snrs) ** 2))
     logging.info(f"COINCIDENCE SNR {rho}")
-    strain_dict = process_strain_dict(strain_dict, STRAIN_HIGH_PASS, SAMPLE_RATE, PAD)
+    strain_dict = process_strain_dict(
+        strain_dict, STRAIN_HIGH_PASS, SAMPLE_RATE, PAD_SECONDS
+    )
     return strain_dict
 
 
@@ -159,13 +161,15 @@ def main():
         theta_jn=0.0,
         psi=0.0,
         phase=0.0,
-        geocent_time=TIME_GPS_PAST,
+        geocent_time=TIME_GPS_PAST_SECONDS,
         ra=6.0,
         dec=-1.2,
     )
     strain_dict = create_injections(injection_parameters)
 
-    num_slides = slide_limiter(SEGMENT_LENGTH, SLIDE_SHIFT, len(LENSED_INSTRUMENTS))
+    num_slides = slide_limiter(
+        SEGMENT_LENGTH_SECONDS, SLIDE_SHIFT_SECONDS, len(LENSED_INSTRUMENTS)
+    )
 
     # Create a dictionary of Python slice objects that indicate where the segments
     # start and end for each detector timeseries.
@@ -173,11 +177,11 @@ def main():
     for ifo in INSTRUMENTS:
         strain_segments_dict[ifo] = StrainSegments(
             strain_dict[ifo],
-            segment_length=SEGMENT_LENGTH,
-            segment_start_pad=START_PAD,
-            segment_end_pad=END_PAD,
-            trigger_start=TRIG_START_TIME[ifo],
-            trigger_end=TRIG_END_TIME[ifo],
+            segment_length=SEGMENT_LENGTH_SECONDS,
+            segment_start_pad=START_PAD_SECONDS,
+            segment_end_pad=END_PAD_SECONDS,
+            trigger_start=TRIG_START_TIME_SECONDS[ifo],
+            trigger_end=TRIG_END_TIME_SECONDS[ifo],
             filter_inj_only=False,
             allow_zero_padding=False,
         )
@@ -213,11 +217,11 @@ def main():
 
     time_slides, time_delay_idx = get_time_delay_indices(
         num_slides,
-        SLIDE_SHIFT,
+        SLIDE_SHIFT_SECONDS,
         LENSED_INSTRUMENTS,
         UNLENSED_INSTRUMENTS,
         sky_positions,
-        TRIGGER_TIMES,
+        TRIGGER_TIMES_SECONDS,
         INSTRUMENTS,
         sky_pos_indices,
         SAMPLE_RATE,
@@ -330,7 +334,7 @@ def main():
 
     logging.info("Calculating antenna pattern functions at every sky position")
     antenna_pattern = calculate_antenna_pattern(
-        sky_pos_indices, INSTRUMENTS, sky_positions, TRIGGER_TIMES
+        sky_pos_indices, INSTRUMENTS, sky_positions, TRIGGER_TIMES_SECONDS
     )
 
     logging.info("Starting the filtering...")
@@ -368,7 +372,11 @@ def main():
 
     logging.info("Writing output")
     event_mgr.write_to_hdf(
-        OUTPUT, SAMPLE_RATE, GPS_START, TRIG_START_TIME, TRIG_END_TIME
+        OUTPUT,
+        SAMPLE_RATE,
+        GPS_START_SECONDS,
+        TRIG_START_TIME_SECONDS,
+        TRIG_END_TIME_SECONDS,
     )
 
     logging.info("Finished")

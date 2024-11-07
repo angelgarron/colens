@@ -39,24 +39,24 @@ def slide_limiter(
 
 def get_time_delay_indices(
     num_slides,
-    SLIDE_SHIFT,
-    LENSED_INSTRUMENTS,
-    UNLENSED_INSTRUMENTS,
+    slide_shift,
+    lensed_instruments,
+    unlensed_instruments,
     sky_positions,
-    TRIGGER_TIMES,
-    INSTRUMENTS,
+    trigger_times,
+    instruments,
     sky_pos_indices,
-    SAMPLE_RATE,
+    sample_rate,
 ):
     # Create a dictionary of time slide shifts; IFO 0 is unshifted
     # ANGEL: Just lensed detectors are shifted
     slide_ids = np.arange(num_slides)
     time_slides = {
-        ifo: SLIDE_SHIFT * slide_ids * ifo_idx
-        for ifo_idx, ifo in enumerate(LENSED_INSTRUMENTS)
+        ifo: slide_shift * slide_ids * ifo_idx
+        for ifo_idx, ifo in enumerate(lensed_instruments)
     }
     time_slides.update(
-        {ifo: time_slides[LENSED_INSTRUMENTS[0]] for ifo in UNLENSED_INSTRUMENTS}
+        {ifo: time_slides[lensed_instruments[0]] for ifo in unlensed_instruments}
     )
     # Given the time delays wrt to IFO 0 in time_slides, create a dictionary
     # for time delay indices evaluated wrt the geocenter, in units of samples,
@@ -66,9 +66,9 @@ def get_time_delay_indices(
             ifo: MyDetector(ifo).time_delay_from_earth_center(
                 sky_positions[0][position_index],
                 sky_positions[1][position_index],
-                TRIGGER_TIMES[ifo],
+                trigger_times[ifo],
             )
-            for ifo in INSTRUMENTS
+            for ifo in instruments
         }
         for position_index in sky_pos_indices
     }
@@ -81,10 +81,10 @@ def get_time_delay_indices(
                             time_delay_idx_zerolag[position_index][ifo]
                             + time_slides[ifo][slide]
                         )
-                        * SAMPLE_RATE
+                        * sample_rate
                     )
                 )
-                for ifo in INSTRUMENTS
+                for ifo in instruments
             }
             for position_index in sky_pos_indices
         }

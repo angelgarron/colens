@@ -165,7 +165,7 @@ def main():
     )
     strain_dict = create_injections(injection_parameters)
 
-    num_slides = slide_limiter(SEGMENT_LENGTH, SLIDE_SHIFT, LENSED_INSTRUMENTS)
+    num_slides = slide_limiter(SEGMENT_LENGTH, SLIDE_SHIFT, len(LENSED_INSTRUMENTS))
 
     # Create a dictionary of Python slice objects that indicate where the segments
     # start and end for each detector timeseries.

@@ -5,7 +5,9 @@ import numpy as np
 from colens.detector import MyDetector
 
 
-def slide_limiter(segment_length, slide_shift, instruments):
+def slide_limiter(
+    segment_length_seconds: int | float, slide_shift_seconds: int | float, nifos: int
+) -> np.int32:
     """
     This function computes the number of shortslides used by the coherent
     matched filter statistic to obtain as most background triggers as
@@ -13,15 +15,24 @@ def slide_limiter(segment_length, slide_shift, instruments):
 
     It bounds the number of slides to avoid counting triggers more than once.
     If the data is not time slid, there is a single slide for the zero-lag.
+
+    Args:
+        segment_length (int | float): The length (in seconds) of each segment.
+        slide_shift (int | float): The interval (in seconds) of the slides.
+        nifos (int): The number of detectors for which you want to compute slides.
+
+    Returns:
+        np.int32: Number of time slides that are going to be performed.
     """
-    low, upp = 1, segment_length
-    n_ifos = len(instruments)
-    stride_dur = segment_length / 2
-    num_slides = np.int32(1 + np.floor(stride_dur / (slide_shift * (n_ifos - 1))))
-    assert np.logical_and(num_slides >= low, num_slides <= upp), (
+    upp_seconds = segment_length_seconds
+    stride_dur_seconds = segment_length_seconds / 2
+    num_slides = np.int32(
+        1 + np.floor(stride_dur_seconds / (slide_shift_seconds * (nifos - 1)))
+    )  # the "1 +" is to account for the zero-lag slide
+    assert num_slides * slide_shift_seconds <= upp_seconds, (
         "the combination (slideshift, segment_dur)"
-        f" = ({slide_shift:.2f},{stride_dur*2:.2f})"
-        f" goes over the allowed upper bound {upp}"
+        f" = ({slide_shift_seconds:.2f},{stride_dur_seconds*2:.2f})"
+        f" goes over the allowed upper bound {upp_seconds}"
     )
     return num_slides
 

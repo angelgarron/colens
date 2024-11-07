@@ -87,7 +87,7 @@ CHISQ_NHIGH = 2.0
 PSD_SEGMENT_STRIDE = 8.0
 PSD_SEGMENT_LENGTH = 32.0
 PSD_NUM_SEGMENTS = 29
-STRAIN_HIGH_PASS = 25.0
+STRAIN_HIGH_PASS_HERTZ = 25.0
 ANGULAR_SPACING = 1.8 * np.pi / 180  # radians
 SKY_ERROR = 0.1 * np.pi / 180  # radians
 
@@ -133,9 +133,7 @@ def create_injections(injection_parameters: dict[str, float]):
     logging.info(f"NETWORK SNR {rho}")
     rho = np.sqrt(sum(abs(matched_filter_snrs) ** 2))
     logging.info(f"COINCIDENCE SNR {rho}")
-    strain_dict = process_strain_dict(
-        strain_dict, STRAIN_HIGH_PASS, SAMPLE_RATE, PAD_SECONDS
-    )
+    process_strain_dict(strain_dict, STRAIN_HIGH_PASS_HERTZ, SAMPLE_RATE, PAD_SECONDS)
     return strain_dict
 
 

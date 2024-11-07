@@ -92,39 +92,24 @@ ANGULAR_SPACING = 1.8 * np.pi / 180  # radians
 SKY_ERROR = 0.1 * np.pi / 180  # radians
 
 
-def create_filter_bank():
+def create_filter_bank(
+    mass1: float, mass2: float, spin1z: float, spin2z: float
+) -> None:
     with h5py.File(BANK_FILE, "w") as file:
         for key, value in {
             "appoximant": APPROXIMANT,
             "f_lower": LOW_FREQUENCY_CUTOFF,
-            "mass1": 79.45,
-            "mass2": 48.50,
-            "spin1z": 0.60,
-            "spin2z": 0.05,
+            "mass1": mass1,
+            "mass2": mass2,
+            "spin1z": spin1z,
+            "spin2z": spin2z,
         }.items():
             file.create_dataset(
                 key, data=[value], compression="gzip", compression_opts=9, shuffle=True
             )
 
 
-def create_injections():
-    injection_parameters = dict(
-        mass_1=79.45,
-        mass_2=48.5,
-        a_1=0.6,
-        a_2=0.05,
-        tilt_1=0.0,
-        tilt_2=0.0,
-        phi_12=0.0,
-        phi_jl=0.0,
-        luminosity_distance=2000.0,
-        theta_jn=0.0,
-        psi=0.0,
-        phase=0.0,
-        geocent_time=TIME_GPS_PAST,
-        ra=6.0,
-        dec=-1.2,
-    )
+def create_injections(injection_parameters: dict[str, float]):
     return_value = get_strain_list_from_simulation(
         injection_parameters,
         ["H1", "L1"],
@@ -173,10 +158,27 @@ def main():
     init_logging(True)
 
     logging.info("Creating template bank")
-    create_filter_bank()
+    create_filter_bank(79.45, 48.50, 0.60, 0.05)
 
     logging.info("Injecting simulated signals on gaussian noise")
-    strain_dict = create_injections()
+    injection_parameters = dict(
+        mass_1=79.45,
+        mass_2=48.5,
+        a_1=0.6,
+        a_2=0.05,
+        tilt_1=0.0,
+        tilt_2=0.0,
+        phi_12=0.0,
+        phi_jl=0.0,
+        luminosity_distance=2000.0,
+        theta_jn=0.0,
+        psi=0.0,
+        phase=0.0,
+        geocent_time=TIME_GPS_PAST,
+        ra=6.0,
+        dec=-1.2,
+    )
+    strain_dict = create_injections(injection_parameters)
 
     num_slides = slide_limiter(SEGMENT_LENGTH, SLIDE_SHIFT, LENSED_INSTRUMENTS)
 

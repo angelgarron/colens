@@ -44,7 +44,6 @@ def get_time_delay_indices(
     unlensed_instruments,
     sky_positions,
     trigger_times,
-    sky_pos_indices,
     sample_rate,
 ):
     # Create a dictionary of time slide shifts; IFO 0 is unshifted
@@ -69,7 +68,7 @@ def get_time_delay_indices(
             )
             for ifo in unlensed_instruments + lensed_instruments
         }
-        for position_index in sky_pos_indices
+        for position_index in range(sky_positions.shape[1])
     }
     time_delay_idx = {
         slide: {
@@ -85,7 +84,7 @@ def get_time_delay_indices(
                 )
                 for ifo in unlensed_instruments + lensed_instruments
             }
-            for position_index in sky_pos_indices
+            for position_index in range(sky_positions.shape[1])
         }
         for slide in slide_ids
     }

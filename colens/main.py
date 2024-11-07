@@ -189,7 +189,6 @@ def main():
     sky_positions = sky_grid(
         ra=RA, dec=DEC, sky_error=SKY_ERROR, angular_spacing=ANGULAR_SPACING
     )
-    sky_pos_indices = np.arange(sky_positions.shape[1])
     flen = strain_segments_dict[INSTRUMENTS[0]].freq_len
     tlen = strain_segments_dict[INSTRUMENTS[0]].time_len
     delta_f = strain_segments_dict[INSTRUMENTS[0]].delta_f
@@ -222,7 +221,6 @@ def main():
         UNLENSED_INSTRUMENTS,
         sky_positions,
         TRIGGER_TIMES_SECONDS,
-        sky_pos_indices,
         SAMPLE_RATE,
     )
 
@@ -333,7 +331,7 @@ def main():
 
     logging.info("Calculating antenna pattern functions at every sky position")
     antenna_pattern = calculate_antenna_pattern(
-        sky_pos_indices, INSTRUMENTS, sky_positions, TRIGGER_TIMES_SECONDS
+        INSTRUMENTS, sky_positions, TRIGGER_TIMES_SECONDS
     )
 
     logging.info("Starting the filtering...")
@@ -346,7 +344,6 @@ def main():
             event_mgr,
             matched_filter,
             num_slides,
-            sky_pos_indices,
             time_delay_idx,
             LENSED_INSTRUMENTS,
             COINC_THRESHOLD,

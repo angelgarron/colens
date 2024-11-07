@@ -14,7 +14,6 @@ def filter_template(
     event_mgr,
     matched_filter,
     num_slides,
-    sky_pos_indices,
     time_delay_idx,
     lensed_instruments,
     coinc_threshold,
@@ -91,11 +90,11 @@ def filter_template(
         for slide in range(num_slides):
             logging.info("  Analyzing slide %d/%d", slide, num_slides)
             # Loop over sky positions
-            for position_index in sky_pos_indices:
+            for position_index in range(sky_positions.shape[1]):
                 logging.info(
                     "    Analyzing sky position %d/%d",
                     position_index + 1,
-                    len(sky_pos_indices),
+                    sky_positions.shape[1],
                 )
                 # Adjust the indices of triggers (if there are any)
                 # and store trigger indices list in a dictionary;

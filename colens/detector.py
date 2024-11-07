@@ -53,17 +53,15 @@ class MyDetector(detector.Detector):
         self.gmst_reference = None
 
 
-def calculate_antenna_pattern(
-    sky_pos_indices, instruments, sky_positions, trigger_times
-):
+def calculate_antenna_pattern(instruments, sky_positions, trigger_times):
     """Calculate the antenna pattern functions for all detectors and sky
     positions.
     """
     antenna_pattern = {}
     for ifo in instruments:
         curr_det = MyDetector(ifo)
-        antenna_pattern[ifo] = [None] * len(sky_pos_indices)
-        for index in sky_pos_indices:
+        antenna_pattern[ifo] = [None] * sky_positions.shape[1]
+        for index in range(sky_positions.shape[1]):
             antenna_pattern[ifo][index] = curr_det.antenna_pattern(
                 sky_positions[0][index],
                 sky_positions[1][index],

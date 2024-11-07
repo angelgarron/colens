@@ -222,7 +222,6 @@ def main():
         UNLENSED_INSTRUMENTS,
         sky_positions,
         TRIGGER_TIMES_SECONDS,
-        INSTRUMENTS,
         sky_pos_indices,
         SAMPLE_RATE,
     )

@@ -44,7 +44,6 @@ def get_time_delay_indices(
     unlensed_instruments,
     sky_positions,
     trigger_times,
-    instruments,
     sky_pos_indices,
     sample_rate,
 ):
@@ -68,7 +67,7 @@ def get_time_delay_indices(
                 sky_positions[1][position_index],
                 trigger_times[ifo],
             )
-            for ifo in instruments
+            for ifo in unlensed_instruments + lensed_instruments
         }
         for position_index in sky_pos_indices
     }
@@ -84,7 +83,7 @@ def get_time_delay_indices(
                         * sample_rate
                     )
                 )
-                for ifo in instruments
+                for ifo in unlensed_instruments + lensed_instruments
             }
             for position_index in sky_pos_indices
         }

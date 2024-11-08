@@ -20,7 +20,7 @@ def process_strain_dict(
         strain_dict (dict[str, TimeSeries]): Dictionary of timeseries for each detector.
         strain_high_pass_hertz (int | float): Lower frequency for the high-pass filters.
         sample_rate (int): Sample rate to resample the timeseries.
-        pad_seconds (int | float): Padding (in seconds) that should be added at the start and
+        pad_seconds (int | float): Padding (in seconds) that should be added at the start and \
         end of each timeseries.
     """
     for ifo in strain_dict:

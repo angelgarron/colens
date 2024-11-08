@@ -14,7 +14,7 @@ from colens.injection import get_strain_list_from_simulation
 from colens.io import create_filter_bank
 from colens.manager import MyEventManagerCoherent
 from colens.psd import associate_psd_to_segments
-from colens.sky import sky_grid
+from colens.sky import get_circular_sky_patch
 from colens.strain import process_strain_dict
 
 FRAME_FILES = {

@@ -17,15 +17,18 @@ class SkyCoordinate:
 
 @dataclass
 class SkyGrid:
-    # positions: list[SkyCoordinate] = field(default_factory=list)
+    ra: Iterable
+    dec: Iterable
 
-    def __init__(self, ra: Iterable, dec: Iterable):
-        if not len(ra) == len(dec):
-            raise ValueError("ra and dec must be of the same length")
+    def __post_init__(self):
+        if len(self.ra) != len(self.dec):
+            raise ValueError("ra and dec must have the same length")
 
-        self.positions = []
-        for ra_single, dec_single in zip(ra, dec):
-            self.positions.append(SkyCoordinate(ra_single, dec_single))
+    def __getitem__(self, index):
+        return SkyCoordinate(self.ra[index], self.dec[index])
+
+    def __len__(self):
+        return len(self.ra)
 
 
 def get_circular_sky_patch(

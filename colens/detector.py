@@ -60,11 +60,11 @@ def calculate_antenna_pattern(instruments, sky_positions, trigger_times):
     antenna_pattern = {}
     for ifo in instruments:
         curr_det = MyDetector(ifo)
-        antenna_pattern[ifo] = [None] * sky_positions.shape[1]
-        for index in range(sky_positions.shape[1]):
+        antenna_pattern[ifo] = [None] * len(sky_positions)
+        for index in range(len(sky_positions)):
             antenna_pattern[ifo][index] = curr_det.antenna_pattern(
-                sky_positions[0][index],
-                sky_positions[1][index],
+                sky_positions[index].ra,
+                sky_positions[index].dec,
                 polarization=0,
                 t_gps=trigger_times[ifo],
             )

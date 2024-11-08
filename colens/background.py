@@ -62,13 +62,13 @@ def get_time_delay_indices(
     time_delay_idx_zerolag = {
         position_index: {
             ifo: MyDetector(ifo).time_delay_from_earth_center(
-                sky_positions[0][position_index],
-                sky_positions[1][position_index],
+                sky_position.ra,
+                sky_position.dec,
                 trigger_times[ifo],
             )
             for ifo in unlensed_instruments + lensed_instruments
         }
-        for position_index in range(sky_positions.shape[1])
+        for position_index, sky_position in enumerate(sky_positions)
     }
     time_delay_idx = {
         slide: {
@@ -84,7 +84,7 @@ def get_time_delay_indices(
                 )
                 for ifo in unlensed_instruments + lensed_instruments
             }
-            for position_index in range(sky_positions.shape[1])
+            for position_index in range(len(sky_positions))
         }
         for slide in slide_ids
     }

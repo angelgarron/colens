@@ -90,11 +90,11 @@ def filter_template(
         for slide in range(num_slides):
             logging.info("  Analyzing slide %d/%d", slide, num_slides)
             # Loop over sky positions
-            for position_index in range(sky_positions.shape[1]):
+            for position_index in range(len(sky_positions)):
                 logging.info(
                     "    Analyzing sky position %d/%d",
                     position_index + 1,
-                    sky_positions.shape[1],
+                    len(sky_positions),
                 )
                 # Adjust the indices of triggers (if there are any)
                 # and store trigger indices list in a dictionary;
@@ -319,10 +319,10 @@ def filter_template(
                     )
                     network_out_vals["nifo"] = [nifo] * num_events
                     network_out_vals["dec"] = [
-                        sky_positions[1][position_index]
+                        sky_positions[position_index].dec
                     ] * num_events
                     network_out_vals["ra"] = [
-                        sky_positions[0][position_index]
+                        sky_positions[position_index].ra
                     ] * num_events
                     network_out_vals["slide_id"] = [slide] * num_events
                     event_mgr.add_template_events_to_network(

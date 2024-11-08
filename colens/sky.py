@@ -1,14 +1,36 @@
 """Functions to implement a sky grid for the search."""
 
+from dataclasses import dataclass, field
+from typing import Iterable
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 from colens.transformations import cart_to_spher, spher_to_cart
 
 
+@dataclass
+class SkyCoordinate:
+    ra: float
+    dec: float
+
+
+@dataclass
+class SkyGrid:
+    # positions: list[SkyCoordinate] = field(default_factory=list)
+
+    def __init__(self, ra: Iterable, dec: Iterable):
+        if not len(ra) == len(dec):
+            raise ValueError("ra and dec must be of the same length")
+
+        self.positions = []
+        for ra_single, dec_single in zip(ra, dec):
+            self.positions.append(SkyCoordinate(ra_single, dec_single))
+
+
 def get_circular_sky_patch(
     ra: float, dec: float, sky_error: float, angular_spacing: float
-) -> np.ndarray:
+) -> SkyGrid:
     """Compute the coordinates (in units of right ascention and declination) for a circular sky patch
     centered at (`ra`, `dec`) and of a radius given (in radians) by `sky_error`.
     Each point of a concentric ring in the sky grid is separated by `angular_spacing` (in radians).
@@ -20,7 +42,7 @@ def get_circular_sky_patch(
         angular_spacing (float): Distance between each point of a concentric ring (in radians).
 
     Returns:
-        np.ndarray: Sky grid.
+        SkyGrid: Sky grid.
     """
     sky_points = np.zeros((1, 2))
     number_of_rings = int(sky_error / angular_spacing)
@@ -51,4 +73,4 @@ def get_circular_sky_patch(
     rota = r.apply(cart)
     # Convert cartesian coordinates back to spherical coordinates
     spher = cart_to_spher(rota)
-    return np.array([spher[:, 0], spher[:, 1]])
+    return SkyGrid(spher[:, 0], spher[:, 1])

@@ -217,7 +217,7 @@ def main():
         SLIDE_SHIFT_SECONDS,
         LENSED_INSTRUMENTS,
         UNLENSED_INSTRUMENTS,
-        sky_positions,
+        sky_positions.positions,
         TRIGGER_TIMES_SECONDS,
         SAMPLE_RATE,
     )
@@ -328,7 +328,7 @@ def main():
 
     logging.info("Calculating antenna pattern functions at every sky position")
     antenna_pattern = calculate_antenna_pattern(
-        INSTRUMENTS, sky_positions, TRIGGER_TIMES_SECONDS
+        INSTRUMENTS, sky_positions.positions, TRIGGER_TIMES_SECONDS
     )
 
     logging.info("Starting the filtering...")
@@ -355,7 +355,7 @@ def main():
             ifo_out_vals,
             network_out_vals,
             ifo_names,
-            sky_positions,
+            sky_positions.positions,
             CLUSTER_WINDOW,
             SAMPLE_RATE,
             network_names,

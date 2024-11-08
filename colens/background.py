@@ -17,8 +17,8 @@ def slide_limiter(
     If the data is not time slid, there is a single slide for the zero-lag.
 
     Args:
-        segment_length (int | float): The length (in seconds) of each segment.
-        slide_shift (int | float): The interval (in seconds) of the slides.
+        segment_length_seconds (int | float): The length (in seconds) of each segment.
+        slide_shift_seconds (int | float): The interval (in seconds) of the slides.
         nifos (int): The number of detectors for which you want to compute slides.
 
     Returns:

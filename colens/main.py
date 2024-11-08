@@ -171,9 +171,9 @@ def main():
 
     # Create a dictionary of Python slice objects that indicate where the segments
     # start and end for each detector timeseries.
-    strain_segments_dict = dict()
+    segments = dict()
     for ifo in INSTRUMENTS:
-        strain_segments_dict[ifo] = StrainSegments(
+        segments[ifo] = StrainSegments(
             strain_dict[ifo],
             segment_length=SEGMENT_LENGTH_SECONDS,
             segment_start_pad=START_PAD_SECONDS,
@@ -182,22 +182,23 @@ def main():
             trigger_end=TRIG_END_TIME_SECONDS[ifo],
             filter_inj_only=False,
             allow_zero_padding=False,
-        )
+        ).fourier_segments()
 
     sky_grid = get_circular_sky_patch(
         ra=RA, dec=DEC, sky_error=SKY_ERROR, angular_spacing=ANGULAR_SPACING
     )
-    flen = strain_segments_dict[INSTRUMENTS[0]].freq_len
-    tlen = strain_segments_dict[INSTRUMENTS[0]].time_len
-    delta_f = strain_segments_dict[INSTRUMENTS[0]].delta_f
-    # segments is a dictionary of frequency domain objects, each one of which
-    # is the Fourier transform of the segments in strain_segments_dict
-    logging.info("Making frequency-domain data segments")
-    segments = {
-        ifo: strain_segments_dict[ifo].fourier_segments() for ifo in INSTRUMENTS
-    }
-    del strain_segments_dict
-    logging.info("Associating PSDs to them")
+
+    delta_f = (
+        1.0 / SEGMENT_LENGTH_SECONDS
+    )  # frequency step of the fourier transform of each segment
+    segment_length = int(
+        SEGMENT_LENGTH_SECONDS * SAMPLE_RATE
+    )  # number of samples of each segment
+    frequency_length = int(
+        segment_length // 2 + 1
+    )  # number of samples of the fourier transform of each segment
+
+    logging.info("Associating PSDs to the fourier segments")
     for ifo in INSTRUMENTS:
         associate_psd_to_segments(
             strain_dict[ifo],
@@ -206,7 +207,7 @@ def main():
             SAMPLE_RATE,
             PSD_SEGMENT_LENGTH_SECONDS,
             PSD_NUM_SEGMENTS,
-            flen,
+            frequency_length,
             delta_f,
         )
 
@@ -223,7 +224,7 @@ def main():
     )
 
     logging.info("Setting up MatchedFilterControl at each IFO")
-    template_mem = zeros(tlen, dtype=complex64)
+    template_mem = zeros(segment_length, dtype=complex64)
 
     # All MatchedFilterControl instances are initialized in the same way.
     # This allows to track where the single detector SNR timeseries are
@@ -238,7 +239,7 @@ def main():
             LOW_FREQUENCY_CUTOFF,
             None,
             SNGL_SNR_THRESHOLD,
-            tlen,
+            segment_length,
             delta_f,
             complex64,
             segments[ifo],
@@ -314,7 +315,7 @@ def main():
     logging.info("Read in template bank")
     bank = waveform.FilterBank(
         BANK_FILE,
-        flen,
+        frequency_length,
         delta_f,
         complex64,
         low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,

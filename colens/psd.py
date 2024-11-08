@@ -10,7 +10,7 @@ def associate_psd_to_segments(
     sample_rate: int,
     psd_segment_length_seconds: int | float,
     psd_num_segments: int,
-    flen: int,
+    frequency_length: int,
     delta_f: float,
 ) -> None:
     """Generate a set of overlapping PSDs covering the data in `strain`.
@@ -26,7 +26,7 @@ def associate_psd_to_segments(
         psd_segment_length_seconds (int | float): The duration (in seconds) of each sub-segment \
         used for the estimation of the PSD.
         psd_num_segments (int): PSDs will be estimated using only this number of segments.
-        flen (int): The length (in samples) of the output PSD.
+        frequency_length (int): The length (in samples) of the output PSD.
         delta_f (float): The frequency step of the output PSD.
     """
     psd_seg_stride = int(psd_segment_stride_seconds * sample_rate)
@@ -45,7 +45,7 @@ def associate_psd_to_segments(
             start = psd_stride * idx
             end = psd_data_len + psd_stride * idx
         strain_part = strain[start:end]
-        sample_rate = (flen - 1) * 2 * delta_f
+        sample_rate = (frequency_length - 1) * 2 * delta_f
         psd = welch(
             strain_part,
             avg_method="median",
@@ -56,7 +56,7 @@ def associate_psd_to_segments(
         )
 
         if delta_f != psd.delta_f:
-            psd = interpolate(psd, delta_f, flen)
+            psd = interpolate(psd, delta_f, frequency_length)
         psd = psd.astype(float32)
         psds_and_times.append((start, end, psd))
 

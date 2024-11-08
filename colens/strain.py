@@ -31,5 +31,4 @@ def process_strain_dict(
         start = int(pad_seconds * sample_rate)
         end = int(len(strain_tmp) - sample_rate * pad_seconds)
         strain_tmp = strain_tmp[start:end]
-        strain_tmp.gating_info = dict()
         strain_dict[ifo] = strain_tmp

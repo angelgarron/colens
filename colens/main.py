@@ -309,7 +309,6 @@ def main():
         [network_out_types[n] for n in network_names],
         segments=segments,
         time_slides=time_slides,
-        gating_info={det: strain_dict[det].gating_info for det in strain_dict},
     )
 
     logging.info("Read in template bank")

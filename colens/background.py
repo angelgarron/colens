@@ -39,18 +39,18 @@ def slide_limiter(
 
 def get_time_delay_indices(
     num_slides,
-    slide_shift,
+    slide_shift_seconds,
     lensed_instruments,
     unlensed_instruments,
     sky_grid,
-    trigger_times,
+    trigger_times_seconds,
     sample_rate,
 ):
     # Create a dictionary of time slide shifts; IFO 0 is unshifted
     # ANGEL: Just lensed detectors are shifted
     slide_ids = np.arange(num_slides)
     time_slides = {
-        ifo: slide_shift * slide_ids * ifo_idx
+        ifo: slide_shift_seconds * slide_ids * ifo_idx
         for ifo_idx, ifo in enumerate(lensed_instruments)
     }
     time_slides.update(
@@ -64,7 +64,7 @@ def get_time_delay_indices(
             ifo: MyDetector(ifo).time_delay_from_earth_center(
                 sky_position.ra,
                 sky_position.dec,
-                trigger_times[ifo],
+                trigger_times_seconds[ifo],
             )
             for ifo in unlensed_instruments + lensed_instruments
         }

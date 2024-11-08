@@ -84,8 +84,8 @@ AUTOCHI_MAX_VALUED = False
 AUTOCHI_MAX_VALUED_DOF = None
 CHISQ_INDEX = 6.0
 CHISQ_NHIGH = 2.0
-PSD_SEGMENT_STRIDE = 8.0
-PSD_SEGMENT_LENGTH = 32.0
+PSD_SEGMENT_STRIDE_SECONDS = 8.0
+PSD_SEGMENT_LENGTH_SECONDS = 32.0
 PSD_NUM_SEGMENTS = 29
 STRAIN_HIGH_PASS_HERTZ = 25.0
 ANGULAR_SPACING = 1.8 * np.pi / 180  # radians
@@ -202,9 +202,9 @@ def main():
         associate_psd_to_segments(
             strain_dict[ifo],
             segments[ifo],
-            PSD_SEGMENT_STRIDE,
+            PSD_SEGMENT_STRIDE_SECONDS,
             SAMPLE_RATE,
-            PSD_SEGMENT_LENGTH,
+            PSD_SEGMENT_LENGTH_SECONDS,
             PSD_NUM_SEGMENTS,
             flen,
             delta_f,

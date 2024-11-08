@@ -6,7 +6,22 @@ from scipy.spatial.transform import Rotation as R
 from colens.transformations import cart_to_spher, spher_to_cart
 
 
-def sky_grid(ra, dec, sky_error, angular_spacing):
+def get_circular_sky_patch(
+    ra: float, dec: float, sky_error: float, angular_spacing: float
+) -> np.ndarray:
+    """Compute the coordinates (in units of right ascention and declination) for a circular sky patch
+    centered at (`ra`, `dec`) and of a radius given (in radians) by `sky_error`.
+    Each point of a concentric ring in the sky grid is separated by `angular_spacing` (in radians).
+
+    Args:
+        ra (float): Right ascention of the center of the patch.
+        dec (float): Declination of the center of the patch.
+        sky_error (float): Radius (in radians) of the patch.
+        angular_spacing (float): Distance between each point of a concentric ring (in radians).
+
+    Returns:
+        np.ndarray: Sky grid.
+    """
     sky_points = np.zeros((1, 2))
     number_of_rings = int(sky_error / angular_spacing)
     # Generate the sky grid centered at the North pole

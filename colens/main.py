@@ -184,7 +184,7 @@ def main():
             allow_zero_padding=False,
         )
 
-    sky_positions = sky_grid(
+    sky_positions = get_circular_sky_patch(
         ra=RA, dec=DEC, sky_error=SKY_ERROR, angular_spacing=ANGULAR_SPACING
     )
     flen = strain_segments_dict[INSTRUMENTS[0]].freq_len

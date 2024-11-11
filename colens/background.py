@@ -3,6 +3,7 @@
 import numpy as np
 
 from colens.detector import MyDetector
+from colens.sky import SkyGrid
 
 
 def slide_limiter(
@@ -37,7 +38,20 @@ def slide_limiter(
     return num_slides
 
 
-def get_time_delay_at_zerolag_seconds(trigger_times_seconds, sky_grid, instruments):
+def get_time_delay_at_zerolag_seconds(
+    trigger_times_seconds: dict[str, int | float],
+    sky_grid: SkyGrid,
+    instruments: list[str],
+):
+    """Compute the difference of arrival time between the `instruments` and the earth center of a signal
+    coming from each point in `sky_grid`.
+
+    Args:
+        trigger_times_seconds (dict[str, int  |  float]): Mapping between detector and trigger time.
+        sky_grid (SkyGrid): The sky grid containing the positions in the sky for which the time delay \
+            should be computed.
+        instruments (list[str]): A list of all the instruments for which to compute the time delays.
+    """
     time_delay_zerolag_seconds = [
         {
             ifo: MyDetector(ifo).time_delay_from_earth_center(

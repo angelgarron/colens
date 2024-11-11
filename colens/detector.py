@@ -9,6 +9,8 @@ from pycbc.detector import (
 )
 from pycbc.libutils import import_optional
 
+from colens.sky import SkyGrid
+
 
 class MyDetector(detector.Detector):
     def __init__(self, _detector_name, reference_time=1126259462.0):
@@ -53,18 +55,25 @@ class MyDetector(detector.Detector):
         self.gmst_reference = None
 
 
-def calculate_antenna_pattern(instruments, sky_grid, trigger_times):
+def calculate_antenna_pattern(
+    instruments: list[str], sky_grid: SkyGrid, trigger_times: dict[str, int | float]
+):
     """Calculate the antenna pattern functions for all detectors and sky
     positions.
+
+    Args:
+        instruments (list[str]): List of the instruments for which we want to calculate the antenna patterns.
+        sky_grid (SkyGrid): Sky grid with all the sky positions for which we want to calculate the antenna patterns.
+        trigger_times (dict[str, int  |  float]): Mapping of times at which the antenna patterns should be computed.
     """
     antenna_pattern = {}
     for ifo in instruments:
         curr_det = MyDetector(ifo)
         antenna_pattern[ifo] = [None] * len(sky_grid)
-        for index in range(len(sky_grid)):
+        for index, sky_position in enumerate(sky_grid):
             antenna_pattern[ifo][index] = curr_det.antenna_pattern(
-                sky_grid[index].ra,
-                sky_grid[index].dec,
+                sky_position.ra,
+                sky_position.dec,
                 polarization=0,
                 t_gps=trigger_times[ifo],
             )

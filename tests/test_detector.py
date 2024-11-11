@@ -8,7 +8,7 @@ def test_calculate_antenna_pattern():
     sky_grid = SkyGrid([1, 2], [0.5, 1.5])
     trigger_time = 1126259462.4
     antenna_pattern = calculate_antenna_pattern(
-        ["H1", "L1"], sky_grid, {"H1": trigger_time, "L1": trigger_time}
+        sky_grid, {"H1": trigger_time, "L1": trigger_time}
     )
     expected_antenna_pattern = {
         "H1": [

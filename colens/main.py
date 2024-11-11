@@ -337,9 +337,7 @@ def main():
     logging.info("Full template bank size: %d", len(bank))
 
     logging.info("Calculating antenna pattern functions at every sky position")
-    antenna_pattern = calculate_antenna_pattern(
-        INSTRUMENTS, sky_grid, TRIGGER_TIMES_SECONDS
-    )
+    antenna_pattern = calculate_antenna_pattern(sky_grid, TRIGGER_TIMES_SECONDS)
 
     logging.info("Starting the filtering...")
     for t_num, template in enumerate(bank):

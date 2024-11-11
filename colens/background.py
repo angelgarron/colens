@@ -80,9 +80,9 @@ def get_time_delay_indices(
     # Given the time delays wrt to IFO 0 in time_slides, create a dictionary
     # for time delay indices evaluated wrt the geocenter, in units of samples,
     # i.e. (time delay from geocenter + time slide)*sampling_rate
-    time_delay_idx = {
-        slide: {
-            position_index: {
+    time_delay_idx = [
+        [
+            {
                 ifo: round(
                     (
                         time_delay_zerolag_at_sky_position_seconds[ifo]
@@ -92,8 +92,8 @@ def get_time_delay_indices(
                 )
                 for ifo in time_delay_zerolag_at_sky_position_seconds
             }
-            for position_index, time_delay_zerolag_at_sky_position_seconds in time_delay_zerolag_seconds.items()
-        }
+            for time_delay_zerolag_at_sky_position_seconds in time_delay_zerolag_seconds.values()
+        ]
         for slide in slide_ids
-    }
+    ]
     return time_delay_idx

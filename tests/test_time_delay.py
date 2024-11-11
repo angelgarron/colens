@@ -37,54 +37,54 @@ def test_get_time_delay_indices():
         time_delay_zerolag_seconds=time_delay_zerolag_seconds,
         time_slides_seconds=time_slides_seconds,
     )
-    expected_time_delay_idx = {
-        0: {
-            0: {
+    expected_time_delay_idx = [
+        [
+            {
                 "A": round(((0.25 + 1) * sample_rate)),
                 "B": round(((0.26) * sample_rate)),
                 "C": round(((0.27 + 7) * sample_rate)),
             },
-            1: {
+            {
                 "A": round(((0.28 + 1) * sample_rate)),
                 "B": round(((0.29) * sample_rate)),
                 "C": round(((0.3 + 7) * sample_rate)),
             },
-        },
-        1: {
-            0: {
+        ],
+        [
+            {
                 "A": round(((0.25 + 2) * sample_rate)),
                 "B": round(((0.26 + 4) * sample_rate)),
                 "C": round(((0.27 + 5) * sample_rate)),
             },
-            1: {
+            {
                 "A": round(((0.28 + 2) * sample_rate)),
                 "B": round(((0.29 + 4) * sample_rate)),
                 "C": round(((0.3 + 5) * sample_rate)),
             },
-        },
-        2: {
-            0: {
+        ],
+        [
+            {
                 "A": round(((0.25 + 3) * sample_rate)),
                 "B": round(((0.26) * sample_rate)),
                 "C": round(((0.27) * sample_rate)),
             },
-            1: {
+            {
                 "A": round(((0.28 + 3) * sample_rate)),
                 "B": round(((0.29) * sample_rate)),
                 "C": round(((0.3) * sample_rate)),
             },
-        },
-        3: {
-            0: {
+        ],
+        [
+            {
                 "A": round(((0.25 + 9) * sample_rate)),
                 "B": round(((0.26 + 2) * sample_rate)),
                 "C": round(((0.27 + 43) * sample_rate)),
             },
-            1: {
+            {
                 "A": round(((0.28 + 9) * sample_rate)),
                 "B": round(((0.29 + 2) * sample_rate)),
                 "C": round(((0.3 + 43) * sample_rate)),
             },
-        },
-    }
+        ],
+    ]
     np.testing.assert_equal(time_delay_idx, expected_time_delay_idx)

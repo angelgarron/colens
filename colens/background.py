@@ -49,7 +49,7 @@ def get_time_delay_at_zerolag_seconds(
     Args:
         trigger_times_seconds (dict[str, int  |  float]): Mapping between detector and trigger time (in seconds).
         sky_grid (SkyGrid): The sky grid containing the positions in the sky for which the time delay \
-            should be computed.
+        should be computed.
         instruments (list[str]): A list of all the instruments for which to compute the time delays.
     """
     time_delay_zerolag_seconds = [
@@ -96,14 +96,21 @@ def get_time_slides_seconds(
 
 
 def get_time_delay_indices(
-    sample_rate,
-    time_delay_zerolag_seconds,
-    time_slides_seconds,
+    sample_rate: int | float,
+    time_delay_zerolag_seconds: list[dict[str, float]],
+    time_slides_seconds: dict[str, np.ndarray],
 ):
+    """Given the time delays wrt to IFO 0 in time_slides, create a dictionary
+    for time delay indices evaluated wrt the geocenter, in units of samples,
+    i.e. (time delay from geocenter + time slide)*sampling_rate
+
+    Args:
+        sample_rate (int | float): Sample rate (in Hertz).
+        time_delay_zerolag_seconds (list[dict[str, float]]): Time difference (in seconds) \
+        of arrival time between instruments and the earth center of a grid of sky positions.
+        time_slides_seconds (dict[str, np.ndarray]): Time slides (in seconds) for each instrument.
+    """
     slide_ids = np.arange(len(list(time_slides_seconds.values())[0]))
-    # Given the time delays wrt to IFO 0 in time_slides, create a dictionary
-    # for time delay indices evaluated wrt the geocenter, in units of samples,
-    # i.e. (time delay from geocenter + time slide)*sampling_rate
     time_delay_idx = [
         [
             {

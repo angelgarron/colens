@@ -43,8 +43,8 @@ def get_time_delay_at_zerolag_seconds(
     sky_grid: SkyGrid,
     instruments: list[str],
 ):
-    """Compute the difference of arrival time between the `instruments` and the earth center of a signal
-    coming from each point in `sky_grid`.
+    """Compute the difference of arrival time between the earth center and each one of the `instruments` of a signal
+    coming from each point in `sky_grid`, .i.e. (t_{center}-t_{instrument}).
 
     Args:
         trigger_times_seconds (dict[str, int  |  float]): Mapping between detector and trigger time (in seconds).
@@ -107,7 +107,7 @@ def get_time_delay_indices(
     Args:
         sample_rate (int | float): Sample rate (in Hertz).
         time_delay_zerolag_seconds (list[dict[str, float]]): Time difference (in seconds) \
-        of arrival time between instruments and the earth center of a grid of sky positions.
+        of arrival time between earth center and instruments of a grid of sky positions.
         time_slides_seconds (dict[str, np.ndarray]): Time slides (in seconds) for each instrument.
     """
     slide_ids = np.arange(len(list(time_slides_seconds.values())[0]))

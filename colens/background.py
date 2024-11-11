@@ -38,8 +38,8 @@ def slide_limiter(
 
 
 def get_time_delay_at_zerolag_seconds(trigger_times_seconds, sky_grid, instruments):
-    time_delay_zerolag_seconds = {
-        position_index: {
+    time_delay_zerolag_seconds = [
+        {
             ifo: MyDetector(ifo).time_delay_from_earth_center(
                 sky_position.ra,
                 sky_position.dec,
@@ -47,8 +47,8 @@ def get_time_delay_at_zerolag_seconds(trigger_times_seconds, sky_grid, instrumen
             )
             for ifo in instruments
         }
-        for position_index, sky_position in enumerate(sky_grid)
-    }
+        for sky_position in sky_grid
+    ]
     return time_delay_zerolag_seconds
 
 
@@ -92,7 +92,7 @@ def get_time_delay_indices(
                 )
                 for ifo in time_delay_zerolag_at_sky_position_seconds
             }
-            for time_delay_zerolag_at_sky_position_seconds in time_delay_zerolag_seconds.values()
+            for time_delay_zerolag_at_sky_position_seconds in time_delay_zerolag_seconds
         ]
         for slide in slide_ids
     ]

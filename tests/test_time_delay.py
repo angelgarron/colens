@@ -23,10 +23,10 @@ def test_get_time_slides_seconds():
 
 def test_get_time_delay_indices():
     sample_rate = 4096.0
-    time_delay_zerolag_seconds = {
-        0: {"A": 0.25, "B": 0.26, "C": 0.27},
-        1: {"A": 0.28, "B": 0.29, "C": 0.3},
-    }
+    time_delay_zerolag_seconds = [
+        {"A": 0.25, "B": 0.26, "C": 0.27},
+        {"A": 0.28, "B": 0.29, "C": 0.3},
+    ]
     time_slides_seconds = {
         "A": np.array([1, 2, 3, 9]),
         "B": np.array([0, 4, 0, 2]),

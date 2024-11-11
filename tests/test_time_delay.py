@@ -6,8 +6,10 @@ from colens.background import get_time_delay_indices, get_time_slides_seconds
 def test_get_time_slides_seconds():
     num_slides = 5
     slide_shift_seconds = 1
+    unlensed_instruments = ["H1", "L1"]
+    lensed_instruments = ["H1_lensed", "L1_lensed"]
     slide_ids, time_slides_seconds = get_time_slides_seconds(
-        num_slides, slide_shift_seconds, ["H1", "L1"], ["H1_lensed", "L1_lensed"]
+        num_slides, slide_shift_seconds, unlensed_instruments, lensed_instruments
     )
 
     expected_time_slides_seconds = {

@@ -47,7 +47,7 @@ def get_time_delay_at_zerolag_seconds(
     coming from each point in `sky_grid`.
 
     Args:
-        trigger_times_seconds (dict[str, int  |  float]): Mapping between detector and trigger time.
+        trigger_times_seconds (dict[str, int  |  float]): Mapping between detector and trigger time (in seconds).
         sky_grid (SkyGrid): The sky grid containing the positions in the sky for which the time delay \
             should be computed.
         instruments (list[str]): A list of all the instruments for which to compute the time delays.
@@ -67,10 +67,20 @@ def get_time_delay_at_zerolag_seconds(
 
 
 def get_time_slides_seconds(
-    num_slides, slide_shift_seconds, unlensed_instruments, lensed_instruments
+    num_slides: int,
+    slide_shift_seconds: int | float,
+    unlensed_instruments: list[str],
+    lensed_instruments: list[str],
 ):
-    # Create a dictionary of time slide shifts; IFO 0 is unshifted
-    # ANGEL: Just lensed detectors are shifted
+    """Create a dictionary of time slide shifts; IFO 0 is unshifted.
+    Just the lensed detectors are shifted.
+
+    Args:
+        num_slides (int): Number of time slides we wish to compute.
+        slide_shift_seconds (int | float): The time difference (in seconds) between slides.
+        unlensed_instruments (list[str]): List of unlensed instruments.
+        lensed_instruments (list[str]): List of lensed instruments.
+    """
     slide_ids = np.arange(num_slides)
     time_slides_seconds = {
         ifo: slide_shift_seconds * slide_ids * ifo_idx

@@ -213,7 +213,7 @@ def main():
 
     logging.info("Determining time slide shifts and time delays")
 
-    time_slides, time_delay_idx = get_time_delay_indices(
+    time_slides_seconds, time_delay_idx = get_time_delay_indices(
         num_slides,
         SLIDE_SHIFT_SECONDS,
         LENSED_INSTRUMENTS,
@@ -309,7 +309,7 @@ def main():
         network_names,
         [network_out_types[n] for n in network_names],
         segments=segments,
-        time_slides=time_slides,
+        time_slides=time_slides_seconds,
     )
 
     logging.info("Read in template bank")

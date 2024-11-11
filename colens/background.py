@@ -49,12 +49,15 @@ def get_time_delay_indices(
     # Create a dictionary of time slide shifts; IFO 0 is unshifted
     # ANGEL: Just lensed detectors are shifted
     slide_ids = np.arange(num_slides)
-    time_slides = {
+    time_slides_seconds = {
         ifo: slide_shift_seconds * slide_ids * ifo_idx
         for ifo_idx, ifo in enumerate(lensed_instruments)
     }
-    time_slides.update(
-        {ifo: time_slides[lensed_instruments[0]] for ifo in unlensed_instruments}
+    time_slides_seconds.update(
+        {
+            ifo: time_slides_seconds[lensed_instruments[0]]
+            for ifo in unlensed_instruments
+        }
     )
     # Given the time delays wrt to IFO 0 in time_slides, create a dictionary
     # for time delay indices evaluated wrt the geocenter, in units of samples,
@@ -77,7 +80,7 @@ def get_time_delay_indices(
                     round(
                         (
                             time_delay_idx_zerolag[position_index][ifo]
-                            + time_slides[ifo][slide]
+                            + time_slides_seconds[ifo][slide]
                         )
                         * sample_rate
                     )
@@ -88,4 +91,4 @@ def get_time_delay_indices(
         }
         for slide in slide_ids
     }
-    return time_slides, time_delay_idx
+    return time_slides_seconds, time_delay_idx

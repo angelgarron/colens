@@ -7,7 +7,11 @@ from pycbc.filter import MatchedFilterControl
 from pycbc.strain import StrainSegments
 from pycbc.types import complex64, float32, zeros
 
-from colens.background import get_time_delay_indices, slide_limiter
+from colens.background import (
+    get_time_delay_at_zerolag_seconds,
+    get_time_delay_indices,
+    slide_limiter,
+)
 from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_template
 from colens.injection import get_strain_list_from_simulation
@@ -213,14 +217,19 @@ def main():
 
     logging.info("Determining time slide shifts and time delays")
 
+    time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
+        TRIGGER_TIMES_SECONDS,
+        sky_grid,
+        INSTRUMENTS,
+    )
     time_slides_seconds, time_delay_idx = get_time_delay_indices(
         num_slides,
         SLIDE_SHIFT_SECONDS,
         LENSED_INSTRUMENTS,
         UNLENSED_INSTRUMENTS,
         sky_grid,
-        TRIGGER_TIMES_SECONDS,
         SAMPLE_RATE,
+        time_delay_zerolag_seconds,
     )
 
     logging.info("Setting up MatchedFilterControl at each IFO")

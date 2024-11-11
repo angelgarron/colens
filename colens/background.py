@@ -37,14 +37,29 @@ def slide_limiter(
     return num_slides
 
 
+def get_time_delay_at_zerolag_seconds(trigger_times_seconds, sky_grid, instruments):
+    time_delay_zerolag_seconds = {
+        position_index: {
+            ifo: MyDetector(ifo).time_delay_from_earth_center(
+                sky_position.ra,
+                sky_position.dec,
+                trigger_times_seconds[ifo],
+            )
+            for ifo in instruments
+        }
+        for position_index, sky_position in enumerate(sky_grid)
+    }
+    return time_delay_zerolag_seconds
+
+
 def get_time_delay_indices(
     num_slides,
     slide_shift_seconds,
     lensed_instruments,
     unlensed_instruments,
     sky_grid,
-    trigger_times_seconds,
     sample_rate,
+    time_delay_zerolag_seconds,
 ):
     # Create a dictionary of time slide shifts; IFO 0 is unshifted
     # ANGEL: Just lensed detectors are shifted
@@ -62,24 +77,13 @@ def get_time_delay_indices(
     # Given the time delays wrt to IFO 0 in time_slides, create a dictionary
     # for time delay indices evaluated wrt the geocenter, in units of samples,
     # i.e. (time delay from geocenter + time slide)*sampling_rate
-    time_delay_idx_zerolag = {
-        position_index: {
-            ifo: MyDetector(ifo).time_delay_from_earth_center(
-                sky_position.ra,
-                sky_position.dec,
-                trigger_times_seconds[ifo],
-            )
-            for ifo in unlensed_instruments + lensed_instruments
-        }
-        for position_index, sky_position in enumerate(sky_grid)
-    }
     time_delay_idx = {
         slide: {
             position_index: {
                 ifo: int(
                     round(
                         (
-                            time_delay_idx_zerolag[position_index][ifo]
+                            time_delay_zerolag_seconds[position_index][ifo]
                             + time_slides_seconds[ifo][slide]
                         )
                         * sample_rate

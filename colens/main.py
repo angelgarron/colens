@@ -10,6 +10,7 @@ from pycbc.types import complex64, float32, zeros
 from colens.background import (
     get_time_delay_at_zerolag_seconds,
     get_time_delay_indices,
+    get_time_slides_seconds,
     slide_limiter,
 )
 from colens.detector import calculate_antenna_pattern
@@ -222,13 +223,16 @@ def main():
         sky_grid,
         INSTRUMENTS,
     )
-    time_slides_seconds, time_delay_idx = get_time_delay_indices(
-        num_slides,
-        SLIDE_SHIFT_SECONDS,
+    slide_ids, time_slides_seconds = get_time_slides_seconds(
+        num_slides, SLIDE_SHIFT_SECONDS, UNLENSED_INSTRUMENTS, LENSED_INSTRUMENTS
+    )
+    time_delay_idx = get_time_delay_indices(
         LENSED_INSTRUMENTS,
         UNLENSED_INSTRUMENTS,
         SAMPLE_RATE,
         time_delay_zerolag_seconds,
+        time_slides_seconds,
+        slide_ids,
     )
 
     logging.info("Setting up MatchedFilterControl at each IFO")

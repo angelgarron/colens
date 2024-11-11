@@ -52,13 +52,8 @@ def get_time_delay_at_zerolag_seconds(trigger_times_seconds, sky_grid, instrumen
     return time_delay_zerolag_seconds
 
 
-def get_time_delay_indices(
-    num_slides,
-    slide_shift_seconds,
-    lensed_instruments,
-    unlensed_instruments,
-    sample_rate,
-    time_delay_zerolag_seconds,
+def get_time_slides_seconds(
+    num_slides, slide_shift_seconds, unlensed_instruments, lensed_instruments
 ):
     # Create a dictionary of time slide shifts; IFO 0 is unshifted
     # ANGEL: Just lensed detectors are shifted
@@ -73,6 +68,17 @@ def get_time_delay_indices(
             for ifo in unlensed_instruments
         }
     )
+    return slide_ids, time_slides_seconds
+
+
+def get_time_delay_indices(
+    lensed_instruments,
+    unlensed_instruments,
+    sample_rate,
+    time_delay_zerolag_seconds,
+    time_slides_seconds,
+    slide_ids,
+):
     # Given the time delays wrt to IFO 0 in time_slides, create a dictionary
     # for time delay indices evaluated wrt the geocenter, in units of samples,
     # i.e. (time delay from geocenter + time slide)*sampling_rate
@@ -94,4 +100,4 @@ def get_time_delay_indices(
         }
         for slide in slide_ids
     }
-    return time_slides_seconds, time_delay_idx
+    return time_delay_idx

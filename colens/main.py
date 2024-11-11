@@ -223,14 +223,13 @@ def main():
         sky_grid,
         INSTRUMENTS,
     )
-    slide_ids, time_slides_seconds = get_time_slides_seconds(
+    time_slides_seconds = get_time_slides_seconds(
         num_slides, SLIDE_SHIFT_SECONDS, UNLENSED_INSTRUMENTS, LENSED_INSTRUMENTS
     )
     time_delay_idx = get_time_delay_indices(
         SAMPLE_RATE,
         time_delay_zerolag_seconds,
         time_slides_seconds,
-        slide_ids,
     )
 
     logging.info("Setting up MatchedFilterControl at each IFO")

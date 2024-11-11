@@ -68,15 +68,15 @@ def get_time_slides_seconds(
             for ifo in unlensed_instruments
         }
     )
-    return slide_ids, time_slides_seconds
+    return time_slides_seconds
 
 
 def get_time_delay_indices(
     sample_rate,
     time_delay_zerolag_seconds,
     time_slides_seconds,
-    slide_ids,
 ):
+    slide_ids = np.arange(len(list(time_slides_seconds.values())[0]))
     # Given the time delays wrt to IFO 0 in time_slides, create a dictionary
     # for time delay indices evaluated wrt the geocenter, in units of samples,
     # i.e. (time delay from geocenter + time slide)*sampling_rate

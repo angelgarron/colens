@@ -72,8 +72,6 @@ def get_time_slides_seconds(
 
 
 def get_time_delay_indices(
-    lensed_instruments,
-    unlensed_instruments,
     sample_rate,
     time_delay_zerolag_seconds,
     time_slides_seconds,
@@ -92,7 +90,7 @@ def get_time_delay_indices(
                     )
                     * sample_rate
                 )
-                for ifo in unlensed_instruments + lensed_instruments
+                for ifo in time_delay_zerolag_at_sky_position_seconds
             }
             for position_index, time_delay_zerolag_at_sky_position_seconds in time_delay_zerolag_seconds.items()
         }

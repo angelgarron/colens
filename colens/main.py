@@ -227,8 +227,6 @@ def main():
         num_slides, SLIDE_SHIFT_SECONDS, UNLENSED_INSTRUMENTS, LENSED_INSTRUMENTS
     )
     time_delay_idx = get_time_delay_indices(
-        LENSED_INSTRUMENTS,
-        UNLENSED_INSTRUMENTS,
         SAMPLE_RATE,
         time_delay_zerolag_seconds,
         time_slides_seconds,

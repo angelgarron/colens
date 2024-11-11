@@ -85,14 +85,12 @@ def get_time_delay_indices(
     time_delay_idx = {
         slide: {
             position_index: {
-                ifo: int(
-                    round(
-                        (
-                            time_delay_zerolag_at_sky_position_seconds[ifo]
-                            + time_slides_seconds[ifo][slide]
-                        )
-                        * sample_rate
+                ifo: round(
+                    (
+                        time_delay_zerolag_at_sky_position_seconds[ifo]
+                        + time_slides_seconds[ifo][slide]
                     )
+                    * sample_rate
                 )
                 for ifo in unlensed_instruments + lensed_instruments
             }

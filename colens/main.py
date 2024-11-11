@@ -227,7 +227,6 @@ def main():
         SLIDE_SHIFT_SECONDS,
         LENSED_INSTRUMENTS,
         UNLENSED_INSTRUMENTS,
-        sky_grid,
         SAMPLE_RATE,
         time_delay_zerolag_seconds,
     )

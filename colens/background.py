@@ -57,7 +57,6 @@ def get_time_delay_indices(
     slide_shift_seconds,
     lensed_instruments,
     unlensed_instruments,
-    sky_grid,
     sample_rate,
     time_delay_zerolag_seconds,
 ):
@@ -83,7 +82,7 @@ def get_time_delay_indices(
                 ifo: int(
                     round(
                         (
-                            time_delay_zerolag_seconds[position_index][ifo]
+                            time_delay_zerolag_at_sky_position_seconds[ifo]
                             + time_slides_seconds[ifo][slide]
                         )
                         * sample_rate
@@ -91,7 +90,7 @@ def get_time_delay_indices(
                 )
                 for ifo in unlensed_instruments + lensed_instruments
             }
-            for position_index in range(len(sky_grid))
+            for position_index, time_delay_zerolag_at_sky_position_seconds in time_delay_zerolag_seconds.items()
         }
         for slide in slide_ids
     }

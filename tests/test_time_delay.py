@@ -1,14 +1,12 @@
 import numpy as np
 
 from colens.background import get_time_delay_indices
-from colens.sky import SkyGrid
 
 
 def test_get_time_delay_indices():
     lensed_instruments = ["H1_lensed", "L1_lensed"]
     unlensed_instruments = ["H1", "L1"]
     sample_rate = 4096.0
-    sky_grid = SkyGrid(ra=[1], dec=[1])
     time_delay_zerolag_seconds = {
         0: {"H1": 0.25, "L1": 0.26, "H1_lensed": 0.25, "L1_lensed": 0.26}
     }
@@ -17,7 +15,6 @@ def test_get_time_delay_indices():
         slide_shift_seconds=1,
         lensed_instruments=lensed_instruments,
         unlensed_instruments=unlensed_instruments,
-        sky_grid=sky_grid,
         sample_rate=sample_rate,
         time_delay_zerolag_seconds=time_delay_zerolag_seconds,
     )

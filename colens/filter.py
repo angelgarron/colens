@@ -25,7 +25,6 @@ def filter_template(
     power_chisq,
     chisq_index,
     chisq_nhigh,
-    network_out_vals,
     ifo_names,
     sky_grid,
     cluster_window,
@@ -303,15 +302,18 @@ def filter_template(
                             ifo_names,
                             [ifo_out_vals[n] for n in ifo_names],
                         )
+                    network_out_vals = dict()
                     if nifo > 2:
                         network_out_vals["coherent_snr"] = rho_coh
                         network_out_vals["null_snr"] = null
                     elif nifo == 2:
                         network_out_vals["coherent_snr"] = rho_coinc
+                        network_out_vals["null_snr"] = None
                     else:
                         network_out_vals["coherent_snr"] = abs(
                             snr[instruments[0]][coinc_idx_det_frame[instruments[0]]]
                         )
+                        network_out_vals["null_snr"] = None
                     network_out_vals["reweighted_snr"] = reweighted_snr
                     network_out_vals["my_network_chisq"] = np.real(network_chisq_dict)
                     network_out_vals["time_index"] = (

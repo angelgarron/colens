@@ -363,7 +363,6 @@ def main():
             power_chisq,
             CHISQ_INDEX,
             CHISQ_NHIGH,
-            network_out_vals,
             ifo_names,
             sky_grid,
             CLUSTER_WINDOW,

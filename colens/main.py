@@ -281,15 +281,16 @@ def main():
         "chisq_dof": int,
         "slide_id": int,
     }
-    ifo_out_vals = {
-        "time_index": None,
-        "ifo": None,
-        "snr": None,
-        "chisq": None,
-        "chisq_dof": None,
-        "slide_id": None,
-    }
-    ifo_names = sorted(ifo_out_vals.keys())
+    ifo_names = sorted(
+        [
+            "time_index",
+            "ifo",
+            "snr",
+            "chisq",
+            "chisq_dof",
+            "slide_id",
+        ]
+    )
     network_out_types = {
         "dec": float32,
         "ra": float32,
@@ -301,18 +302,19 @@ def main():
         "reweighted_snr": float32,
         "slide_id": int,
     }
-    network_out_vals = {
-        "dec": None,
-        "ra": None,
-        "time_index": None,
-        "coherent_snr": None,
-        "null_snr": None,
-        "nifo": None,
-        "my_network_chisq": None,
-        "reweighted_snr": None,
-        "slide_id": None,
-    }
-    network_names = sorted(network_out_vals.keys())
+    network_names = sorted(
+        [
+            "dec",
+            "ra",
+            "time_index",
+            "coherent_snr",
+            "null_snr",
+            "nifo",
+            "my_network_chisq",
+            "reweighted_snr",
+            "slide_id",
+        ]
+    )
     event_mgr = MyEventManagerCoherent(
         [],
         INSTRUMENTS,

@@ -72,13 +72,15 @@ GPS_END_SECONDS = dict()
 for ifo in INSTRUMENTS:
     GPS_START_SECONDS[ifo] = TRIGGER_TIMES_SECONDS[ifo] - 192 - PAD_SECONDS
     GPS_END_SECONDS[ifo] = TRIGGER_TIMES_SECONDS[ifo] + 192 + PAD_SECONDS
-START_PAD_SECONDS = 111  # time in seconds to ignore at the beginning of each block
-END_PAD_SECONDS = 17  # time in seconds to ignore at the end of each block
+SEGMENT_START_PAD_SECONDS = (
+    111  # time in seconds to ignore at the beginning of each segment
+)
+SEGMENT_END_PAD_SECONDS = 17  # time in seconds to ignore at the end of each segment
 TRIG_START_TIME_SECONDS = dict()  # gps time to start recording triggers
 TRIG_END_TIME_SECONDS = dict()  # gps time to stop recording triggers
 for ifo in INSTRUMENTS:
-    TRIG_START_TIME_SECONDS[ifo] = GPS_START_SECONDS[ifo] + START_PAD_SECONDS
-    TRIG_END_TIME_SECONDS[ifo] = GPS_END_SECONDS[ifo] - END_PAD_SECONDS
+    TRIG_START_TIME_SECONDS[ifo] = GPS_START_SECONDS[ifo] + SEGMENT_START_PAD_SECONDS
+    TRIG_END_TIME_SECONDS[ifo] = GPS_END_SECONDS[ifo] - SEGMENT_END_PAD_SECONDS
 CHISQ_BINS = "0.9*get_freq('fSEOBNRv4Peak',params.mass1,params.mass2,params.spin1z,params.spin2z)**(2./3.)"
 AUTOCHI_STRIDE = 0
 AUTOCHI_NUMBER_POINTS = 0
@@ -182,8 +184,8 @@ def main():
         segments[ifo] = StrainSegments(
             strain_dict[ifo],
             segment_length=SEGMENT_LENGTH_SECONDS,
-            segment_start_pad=START_PAD_SECONDS,
-            segment_end_pad=END_PAD_SECONDS,
+            segment_start_pad=SEGMENT_START_PAD_SECONDS,
+            segment_end_pad=SEGMENT_END_PAD_SECONDS,
             trigger_start=TRIG_START_TIME_SECONDS[ifo],
             trigger_end=TRIG_END_TIME_SECONDS[ifo],
             filter_inj_only=False,

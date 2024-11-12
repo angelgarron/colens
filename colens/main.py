@@ -23,10 +23,10 @@ from colens.sky import get_circular_sky_patch
 from colens.strain import process_strain_dict
 
 FRAME_FILES = {
-    "H1": "H-H1_GWOSC_4KHZ_R1-1185387760-4096.gwf",
-    "L1": "L-L1_GWOSC_4KHZ_R1-1185387760-4096.gwf",
-    "H1_lensed": "H-H1_GWOSC_O2_4KHZ_R1-1185435648-4096.gwf",
-    "L1_lensed": "L-L1_GWOSC_O2_4KHZ_R1-1185435648-4096.gwf",
+    "H1": "/home/angel/Documents/pycbc_checks/H-H1_GWOSC_4KHZ_R1-1185387760-4096.gwf",
+    "L1": "/home/angel/Documents/pycbc_checks/L-L1_GWOSC_4KHZ_R1-1185387760-4096.gwf",
+    "H1_lensed": "/home/angel/Documents/pycbc_checks/H-H1_GWOSC_O2_4KHZ_R1-1185435648-4096.gwf",
+    "L1_lensed": "/home/angel/Documents/pycbc_checks/L-L1_GWOSC_O2_4KHZ_R1-1185435648-4096.gwf",
 }
 CHANNELS = {
     "H1": "H1:GWOSC-4KHZ_R1_STRAIN",

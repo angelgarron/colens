@@ -72,7 +72,7 @@ GPS_END_SECONDS = dict()
 for ifo in INSTRUMENTS:
     GPS_START_SECONDS[ifo] = TRIGGER_TIMES_SECONDS[ifo] - 192 - PAD_SECONDS
     GPS_END_SECONDS[ifo] = TRIGGER_TIMES_SECONDS[ifo] + 192 + PAD_SECONDS
-START_PAD_SECONDS = 111  # time in seconds to ignore of the beginning of each segment
+START_PAD_SECONDS = 111  # time in seconds to ignore at the beginning of each segment
 END_PAD_SECONDS = 17  # time in seconds to ignore at the end of each segment
 TRIG_START_TIME_SECONDS = dict()  # gps time to start recording triggers
 TRIG_END_TIME_SECONDS = dict()  # gps time to stop recording triggers

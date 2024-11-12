@@ -10,7 +10,7 @@ def slide_limiter(
     segment_length_seconds: int | float, slide_shift_seconds: int | float, nifos: int
 ) -> np.int32:
     """
-    This function computes the number of shortslides used by the coherent
+    Compute the number of shortslides used by the coherent
     matched filter statistic to obtain as most background triggers as
     possible.
 
@@ -19,8 +19,8 @@ def slide_limiter(
 
     Args:
         segment_length_seconds (int | float): The length (in seconds) of each segment.
-        slide_shift_seconds (int | float): The interval (in seconds) of the slides.
-        nifos (int): The number of detectors for which you want to compute slides.
+        slide_shift_seconds (int | float): The time difference (in seconds) between slides.
+        nifos (int): The number of detectors for which we want to compute slides.
 
     Returns:
         np.int32: Number of time slides that are going to be performed.

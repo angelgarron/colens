@@ -141,7 +141,6 @@ def create_injections(injection_parameters: dict[str, float]):
     logging.info(f"NETWORK SNR {rho}")
     rho = np.sqrt(sum(abs(matched_filter_snrs) ** 2))
     logging.info(f"COINCIDENCE SNR {rho}")
-    process_strain_dict(strain_dict, STRAIN_HIGH_PASS_HERTZ, SAMPLE_RATE, PAD_SECONDS)
     return strain_dict
 
 
@@ -172,6 +171,8 @@ def main():
         dec=-1.2,
     )
     strain_dict = create_injections(injection_parameters)
+
+    process_strain_dict(strain_dict, STRAIN_HIGH_PASS_HERTZ, SAMPLE_RATE, PAD_SECONDS)
 
     num_slides = slide_limiter(
         SEGMENT_LENGTH_SECONDS, SLIDE_SHIFT_SECONDS, len(LENSED_INSTRUMENTS)

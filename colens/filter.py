@@ -287,6 +287,9 @@ def filter_template(
                     for ifo in instruments:
                         ifo_out_vals["chisq"] = chisq[ifo]
                         ifo_out_vals["chisq_dof"] = chisq_dof[ifo]
+                        # The value 'cumulative_index'
+                        # indexes from the beginning of the original strain series
+                        # (segment_slice.start + analisis.start)
                         ifo_out_vals["time_index"] = (
                             coinc_idx_det_frame[ifo] + stilde[ifo].cumulative_index
                         )

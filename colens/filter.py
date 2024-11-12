@@ -244,7 +244,6 @@ def filter_template(
                             coinc_idx_det_frame[ifo] + stilde[ifo].analyze.start,
                             template,
                         )
-                    # Calculate network chisq value
                     network_chisq_dict = coh.network_chisq(
                         chisq, chisq_dof, coherent_ifo_trigs
                     )
@@ -256,7 +255,6 @@ def filter_template(
                             q=chisq_index,
                             n=chisq_nhigh,
                         )
-                        # Calculate null reweighted SNR
                         reweighted_snr = coh.reweight_snr_by_null(
                             reweighted_snr,
                             null,
@@ -295,7 +293,6 @@ def filter_template(
                         ifo_out_vals["snr"] = coherent_ifo_trigs[ifo]
                         # IFO is stored as an int
                         ifo_out_vals["ifo"] = [event_mgr.ifo_dict[ifo]] * num_events
-                        # Time slide ID
                         ifo_out_vals["slide_id"] = [slide] * num_events
                         event_mgr.add_template_events_to_ifo(
                             ifo,
@@ -329,8 +326,6 @@ def filter_template(
                         network_names,
                         [network_out_vals[n] for n in network_names],
                     )
-        # Left loops over sky positions and time-slides,
-        # but not loops over segments and templates.
         # The triggers can be clustered
         # Cluster template events by slide
         for slide in range(num_slides):
@@ -341,5 +336,4 @@ def filter_template(
                 int(cluster_window * sample_rate),
                 slide=slide,
             )
-    # Left loop over segments
     event_mgr.finalize_template_events()

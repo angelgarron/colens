@@ -25,7 +25,6 @@ def filter_template(
     power_chisq,
     chisq_index,
     chisq_nhigh,
-    ifo_out_vals,
     network_out_vals,
     ifo_names,
     sky_grid,
@@ -287,6 +286,7 @@ def filter_template(
                     # All out vals must be the same length, so single
                     # value entries are repeated once per event
                     num_events = len(reweighted_snr)
+                    ifo_out_vals = dict()
                     for ifo in instruments:
                         ifo_out_vals["chisq"] = chisq[ifo]
                         ifo_out_vals["chisq_dof"] = chisq_dof[ifo]

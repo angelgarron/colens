@@ -7,6 +7,45 @@ from pycbc.events import ranking
 from colens.coincident import get_coinc_indexes
 
 
+def filter_ifos(
+    instruments,
+    template,
+    matched_filter,
+    segment_number,
+    stilde,
+):
+    # The following dicts with IFOs as keys are created to store
+    # copies of the matched filtering results computed below.
+    # - Complex SNR time series
+    snr_dict = dict.fromkeys(instruments)
+    # - Its normalization
+    norm_dict = dict.fromkeys(instruments)
+    # - The correlation vector frequency series
+    #   It is the FFT of the SNR (so inverse FFT it to get the SNR)
+    corr_dict = dict.fromkeys(instruments)
+    # - The trigger indices list (idx_dict will be created out of this)
+    idx = dict.fromkeys(instruments)
+    # - The list of normalized SNR values at the trigger locations
+    snr = dict.fromkeys(instruments)
+    for ifo in instruments:
+        logging.info("  Filtering ifo %s", ifo)
+        # The following lines unpack and store copies of the matched
+        # filtering results for the current template, segment, and IFO.
+        # No clustering happens in the coherent search until the end.
+        snr_ts, norm, corr, ind, snrv = matched_filter[ifo].matched_filter_and_cluster(
+            segment_number, template.sigmasq(stilde[ifo].psd), window=0
+        )
+        snr_dict[ifo] = (
+            snr_ts[matched_filter[ifo].segments[segment_number].analyze] * norm
+        )
+        assert len(snr_dict[ifo]) > 0, f"SNR time series for {ifo} is empty"
+        norm_dict[ifo] = norm
+        corr_dict[ifo] = corr.copy()
+        idx[ifo] = ind.copy()
+        snr[ifo] = snrv * norm
+    return snr_dict, norm_dict, corr_dict, idx, snr
+
+
 def filter_template(
     segments,
     instruments,
@@ -49,35 +88,9 @@ def filter_template(
         logging.info(
             "Analyzing segment %d/%d", s_num + 1, len(segments[instruments[0]])
         )
-        # The following dicts with IFOs as keys are created to store
-        # copies of the matched filtering results computed below.
-        # - Complex SNR time series
-        snr_dict = dict.fromkeys(instruments)
-        # - Its normalization
-        norm_dict = dict.fromkeys(instruments)
-        # - The correlation vector frequency series
-        #   It is the FFT of the SNR (so inverse FFT it to get the SNR)
-        corr_dict = dict.fromkeys(instruments)
-        # - The trigger indices list (idx_dict will be created out of this)
-        idx = dict.fromkeys(instruments)
-        # - The list of normalized SNR values at the trigger locations
-        snr = dict.fromkeys(instruments)
-        for ifo in instruments:
-            logging.info("  Filtering ifo %s", ifo)
-            # The following lines unpack and store copies of the matched
-            # filtering results for the current template, segment, and IFO.
-            # No clustering happens in the coherent search until the end.
-            snr_ts, norm, corr, ind, snrv = matched_filter[
-                ifo
-            ].matched_filter_and_cluster(
-                s_num, template.sigmasq(stilde[ifo].psd), window=0
-            )
-            snr_dict[ifo] = snr_ts[matched_filter[ifo].segments[s_num].analyze] * norm
-            assert len(snr_dict[ifo]) > 0, f"SNR time series for {ifo} is empty"
-            norm_dict[ifo] = norm
-            corr_dict[ifo] = corr.copy()
-            idx[ifo] = ind.copy()
-            snr[ifo] = snrv * norm
+        snr_dict, norm_dict, corr_dict, idx, snr = filter_ifos(
+            instruments, template, matched_filter, s_num, stilde
+        )
 
         # Move onto next segment if there are no triggers.
         n_trigs = [len(snr[ifo]) for ifo in instruments]

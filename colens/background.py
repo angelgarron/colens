@@ -44,7 +44,7 @@ def get_time_delay_at_zerolag_seconds(
     instruments: list[str],
 ):
     """Compute the difference of arrival time between the earth center and each one of the `instruments` of a signal
-    coming from each point in `sky_grid`, .i.e. (t_{center}-t_{instrument}).
+    coming from each point in `sky_grid`, .i.e. (t_{instrument}-t_{center}).
 
     Args:
         trigger_times_seconds (dict[str, int  |  float]): Mapping between detector and trigger time (in seconds).

@@ -107,6 +107,7 @@ def create_injections(injection_parameters: dict[str, float]):
         start_time=GPS_START_SECONDS["H1"] - PAD_SECONDS,
         end_time=GPS_END_SECONDS["H1"] + PAD_SECONDS,
         low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
+        seed=1,
     )
     optimal_snrs = return_value[0]
     matched_filter_snrs = return_value[1]
@@ -119,6 +120,7 @@ def create_injections(injection_parameters: dict[str, float]):
         start_time=GPS_START_SECONDS["H1_lensed"] - PAD_SECONDS,
         end_time=GPS_END_SECONDS["H1_lensed"] + PAD_SECONDS,
         low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
+        seed=2,
     )
     optimal_snrs += return_value[0]
     matched_filter_snrs += return_value[1]

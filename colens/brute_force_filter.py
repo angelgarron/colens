@@ -106,6 +106,8 @@ def brute_force_filter_template(
     LENSED_INSTRUMENTS,
     SAMPLE_RATE,
     GPS_START_SECONDS,
+    TIME_GPS_PAST_SECONDS,
+    TIME_GPS_FUTURE_SECONDS,
 ):
     # get the single detector snrs
     segment_index = 0
@@ -115,17 +117,17 @@ def brute_force_filter_template(
     )
 
     # loop over original geocentric trigger time
-    for original_trigger_time_seconds in [
-        1185389807.298705 - 0.01,
-        1185389807.298705,
-        1185389807.298705 + 0.01,
-    ]:
+    for original_trigger_time_seconds in np.arange(
+        TIME_GPS_PAST_SECONDS - 0.001,
+        TIME_GPS_PAST_SECONDS + 0.001,
+        step=snr_dict["H1"]._delta_t,
+    ):
         # loop over lensed geocentric trigger time
-        for lensed_trigger_time_seconds in [
-            1185437144.788086 - 0.01,
-            1185437144.788086,
-            1185437144.788086 + 0.01,
-        ]:
+        for lensed_trigger_time_seconds in np.arange(
+            TIME_GPS_FUTURE_SECONDS - 0.001,
+            TIME_GPS_FUTURE_SECONDS + 0.001,
+            snr_dict["H1"]._delta_t,
+        ):
             trigger_times_seconds = {
                 "H1": original_trigger_time_seconds,
                 "L1": original_trigger_time_seconds,
@@ -289,7 +291,7 @@ def brute_force_filter_template(
                 print(null)
 
                 found_trigger_time_geocenter = (
-                    coinc_idx[64]
+                    coinc_idx[rho_coinc.argmax()]
                     + segments["H1_lensed"][segment_index].cumulative_index
                 ) / SAMPLE_RATE + GPS_START_SECONDS["H1_lensed"]
                 print(found_trigger_time_geocenter)

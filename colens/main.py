@@ -13,10 +13,11 @@ from colens.background import (
     get_time_slides_seconds,
     slide_limiter,
 )
+from colens.brute_force_filter import brute_force_filter_template
 from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_template
 from colens.injection import get_strain_list_from_simulation
-from colens.io import create_filter_bank
+from colens.io import create_filter_bank, get_strain_dict_from_files
 from colens.manager import MyEventManagerCoherent
 from colens.psd import associate_psd_to_segments
 from colens.sky import get_circular_sky_patch
@@ -156,25 +157,35 @@ def main():
         79.45, 48.50, 0.60, 0.05, BANK_FILE, APPROXIMANT, LOW_FREQUENCY_CUTOFF
     )
 
-    logging.info("Injecting simulated signals on gaussian noise")
-    injection_parameters = dict(
-        mass_1=79.45,
-        mass_2=48.5,
-        a_1=0.6,
-        a_2=0.05,
-        tilt_1=0.0,
-        tilt_2=0.0,
-        phi_12=0.0,
-        phi_jl=0.0,
-        luminosity_distance=2000.0,
-        theta_jn=0.0,
-        psi=0.0,
-        phase=0.0,
-        geocent_time=TIME_GPS_PAST_SECONDS,
-        ra=6.0,
-        dec=-1.2,
+    # logging.info("Injecting simulated signals on gaussian noise")
+    # injection_parameters = dict(
+    #     mass_1=79.45,
+    #     mass_2=48.5,
+    #     a_1=0.6,
+    #     a_2=0.05,
+    #     tilt_1=0.0,
+    #     tilt_2=0.0,
+    #     phi_12=0.0,
+    #     phi_jl=0.0,
+    #     luminosity_distance=2000.0,
+    #     theta_jn=0.0,
+    #     psi=0.0,
+    #     phase=0.0,
+    #     geocent_time=TIME_GPS_PAST_SECONDS,
+    #     ra=6.0,
+    #     dec=-1.2,
+    # )
+    # strain_dict = create_injections(injection_parameters)
+
+    logging.info("Loading frame files")
+    strain_dict = get_strain_dict_from_files(
+        FRAME_FILES,
+        CHANNELS,
+        INSTRUMENTS,
+        GPS_START_SECONDS,
+        GPS_END_SECONDS,
+        PAD_SECONDS,
     )
-    strain_dict = create_injections(injection_parameters)
 
     process_strain_dict(strain_dict, STRAIN_HIGH_PASS_HERTZ, SAMPLE_RATE, PAD_SECONDS)
 
@@ -346,23 +357,18 @@ def main():
 
     logging.info("Full template bank size: %d", len(bank))
 
-    logging.info("Calculating antenna pattern functions at every sky position")
-    antenna_pattern = calculate_antenna_pattern(sky_grid, TRIGGER_TIMES_SECONDS)
-
     logging.info("Starting the filtering...")
     for t_num, template in enumerate(bank):
         logging.info("Filtering template %d/%d", t_num + 1, len(bank))
-        filter_template(
+        brute_force_filter_template(
             segments,
             INSTRUMENTS,
             template,
             event_mgr,
             matched_filter,
             num_slides,
-            time_delay_idx,
             LENSED_INSTRUMENTS,
             COINC_THRESHOLD,
-            antenna_pattern,
             DO_NULL_CUT,
             NULL_MIN,
             NULL_GRAD,
@@ -375,20 +381,14 @@ def main():
             CLUSTER_WINDOW,
             SAMPLE_RATE,
             network_names,
+            SLIDE_SHIFT_SECONDS,
+            UNLENSED_INSTRUMENTS,
+            LENSED_INSTRUMENTS,
+            SAMPLE_RATE,
+            GPS_START_SECONDS,
         )
 
     logging.info("Filtering completed")
-
-    logging.info("Writing output")
-    event_mgr.write_to_hdf(
-        OUTPUT,
-        SAMPLE_RATE,
-        GPS_START_SECONDS,
-        TRIG_START_TIME_SECONDS,
-        TRIG_END_TIME_SECONDS,
-    )
-
-    logging.info("Finished")
 
 
 if __name__ == "__main__":

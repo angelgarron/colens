@@ -257,14 +257,14 @@ def filter_template(
                             coinc_idx_det_frame[ifo] + stilde[ifo].analyze.start,
                             template,
                         )
-                    network_chisq_dict = coh.network_chisq(
+                    network_chisq_values = coh.network_chisq(
                         chisq, chisq_dof, coherent_ifo_trigs
                     )
                     # Calculate chisq reweighted SNR
                     if nifo > 2:
                         reweighted_snr = ranking.newsnr(
                             rho_coh,
-                            network_chisq_dict,
+                            network_chisq_values,
                             q=chisq_index,
                             n=chisq_nhigh,
                         )
@@ -279,7 +279,7 @@ def filter_template(
                     elif nifo == 2:
                         reweighted_snr = ranking.newsnr(
                             rho_coinc,
-                            network_chisq_dict,
+                            network_chisq_values,
                             q=chisq_index,
                             n=chisq_nhigh,
                         )
@@ -289,7 +289,7 @@ def filter_template(
                         )
                         reweighted_snr = ranking.newsnr(
                             rho_sngl,
-                            network_chisq_dict,
+                            network_chisq_values,
                             q=chisq_index,
                             n=chisq_nhigh,
                         )
@@ -328,7 +328,7 @@ def filter_template(
                         )
                         network_out_vals["null_snr"] = None
                     network_out_vals["reweighted_snr"] = reweighted_snr
-                    network_out_vals["my_network_chisq"] = np.real(network_chisq_dict)
+                    network_out_vals["my_network_chisq"] = np.real(network_chisq_values)
                     network_out_vals["time_index"] = (
                         coinc_idx + stilde[ifo].cumulative_index
                     )

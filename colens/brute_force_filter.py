@@ -202,140 +202,144 @@ def brute_force_filter_template(
                     fp, fc, sigma, projection="standard"
                 )
 
-                # for the moment I'm going to focus on just one time slide
-                time_slide_index = 0
+                # Loop over (short) time-slides, staring with the zero-lag
+                for time_slide_index in range(num_slides):
 
-                # Adjust the indices of triggers (if there are any)
-                # and store trigger indices list in a dictionary;
-                # when there are no triggers, the dictionary is empty.
-                # Indices are kept only if they do not get time shifted
-                # out of the time we are looking at, i.e., require
-                # idx[ifo] - time_delay_idx[slide][position_index][ifo]
-                # to be in (0, len(snr_dict[ifo]))
-                idx_dict = {
-                    ifo: idx[ifo][
-                        np.logical_and(
-                            idx[ifo]
-                            > time_delay_idx[time_slide_index][sky_position_index][ifo],
-                            idx[ifo]
-                            - time_delay_idx[time_slide_index][sky_position_index][ifo]
-                            < len(snr_dict[ifo]),
-                        )
-                    ]
-                    for ifo in instruments
-                }
+                    # Adjust the indices of triggers (if there are any)
+                    # and store trigger indices list in a dictionary;
+                    # when there are no triggers, the dictionary is empty.
+                    # Indices are kept only if they do not get time shifted
+                    # out of the time we are looking at, i.e., require
+                    # idx[ifo] - time_delay_idx[slide][position_index][ifo]
+                    # to be in (0, len(snr_dict[ifo]))
+                    idx_dict = {
+                        ifo: idx[ifo][
+                            np.logical_and(
+                                idx[ifo]
+                                > time_delay_idx[time_slide_index][sky_position_index][
+                                    ifo
+                                ],
+                                idx[ifo]
+                                - time_delay_idx[time_slide_index][sky_position_index][
+                                    ifo
+                                ]
+                                < len(snr_dict[ifo]),
+                            )
+                        ]
+                        for ifo in instruments
+                    }
 
-                # Find triggers that are coincident (in geocent time) in
-                # multiple IFOs. If a single IFO analysis then just use the
-                # indices from that IFO, i.e., IFO 0; otherwise, this
-                # method finds coincidences and applies the single IFO cut,
-                # namely, triggers must have at least 2 IFO SNRs above
-                # args.sngl_snr_threshold.
-                coinc_idx = get_coinc_indexes(
-                    idx_dict,
-                    time_delay_idx[time_slide_index][sky_position_index],
-                    LENSED_INSTRUMENTS,
-                )
-
-                coinc_idx_detector_frame = {
-                    ifo: coinc_idx
-                    + time_delay_idx[time_slide_index][sky_position_index][ifo]
-                    for ifo in LENSED_INSTRUMENTS
-                }
-
-                (
-                    rho_coinc,
-                    coinc_idx,
-                    coinc_triggers,
-                ) = coincident_snr(
-                    snr_H1_at_trigger,
-                    snr_L1_at_trigger,
-                    snr_dict,
-                    coinc_idx,
-                    coinc_threshold,
-                    time_delay_idx[time_slide_index][sky_position_index],
-                )
-                print(rho_coinc)
-
-                (
-                    rho_coh,
-                    coinc_idx,
-                    coinc_triggers,
-                    rho_coinc,
-                ) = coherent_snr(
-                    snr_H1_at_trigger,
-                    snr_L1_at_trigger,
-                    coinc_triggers,
-                    coinc_idx,
-                    0,
-                    project,
-                    rho_coinc,
-                )
-                print(rho_coh)
-                (
-                    null,
-                    rho_coh,
-                    rho_coinc,
-                    coinc_idx,
-                    coinc_triggers,
-                ) = coh.null_snr(
-                    rho_coh,
-                    rho_coinc,
-                    apply_cut=do_null_cut,
-                    null_min=null_min,
-                    null_grad=null_grad,
-                    null_step=null_step,
-                    snrv=coinc_triggers,
-                    index=coinc_idx,
-                )
-                print(null)
-
-                found_trigger_time_geocenter = (
-                    coinc_idx[rho_coinc.argmax()]
-                    + segments["H1_lensed"][segment_index].cumulative_index
-                ) / SAMPLE_RATE + GPS_START_SECONDS["H1_lensed"]
-                print(found_trigger_time_geocenter)
-
-                # consistency tests
-                coherent_ifo_trigs = {
-                    ifo: snr_dict[ifo][coinc_idx_detector_frame[ifo]]
-                    for ifo in LENSED_INSTRUMENTS
-                }
-
-                # Calculate the powerchi2 values of remaining triggers
-                # (this uses the SNR timeseries before the time delay,
-                # so we undo it; the same holds for normalisation)
-                chisq = {}
-                chisq_dof = {}
-                for ifo in LENSED_INSTRUMENTS:
-                    chisq[ifo], chisq_dof[ifo] = power_chisq.values(
-                        corr_dict[ifo],
-                        coherent_ifo_trigs[ifo] / norm_dict[ifo],
-                        norm_dict[ifo],
-                        stilde[ifo].psd,
-                        coinc_idx_detector_frame[ifo],
-                        template,
+                    # Find triggers that are coincident (in geocent time) in
+                    # multiple IFOs. If a single IFO analysis then just use the
+                    # indices from that IFO, i.e., IFO 0; otherwise, this
+                    # method finds coincidences and applies the single IFO cut,
+                    # namely, triggers must have at least 2 IFO SNRs above
+                    # args.sngl_snr_threshold.
+                    coinc_idx = get_coinc_indexes(
+                        idx_dict,
+                        time_delay_idx[time_slide_index][sky_position_index],
+                        LENSED_INSTRUMENTS,
                     )
-                print(chisq)
-                network_chisq_values = coh.network_chisq(
-                    chisq, chisq_dof, coherent_ifo_trigs
-                )
-                print(network_chisq_values)
 
-                reweighted_snr = ranking.newsnr(
-                    rho_coh,
-                    network_chisq_values,
-                    q=chisq_index,
-                    n=chisq_nhigh,
-                )
-                print(reweighted_snr)
+                    coinc_idx_detector_frame = {
+                        ifo: coinc_idx
+                        + time_delay_idx[time_slide_index][sky_position_index][ifo]
+                        for ifo in LENSED_INSTRUMENTS
+                    }
 
-                reweighted_by_null_snr = coh.reweight_snr_by_null(
-                    reweighted_snr,
-                    null,
-                    rho_coh,
-                    null_min=null_min,
-                    null_grad=null_grad,
-                    null_step=null_step,
-                )
-                print(reweighted_by_null_snr)
+                    (
+                        rho_coinc,
+                        coinc_idx,
+                        coinc_triggers,
+                    ) = coincident_snr(
+                        snr_H1_at_trigger,
+                        snr_L1_at_trigger,
+                        snr_dict,
+                        coinc_idx,
+                        coinc_threshold,
+                        time_delay_idx[time_slide_index][sky_position_index],
+                    )
+                    print(rho_coinc)
+
+                    (
+                        rho_coh,
+                        coinc_idx,
+                        coinc_triggers,
+                        rho_coinc,
+                    ) = coherent_snr(
+                        snr_H1_at_trigger,
+                        snr_L1_at_trigger,
+                        coinc_triggers,
+                        coinc_idx,
+                        0,
+                        project,
+                        rho_coinc,
+                    )
+                    print(rho_coh)
+                    (
+                        null,
+                        rho_coh,
+                        rho_coinc,
+                        coinc_idx,
+                        coinc_triggers,
+                    ) = coh.null_snr(
+                        rho_coh,
+                        rho_coinc,
+                        apply_cut=do_null_cut,
+                        null_min=null_min,
+                        null_grad=null_grad,
+                        null_step=null_step,
+                        snrv=coinc_triggers,
+                        index=coinc_idx,
+                    )
+                    print(null)
+
+                    found_trigger_time_geocenter = (
+                        coinc_idx[rho_coinc.argmax()]
+                        + segments["H1_lensed"][segment_index].cumulative_index
+                    ) / SAMPLE_RATE + GPS_START_SECONDS["H1_lensed"]
+                    print(found_trigger_time_geocenter)
+
+                    # consistency tests
+                    coherent_ifo_trigs = {
+                        ifo: snr_dict[ifo][coinc_idx_detector_frame[ifo]]
+                        for ifo in LENSED_INSTRUMENTS
+                    }
+
+                    # Calculate the powerchi2 values of remaining triggers
+                    # (this uses the SNR timeseries before the time delay,
+                    # so we undo it; the same holds for normalisation)
+                    chisq = {}
+                    chisq_dof = {}
+                    for ifo in LENSED_INSTRUMENTS:
+                        chisq[ifo], chisq_dof[ifo] = power_chisq.values(
+                            corr_dict[ifo],
+                            coherent_ifo_trigs[ifo] / norm_dict[ifo],
+                            norm_dict[ifo],
+                            stilde[ifo].psd,
+                            coinc_idx_detector_frame[ifo],
+                            template,
+                        )
+                    print(chisq)
+                    network_chisq_values = coh.network_chisq(
+                        chisq, chisq_dof, coherent_ifo_trigs
+                    )
+                    print(network_chisq_values)
+
+                    reweighted_snr = ranking.newsnr(
+                        rho_coh,
+                        network_chisq_values,
+                        q=chisq_index,
+                        n=chisq_nhigh,
+                    )
+                    print(reweighted_snr)
+
+                    reweighted_by_null_snr = coh.reweight_snr_by_null(
+                        reweighted_snr,
+                        null,
+                        rho_coh,
+                        null_min=null_min,
+                        null_grad=null_grad,
+                        null_step=null_step,
+                    )
+                    print(reweighted_by_null_snr)

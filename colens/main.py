@@ -58,7 +58,7 @@ UPSAMPLE_METHOD = "pruned_fft"
 BANK_FILE = "gw170729_single_template.hdf"
 ORDER = "-1"
 TAPER_TEMPLATE = None
-APPROXIMANT = "IMRPhenomD"
+APPROXIMANT = "IMRPhenomXPHM"
 COINC_THRESHOLD = 0.0
 DO_NULL_CUT = False
 NULL_MIN = 5.25
@@ -108,6 +108,7 @@ def create_injections(injection_parameters: dict[str, float]):
         end_time=GPS_END_SECONDS["H1"] + PAD_SECONDS,
         low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
         seed=1,
+        approximant=APPROXIMANT,
     )
     optimal_snrs = return_value[0]
     matched_filter_snrs = return_value[1]
@@ -121,6 +122,7 @@ def create_injections(injection_parameters: dict[str, float]):
         end_time=GPS_END_SECONDS["H1_lensed"] + PAD_SECONDS,
         low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
         seed=2,
+        approximant=APPROXIMANT,
     )
     optimal_snrs += return_value[0]
     matched_filter_snrs += return_value[1]

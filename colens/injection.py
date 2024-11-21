@@ -5,7 +5,13 @@ from pycbc.types.timeseries import TimeSeries
 
 
 def get_strain_list_from_simulation(
-    injection_parameters, ifo_names, start_time, end_time, low_frequency_cutoff, seed
+    injection_parameters,
+    ifo_names,
+    start_time,
+    end_time,
+    low_frequency_cutoff,
+    seed,
+    approximant,
 ):
     sampling_frequency = 4096.0
     duration = end_time - start_time
@@ -14,7 +20,7 @@ def get_strain_list_from_simulation(
     bilby.core.utils.random.seed(seed)
 
     waveform_arguments = dict(
-        waveform_approximant="IMRPhenomD",
+        waveform_approximant=approximant,
         reference_frequency=50.0,
         minimum_frequency=low_frequency_cutoff,
     )

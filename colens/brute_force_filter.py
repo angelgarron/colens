@@ -109,6 +109,7 @@ def brute_force_filter_template(
     TIME_GPS_PAST_SECONDS,
     TIME_GPS_FUTURE_SECONDS,
 ):
+    # TODO loop over segments
     # get the single detector snrs
     segment_index = 0
     stilde = {ifo: segments[ifo][segment_index] for ifo in instruments}
@@ -259,7 +260,7 @@ def brute_force_filter_template(
                         coinc_threshold,
                         time_delay_idx[time_slide_index][sky_position_index],
                     )
-                    print(rho_coinc)
+                    logging.info(rho_coinc)
 
                     (
                         rho_coh,
@@ -275,7 +276,7 @@ def brute_force_filter_template(
                         project,
                         rho_coinc,
                     )
-                    print(rho_coh)
+                    logging.info(rho_coh)
                     (
                         null,
                         rho_coh,
@@ -292,13 +293,13 @@ def brute_force_filter_template(
                         snrv=coinc_triggers,
                         index=coinc_idx,
                     )
-                    print(null)
+                    logging.info(null)
 
                     found_trigger_time_geocenter = (
                         coinc_idx[rho_coinc.argmax()]
                         + segments["H1_lensed"][segment_index].cumulative_index
                     ) / SAMPLE_RATE + GPS_START_SECONDS["H1_lensed"]
-                    print(found_trigger_time_geocenter)
+                    logging.info(found_trigger_time_geocenter)
 
                     # consistency tests
                     coherent_ifo_trigs = {
@@ -320,11 +321,11 @@ def brute_force_filter_template(
                             coinc_idx_detector_frame[ifo],
                             template,
                         )
-                    print(chisq)
+                    logging.info(chisq)
                     network_chisq_values = coh.network_chisq(
                         chisq, chisq_dof, coherent_ifo_trigs
                     )
-                    print(network_chisq_values)
+                    logging.info(network_chisq_values)
 
                     reweighted_snr = ranking.newsnr(
                         rho_coh,
@@ -332,7 +333,7 @@ def brute_force_filter_template(
                         q=chisq_index,
                         n=chisq_nhigh,
                     )
-                    print(reweighted_snr)
+                    logging.info(reweighted_snr)
 
                     reweighted_by_null_snr = coh.reweight_snr_by_null(
                         reweighted_snr,
@@ -342,4 +343,4 @@ def brute_force_filter_template(
                         null_grad=null_grad,
                         null_step=null_step,
                     )
-                    print(reweighted_by_null_snr)
+                    logging.info(reweighted_by_null_snr)

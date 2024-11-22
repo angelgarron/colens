@@ -12,6 +12,7 @@ from colens.background import (
 from colens.coincident import get_coinc_indexes
 from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_ifos
+from colens.io import write_to_json
 
 
 def null_snr(
@@ -290,3 +291,13 @@ def brute_force_filter_template(
                         null_step=null_step,
                     )
                     logging.info(reweighted_by_null_snr)
+
+    output_data = {
+        "H1": {
+            "snr_real": np.array(snr_dict["H1"]).real,
+            "snr_imag": np.array(snr_dict["H1"]).imag,
+        }
+    }
+    output_file = "results.json"
+    logging.info(f"Saving the data to {output_file}")
+    write_to_json(output_file, output_data)

@@ -1,7 +1,11 @@
 """Functions to manage loading and saving data."""
 
+import json
+
 import h5py
 from pycbc.frame import read_frame
+
+from colens.data import NumpyArrayEncoder
 
 
 def get_strain_dict_from_files(
@@ -52,3 +56,8 @@ def create_filter_bank(
             file.create_dataset(
                 key, data=[value], compression="gzip", compression_opts=9, shuffle=True
             )
+
+
+def write_to_json(output_file, data):
+    with open(output_file, "w") as file:
+        json.dump(data, file, cls=NumpyArrayEncoder, indent=4)

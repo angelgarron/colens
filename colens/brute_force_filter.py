@@ -369,14 +369,18 @@ def brute_force_filter_template(
                     )
                     for ifo in instruments:
                         output_data[ifo]["sigma"].append(sigma[ifo])
-                        output_data[ifo]["chisq_dof"].append(chisq_dof[ifo])
-                        output_data[ifo]["chisq"].append(chisq[ifo])
-                    output_data["rho_coinc"].append(rho_coinc)
-                    output_data["rho_coh"].append(rho_coh)
-                    output_data["null"].append(null)
-                    output_data["network_chisq_values"].append(network_chisq_values)
-                    output_data["reweighted_snr"].append(reweighted_snr)
-                    output_data["reweighted_by_null_snr"].append(reweighted_by_null_snr)
+                        output_data[ifo]["chisq_dof"].append(float(chisq_dof[ifo][0]))
+                        output_data[ifo]["chisq"].append(float(chisq[ifo][0]))
+                    output_data["rho_coinc"].append(float(rho_coinc[0]))
+                    output_data["rho_coh"].append(float(rho_coh[0]))
+                    output_data["null"].append(float(null[0]))
+                    output_data["network_chisq_values"].append(
+                        float(network_chisq_values[0])
+                    )
+                    output_data["reweighted_snr"].append(float(reweighted_snr[0]))
+                    output_data["reweighted_by_null_snr"].append(
+                        float(reweighted_by_null_snr[0])
+                    )
 
     output_file = "results.json"
     logging.info(f"Saving the data to {output_file}")

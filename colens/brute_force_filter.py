@@ -108,27 +108,33 @@ def brute_force_filter_template(
             "snr_real": [],
             "snr_imag": [],
             "sigma": [],
+            "chisq_dof": [],
+            "chisq": [],
         },
         "L1": {
             "snr_real": [],
             "snr_imag": [],
             "sigma": [],
+            "chisq_dof": [],
+            "chisq": [],
         },
         "H1_lensed": {
             "snr_real": [],
             "snr_imag": [],
             "sigma": [],
+            "chisq_dof": [],
+            "chisq": [],
         },
         "L1_lensed": {
             "snr_real": [],
             "snr_imag": [],
             "sigma": [],
+            "chisq_dof": [],
+            "chisq": [],
         },
         "rho_coinc": [],
         "rho_coh": [],
         "null": [],
-        "chisq_dof": [],
-        "chisq": [],
         "network_chisq_values": [],
         "reweighted_snr": [],
         "reweighted_by_null_snr": [],
@@ -361,15 +367,13 @@ def brute_force_filter_template(
                     output_data["L1_lensed"]["snr_imag"].append(
                         float(snr_L1_at_trigger_lensed.imag)
                     )
-                    output_data["H1"]["sigma"].append(sigma["H1"])
-                    output_data["L1"]["sigma"].append(sigma["L1"])
-                    output_data["H1_lensed"]["sigma"].append(sigma["H1_lensed"])
-                    output_data["L1_lensed"]["sigma"].append(sigma["L1_lensed"])
+                    for ifo in instruments:
+                        output_data[ifo]["sigma"].append(sigma[ifo])
+                        output_data[ifo]["chisq_dof"].append(chisq_dof[ifo])
+                        output_data[ifo]["chisq"].append(chisq[ifo])
                     output_data["rho_coinc"].append(rho_coinc)
                     output_data["rho_coh"].append(rho_coh)
                     output_data["null"].append(null)
-                    output_data["chisq_dof"].append(chisq_dof)
-                    output_data["chisq"].append(chisq)
                     output_data["network_chisq_values"].append(network_chisq_values)
                     output_data["reweighted_snr"].append(reweighted_snr)
                     output_data["reweighted_by_null_snr"].append(reweighted_by_null_snr)

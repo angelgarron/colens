@@ -9,63 +9,12 @@ from colens.background import (
     get_time_delay_indices,
     get_time_slides_seconds,
 )
-from colens.coincident import get_coinc_indexes
+from colens.coherent import coherent_snr
+from colens.coincident import coincident_snr, get_coinc_indexes
 from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_ifos
 from colens.io import write_to_json
-
-
-def null_snr(
-    rho_coh,
-    rho_coinc,
-):
-    # Calculate null SNRs
-    null2 = rho_coinc**2 - rho_coh**2
-    # Numerical errors may make this negative and break the sqrt, so set
-    # negative values to 0.
-    null2[null2 < 0] = 0
-    null = null2**0.5
-    return null
-
-
-def coherent_snr(
-    snr_H1_at_trigger_original,
-    snr_L1_at_trigger_original,
-    snr_H1_at_trigger_lensed,
-    snr_L1_at_trigger_lensed,
-    projection_matrix,
-):
-    # Calculate rho_coh
-    snr_array = np.array(
-        [
-            [snr_H1_at_trigger_original],
-            [snr_H1_at_trigger_lensed],
-            [snr_L1_at_trigger_original],
-            [snr_L1_at_trigger_lensed],
-        ]
-    )
-    snr_proj = np.inner(snr_array.conj().transpose(), projection_matrix)
-    rho_coh2 = sum(snr_proj.transpose() * snr_array)
-    rho_coh = abs(np.sqrt(rho_coh2))
-    return rho_coh
-
-
-def coincident_snr(
-    snr_H1_at_trigger_original,
-    snr_L1_at_trigger_original,
-    snr_H1_at_trigger_lensed,
-    snr_L1_at_trigger_lensed,
-):
-    snr_array = np.array(
-        [
-            [snr_H1_at_trigger_original],
-            [snr_H1_at_trigger_lensed],
-            [snr_L1_at_trigger_original],
-            [snr_L1_at_trigger_lensed],
-        ]
-    )
-    rho_coinc = abs(np.sqrt(np.sum(snr_array * snr_array.conj(), axis=0)))
-    return rho_coinc
+from colens.null import null_snr
 
 
 def brute_force_filter_template(

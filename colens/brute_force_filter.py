@@ -107,20 +107,23 @@ def brute_force_filter_template(
         "H1": {
             "snr_real": [],
             "snr_imag": [],
+            "sigma": [],
         },
         "L1": {
             "snr_real": [],
             "snr_imag": [],
+            "sigma": [],
         },
         "H1_lensed": {
             "snr_real": [],
             "snr_imag": [],
+            "sigma": [],
         },
         "L1_lensed": {
             "snr_real": [],
             "snr_imag": [],
+            "sigma": [],
         },
-        "sigma": [],
         "rho_coinc": [],
         "rho_coh": [],
         "null": [],
@@ -358,7 +361,10 @@ def brute_force_filter_template(
                     output_data["L1_lensed"]["snr_imag"].append(
                         float(snr_L1_at_trigger_lensed.imag)
                     )
-                    output_data["sigma"].append(sigma)
+                    output_data["H1"]["sigma"].append(sigma["H1"])
+                    output_data["L1"]["sigma"].append(sigma["L1"])
+                    output_data["H1_lensed"]["sigma"].append(sigma["H1_lensed"])
+                    output_data["L1_lensed"]["sigma"].append(sigma["L1_lensed"])
                     output_data["rho_coinc"].append(rho_coinc)
                     output_data["rho_coh"].append(rho_coh)
                     output_data["null"].append(null)

@@ -97,7 +97,40 @@ def brute_force_filter_template(
     TIME_GPS_PAST_SECONDS,
     TIME_GPS_FUTURE_SECONDS,
 ):
-    # TODO loop over segments
+    output_data = {
+        "original_trigger_time_seconds": [],
+        "lensed_trigger_time_seconds": [],
+        "sky_position": {
+            "ra": [],
+            "dec": [],
+        },
+        "H1": {
+            "snr_real": [],
+            "snr_imag": [],
+        },
+        "L1": {
+            "snr_real": [],
+            "snr_imag": [],
+        },
+        "H1_lensed": {
+            "snr_real": [],
+            "snr_imag": [],
+        },
+        "L1_lensed": {
+            "snr_real": [],
+            "snr_imag": [],
+        },
+        "sigma": [],
+        "rho_coinc": [],
+        "rho_coh": [],
+        "null": [],
+        "chisq_dof": [],
+        "chisq": [],
+        "network_chisq_values": [],
+        "reweighted_snr": [],
+        "reweighted_by_null_snr": [],
+    }
+    # TODO loop over segments (or maybe we just create a big segment)
     # get the single detector snrs
     segment_index = 0
     stilde = {ifo: segments[ifo][segment_index] for ifo in instruments}
@@ -292,12 +325,49 @@ def brute_force_filter_template(
                     )
                     logging.info(reweighted_by_null_snr)
 
-    output_data = {
-        "H1": {
-            "snr_real": np.array(snr_dict["H1"]).real,
-            "snr_imag": np.array(snr_dict["H1"]).imag,
-        }
-    }
+                    # writting output
+                    output_data["original_trigger_time_seconds"].append(
+                        original_trigger_time_seconds
+                    )
+                    output_data["lensed_trigger_time_seconds"].append(
+                        lensed_trigger_time_seconds
+                    )
+                    output_data["sky_position"]["ra"].append(sky_position.ra)
+                    output_data["sky_position"]["dec"].append(sky_position.dec)
+                    output_data["H1"]["snr_real"].append(
+                        float(snr_H1_at_trigger_original.real)
+                    )
+                    output_data["H1"]["snr_imag"].append(
+                        float(snr_H1_at_trigger_original.imag)
+                    )
+                    output_data["L1"]["snr_real"].append(
+                        float(snr_L1_at_trigger_original.real)
+                    )
+                    output_data["L1"]["snr_imag"].append(
+                        float(snr_L1_at_trigger_original.imag)
+                    )
+                    output_data["H1_lensed"]["snr_real"].append(
+                        float(snr_H1_at_trigger_lensed.real)
+                    )
+                    output_data["H1_lensed"]["snr_imag"].append(
+                        float(snr_H1_at_trigger_lensed.imag)
+                    )
+                    output_data["L1_lensed"]["snr_real"].append(
+                        float(snr_L1_at_trigger_lensed.real)
+                    )
+                    output_data["L1_lensed"]["snr_imag"].append(
+                        float(snr_L1_at_trigger_lensed.imag)
+                    )
+                    output_data["sigma"].append(sigma)
+                    output_data["rho_coinc"].append(rho_coinc)
+                    output_data["rho_coh"].append(rho_coh)
+                    output_data["null"].append(null)
+                    output_data["chisq_dof"].append(chisq_dof)
+                    output_data["chisq"].append(chisq)
+                    output_data["network_chisq_values"].append(network_chisq_values)
+                    output_data["reweighted_snr"].append(reweighted_snr)
+                    output_data["reweighted_by_null_snr"].append(reweighted_by_null_snr)
+
     output_file = "results.json"
     logging.info(f"Saving the data to {output_file}")
     write_to_json(output_file, output_data)

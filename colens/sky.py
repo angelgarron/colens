@@ -10,7 +10,7 @@ from colens.transformations import cart_to_spher, spher_to_cart
 
 
 @dataclass
-class SkyCoordinate:
+class SkyCoordinates:
     ra: float
     dec: float
 
@@ -25,7 +25,7 @@ class SkyGrid:
             raise ValueError("ra and dec must have the same length")
 
     def __getitem__(self, index):
-        return SkyCoordinate(self.ra[index], self.dec[index])
+        return SkyCoordinates(self.ra[index], self.dec[index])
 
     def __len__(self):
         return len(self.ra)

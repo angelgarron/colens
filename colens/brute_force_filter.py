@@ -131,83 +131,91 @@ def brute_force_filter_template(
                 time_slides_seconds,
             )
 
-            # loop over sky positions
-            for sky_position_index, sky_position in enumerate(sky_grid):
-                index_trigger_H1_original = int(
-                    (
-                        original_trigger_time_seconds
-                        + time_delay_zerolag_seconds[sky_position_index]["H1"]
-                        - GPS_START_SECONDS["H1"]
+            # Loop over (short) time-slides, staring with the zero-lag
+            for time_slide_index in range(num_slides):
+                # loop over sky positions
+                for sky_position_index, sky_position in enumerate(sky_grid):
+                    index_trigger_H1_original = int(
+                        (
+                            original_trigger_time_seconds
+                            + time_delay_zerolag_seconds[sky_position_index]["H1"]
+                            - GPS_START_SECONDS["H1"]
+                        )
+                        * SAMPLE_RATE
+                        - segments["H1"][segment_index].cumulative_index
                     )
-                    * SAMPLE_RATE
-                    - segments["H1"][segment_index].cumulative_index
-                )
 
-                index_trigger_L1_original = int(
-                    (
-                        original_trigger_time_seconds
-                        + time_delay_zerolag_seconds[sky_position_index]["L1"]
-                        - GPS_START_SECONDS["L1"]
+                    index_trigger_L1_original = int(
+                        (
+                            original_trigger_time_seconds
+                            + time_delay_zerolag_seconds[sky_position_index]["L1"]
+                            - GPS_START_SECONDS["L1"]
+                        )
+                        * SAMPLE_RATE
+                        - segments["L1"][segment_index].cumulative_index
                     )
-                    * SAMPLE_RATE
-                    - segments["L1"][segment_index].cumulative_index
-                )
-                index_trigger_H1_lensed = int(
-                    (
-                        lensed_trigger_time_seconds
-                        + time_delay_zerolag_seconds[sky_position_index]["H1_lensed"]
-                        - GPS_START_SECONDS["H1_lensed"]
+                    index_trigger_H1_lensed = int(
+                        (
+                            lensed_trigger_time_seconds
+                            + time_delay_zerolag_seconds[sky_position_index][
+                                "H1_lensed"
+                            ]
+                            - GPS_START_SECONDS["H1_lensed"]
+                        )
+                        * SAMPLE_RATE
+                        - segments["H1_lensed"][segment_index].cumulative_index
                     )
-                    * SAMPLE_RATE
-                    - segments["H1_lensed"][segment_index].cumulative_index
-                )
-                index_trigger_L1_lensed = int(
-                    (
-                        lensed_trigger_time_seconds
-                        + time_delay_zerolag_seconds[sky_position_index]["L1_lensed"]
-                        - GPS_START_SECONDS["L1_lensed"]
+                    index_trigger_L1_lensed = int(
+                        (
+                            lensed_trigger_time_seconds
+                            + time_delay_zerolag_seconds[sky_position_index][
+                                "L1_lensed"
+                            ]
+                            - GPS_START_SECONDS["L1_lensed"]
+                        )
+                        * SAMPLE_RATE
+                        - segments["L1_lensed"][segment_index].cumulative_index
                     )
-                    * SAMPLE_RATE
-                    - segments["L1_lensed"][segment_index].cumulative_index
-                )
 
-                snr_H1_at_trigger_original = snr_dict["H1"][index_trigger_H1_original]
-                snr_L1_at_trigger_original = snr_dict["L1"][index_trigger_L1_original]
-                snr_H1_at_trigger_lensed = snr_dict["H1_lensed"][
-                    index_trigger_H1_lensed
-                ]
-                snr_L1_at_trigger_lensed = snr_dict["L1_lensed"][
-                    index_trigger_L1_lensed
-                ]
+                    snr_H1_at_trigger_original = snr_dict["H1"][
+                        index_trigger_H1_original
+                    ]
+                    snr_L1_at_trigger_original = snr_dict["L1"][
+                        index_trigger_L1_original
+                    ]
+                    snr_H1_at_trigger_lensed = snr_dict["H1_lensed"][
+                        index_trigger_H1_lensed
+                    ]
+                    snr_L1_at_trigger_lensed = snr_dict["L1_lensed"][
+                        index_trigger_L1_lensed
+                    ]
 
-                logging.info(
-                    f"The coincident snr is {(abs(snr_H1_at_trigger_original) ** 2 + abs(snr_L1_at_trigger_original) ** 2) ** 0.5}"
-                )
+                    logging.info(
+                        f"The coincident snr is {(abs(snr_H1_at_trigger_original) ** 2 + abs(snr_L1_at_trigger_original) ** 2) ** 0.5}"
+                    )
 
-                sigmasq = {
-                    ifo: template.sigmasq(segments[ifo][segment_index].psd)
-                    for ifo in instruments
-                }
-                sigma = {ifo: np.sqrt(sigmasq[ifo]) for ifo in instruments}
+                    sigmasq = {
+                        ifo: template.sigmasq(segments[ifo][segment_index].psd)
+                        for ifo in instruments
+                    }
+                    sigma = {ifo: np.sqrt(sigmasq[ifo]) for ifo in instruments}
 
-                antenna_pattern = calculate_antenna_pattern(
-                    sky_grid, trigger_times_seconds
-                )
+                    antenna_pattern = calculate_antenna_pattern(
+                        sky_grid, trigger_times_seconds
+                    )
 
-                fp = {
-                    ifo: antenna_pattern[ifo][sky_position_index][0]
-                    for ifo in instruments
-                }
-                fc = {
-                    ifo: antenna_pattern[ifo][sky_position_index][1]
-                    for ifo in instruments
-                }
-                project = coh.get_projection_matrix(
-                    fp, fc, sigma, projection="standard"
-                )
+                    fp = {
+                        ifo: antenna_pattern[ifo][sky_position_index][0]
+                        for ifo in instruments
+                    }
+                    fc = {
+                        ifo: antenna_pattern[ifo][sky_position_index][1]
+                        for ifo in instruments
+                    }
+                    project = coh.get_projection_matrix(
+                        fp, fc, sigma, projection="standard"
+                    )
 
-                # Loop over (short) time-slides, staring with the zero-lag
-                for time_slide_index in range(num_slides):
                     rho_coinc = coincident_snr(
                         snr_H1_at_trigger_original,
                         snr_L1_at_trigger_original,

@@ -92,6 +92,11 @@ def brute_force_filter_template(
         instruments, template, matched_filter, segment_index, stilde
     )
 
+    sigmasq = {
+        ifo: template.sigmasq(segments[ifo][segment_index].psd) for ifo in instruments
+    }
+    sigma = {ifo: np.sqrt(sigmasq[ifo]) for ifo in instruments}
+
     # loop over original geocentric trigger time
     for original_trigger_time_seconds in np.arange(
         TIME_GPS_PAST_SECONDS - 0.001,
@@ -191,12 +196,6 @@ def brute_force_filter_template(
                     logging.info(
                         f"The coincident snr is {(abs(snr_H1_at_trigger_original) ** 2 + abs(snr_L1_at_trigger_original) ** 2) ** 0.5}"
                     )
-
-                    sigmasq = {
-                        ifo: template.sigmasq(segments[ifo][segment_index].psd)
-                        for ifo in instruments
-                    }
-                    sigma = {ifo: np.sqrt(sigmasq[ifo]) for ifo in instruments}
 
                     fp = {
                         ifo: antenna_pattern[ifo][sky_position_index][0]

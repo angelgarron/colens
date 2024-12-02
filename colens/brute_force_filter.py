@@ -127,6 +127,8 @@ def brute_force_filter_template(
                 time_slides_seconds,
             )
 
+            antenna_pattern = calculate_antenna_pattern(sky_grid, trigger_times_seconds)
+
             # Loop over (short) time-slides, staring with the zero-lag
             for time_slide_index in range(num_slides):
                 # loop over sky positions
@@ -195,10 +197,6 @@ def brute_force_filter_template(
                         for ifo in instruments
                     }
                     sigma = {ifo: np.sqrt(sigmasq[ifo]) for ifo in instruments}
-
-                    antenna_pattern = calculate_antenna_pattern(
-                        sky_grid, trigger_times_seconds
-                    )
 
                     fp = {
                         ifo: antenna_pattern[ifo][sky_position_index][0]

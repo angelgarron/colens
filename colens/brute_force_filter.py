@@ -45,6 +45,7 @@ def brute_force_filter_template(
     output_data = {
         "original_trigger_time_seconds": [],
         "lensed_trigger_time_seconds": [],
+        "time_slide_index": [],
         "sky_position": {
             "ra": [],
             "dec": [],
@@ -279,6 +280,7 @@ def brute_force_filter_template(
                     output_data["lensed_trigger_time_seconds"].append(
                         lensed_trigger_time_seconds
                     )
+                    output_data["time_slide_index"].append(time_slide_index)
                     output_data["sky_position"]["ra"].append(sky_position.ra)
                     output_data["sky_position"]["dec"].append(sky_position.dec)
                     output_data["H1"]["snr_real"].append(

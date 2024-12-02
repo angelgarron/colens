@@ -333,5 +333,5 @@ def brute_force_filter_template(
                     )
 
     output_file = "results.json"
-    logging.info(f"Saving the data to {output_file}")
+    logging.info(f"Saving results to {output_file}")
     write_to_json(output_file, output_data)

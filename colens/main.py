@@ -18,7 +18,6 @@ from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_template
 from colens.injection import get_strain_list_from_simulation
 from colens.io import create_filter_bank, get_strain_dict_from_files
-from colens.manager import MyEventManagerCoherent
 from colens.psd import associate_psd_to_segments
 from colens.sky import get_circular_sky_patch
 from colens.strain import process_strain_dict
@@ -289,60 +288,6 @@ def main():
         for seg in segments[ifo]:
             seg /= seg.psd
 
-    logging.info("Setting up event manager")
-    ifo_out_types = {
-        "time_index": int,
-        "ifo": int,  # IFO is stored as an int internally!
-        "snr": complex64,
-        "chisq": float32,
-        "chisq_dof": int,
-        "slide_id": int,
-    }
-    ifo_names = sorted(
-        [
-            "time_index",
-            "ifo",
-            "snr",
-            "chisq",
-            "chisq_dof",
-            "slide_id",
-        ]
-    )
-    network_out_types = {
-        "dec": float32,
-        "ra": float32,
-        "time_index": int,
-        "coherent_snr": float32,
-        "null_snr": float32,
-        "nifo": int,
-        "my_network_chisq": float32,
-        "reweighted_snr": float32,
-        "slide_id": int,
-    }
-    network_names = sorted(
-        [
-            "dec",
-            "ra",
-            "time_index",
-            "coherent_snr",
-            "null_snr",
-            "nifo",
-            "my_network_chisq",
-            "reweighted_snr",
-            "slide_id",
-        ]
-    )
-    event_mgr = MyEventManagerCoherent(
-        [],
-        INSTRUMENTS,
-        ifo_names,
-        [ifo_out_types[n] for n in ifo_names],
-        network_names,
-        [network_out_types[n] for n in network_names],
-        segments=segments,
-        time_slides=time_slides_seconds,
-    )
-
     logging.info("Read in template bank")
     bank = waveform.FilterBank(
         BANK_FILE,
@@ -365,23 +310,19 @@ def main():
             segments,
             INSTRUMENTS,
             template,
-            event_mgr,
             matched_filter,
             num_slides,
             LENSED_INSTRUMENTS,
             COINC_THRESHOLD,
-            DO_NULL_CUT,
             NULL_MIN,
             NULL_GRAD,
             NULL_STEP,
             power_chisq,
             CHISQ_INDEX,
             CHISQ_NHIGH,
-            ifo_names,
             sky_grid,
             CLUSTER_WINDOW,
             SAMPLE_RATE,
-            network_names,
             SLIDE_SHIFT_SECONDS,
             UNLENSED_INSTRUMENTS,
             LENSED_INSTRUMENTS,

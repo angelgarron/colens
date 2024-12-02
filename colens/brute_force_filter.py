@@ -139,44 +139,32 @@ def brute_force_filter_template(
                 # loop over sky positions
                 for sky_position_index, sky_position in enumerate(sky_grid):
                     index_trigger_H1_original = int(
-                        (
-                            original_trigger_time_seconds
-                            + time_delay_zerolag_seconds[sky_position_index]["H1"]
-                            - GPS_START_SECONDS["H1"]
-                        )
+                        (original_trigger_time_seconds - GPS_START_SECONDS["H1"])
                         * SAMPLE_RATE
+                        + time_delay_idx[time_slide_index][sky_position_index]["H1"]
                         - segments["H1"][segment_index].cumulative_index
                     )
 
                     index_trigger_L1_original = int(
-                        (
-                            original_trigger_time_seconds
-                            + time_delay_zerolag_seconds[sky_position_index]["L1"]
-                            - GPS_START_SECONDS["L1"]
-                        )
+                        (original_trigger_time_seconds - GPS_START_SECONDS["L1"])
                         * SAMPLE_RATE
+                        + time_delay_idx[time_slide_index][sky_position_index]["L1"]
                         - segments["L1"][segment_index].cumulative_index
                     )
                     index_trigger_H1_lensed = int(
-                        (
-                            lensed_trigger_time_seconds
-                            + time_delay_zerolag_seconds[sky_position_index][
-                                "H1_lensed"
-                            ]
-                            - GPS_START_SECONDS["H1_lensed"]
-                        )
+                        (lensed_trigger_time_seconds - GPS_START_SECONDS["H1_lensed"])
                         * SAMPLE_RATE
+                        + time_delay_idx[time_slide_index][sky_position_index][
+                            "H1_lensed"
+                        ]
                         - segments["H1_lensed"][segment_index].cumulative_index
                     )
                     index_trigger_L1_lensed = int(
-                        (
-                            lensed_trigger_time_seconds
-                            + time_delay_zerolag_seconds[sky_position_index][
-                                "L1_lensed"
-                            ]
-                            - GPS_START_SECONDS["L1_lensed"]
-                        )
+                        (lensed_trigger_time_seconds - GPS_START_SECONDS["L1_lensed"])
                         * SAMPLE_RATE
+                        + time_delay_idx[time_slide_index][sky_position_index][
+                            "L1_lensed"
+                        ]
                         - segments["L1_lensed"][segment_index].cumulative_index
                     )
 

@@ -1,9 +1,10 @@
 """Functions used to inject simulated signals."""
 
 import bilby
+import numpy as np
 from pycbc.detector import Detector
 from pycbc.types.timeseries import TimeSeries
-from pycbc.waveform import get_td_waveform
+from pycbc.waveform import get_fd_waveform, get_td_waveform
 
 
 def get_strain_list_from_simulation(
@@ -59,7 +60,6 @@ def get_strain_list_from_simulation(
                 injection_parameters,
                 low_frequency_cutoff,
                 approximant,
-                injection_parameters["geocent_time"],
                 ifo_names[i],
             )
             strain_tmp = strain_tmp.inject(signal)
@@ -72,10 +72,9 @@ def _get_signal_from_pycbc(
     injection_parameters,
     low_frequency_cutoff,
     approximant,
-    end_time,
     ifo,
 ):
-    hp, hc = get_td_waveform(
+    hp, hc = get_fd_waveform(
         approximant=approximant,
         mass1=injection_parameters["mass_1"],
         mass2=injection_parameters["mass_2"],
@@ -83,16 +82,31 @@ def _get_signal_from_pycbc(
         spin2z=injection_parameters["a_2"],
         inclination=injection_parameters["theta_jn"],
         coa_phase=injection_parameters["phase"],
+        distance=injection_parameters["luminosity_distance"],
+        f_ref=50.0,
         delta_t=1.0 / 4096,
+        delta_f=0.0625,
         f_lower=low_frequency_cutoff,
+        f_final=2048.0,
     )
-    hp.start_time += end_time
-    hc.start_time += end_time
+
+    hp = hp.to_timeseries(delta_t=1.0 / 4096)
+    hc = hc.to_timeseries(delta_t=1.0 / 4096)
+    det = Detector(ifo)
 
     declination = injection_parameters["dec"]
     right_ascension = injection_parameters["ra"]
     polarization = injection_parameters["psi"]
 
-    det = Detector(ifo)
-    signal = det.project_wave(hp, hc, right_ascension, declination, polarization)
-    return signal / injection_parameters["luminosity_distance"]
+    signal = det.project_wave(
+        hp,
+        hc,
+        right_ascension,
+        declination,
+        polarization,
+        method="constant",
+        reference_time=injection_parameters["geocent_time"],
+    )
+    signal = signal.cyclic_time_shift(-10)
+    signal.start_time += injection_parameters["geocent_time"]
+    return signal

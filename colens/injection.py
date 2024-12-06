@@ -1,7 +1,9 @@
 """Functions used to inject simulated signals."""
 
 import bilby
+from pycbc.detector import Detector
 from pycbc.types.timeseries import TimeSeries
+from pycbc.waveform import get_td_waveform
 
 
 def get_strain_list_from_simulation(
@@ -12,6 +14,7 @@ def get_strain_list_from_simulation(
     low_frequency_cutoff,
     seed,
     approximant,
+    inject_from_pycbc=False,
 ):
     sampling_frequency = 4096.0
     duration = end_time - start_time
@@ -34,27 +37,62 @@ def get_strain_list_from_simulation(
     )
 
     ifos = bilby.gw.detector.InterferometerList(ifo_names)
-    ifos.set_strain_data_from_power_spectral_densities(
+    ifos.set_strain_data_from_zero_noise(
         sampling_frequency=sampling_frequency,
         duration=duration,
         start_time=start_time,
     )
 
-    ifos.inject_signal(
-        waveform_generator=waveform_generator, parameters=injection_parameters
-    )
+    if not inject_from_pycbc:
+        ifos.inject_signal(
+            waveform_generator=waveform_generator, parameters=injection_parameters
+        )
     strains = []
     for i in range(len(ifo_names)):
+        signal = _get_strain_list_from_pycbc_injection(
+            injection_parameters,
+            low_frequency_cutoff,
+            approximant,
+            injection_parameters["geocent_time"],
+            ifo_names[i],
+        )
         strain_tmp = TimeSeries(
             initial_array=ifos[i].time_domain_strain,
             delta_t=ifos[i].time_array[1] - ifos[i].time_array[0],
             epoch=start_time,
         )
+        if inject_from_pycbc:
+            strain_tmp = strain_tmp.inject(signal)
         strains.append(strain_tmp)
-    optimal_snrs = [ifos.meta_data[ifo_name]["optimal_SNR"] for ifo_name in ifo_names]
 
-    matched_filter_snrs = [
-        ifos.meta_data[ifo_name]["matched_filter_SNR"] for ifo_name in ifo_names
-    ]
+    return strains
 
-    return optimal_snrs, matched_filter_snrs, strains
+
+def _get_strain_list_from_pycbc_injection(
+    injection_parameters,
+    low_frequency_cutoff,
+    approximant,
+    end_time,
+    ifo,
+):
+    hp, hc = get_td_waveform(
+        approximant=approximant,
+        mass1=injection_parameters["mass_1"],
+        mass2=injection_parameters["mass_2"],
+        spinz1=injection_parameters["a_1"],
+        spinz2=injection_parameters["a_2"],
+        inclination=injection_parameters["theta_jn"],
+        coa_phase=injection_parameters["phase"],
+        delta_t=1.0 / 4096,
+        f_lower=low_frequency_cutoff,
+    )
+    hp.start_time += end_time
+    hc.start_time += end_time
+
+    declination = injection_parameters["dec"]
+    right_ascension = injection_parameters["ra"]
+    polarization = injection_parameters["psi"]
+
+    det = Detector(ifo)
+    signal = det.project_wave(hp, hc, right_ascension, declination, polarization)
+    return signal / injection_parameters["luminosity_distance"]

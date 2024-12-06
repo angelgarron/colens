@@ -49,19 +49,19 @@ def get_strain_list_from_simulation(
         )
     strains = []
     for i in range(len(ifo_names)):
-        signal = _get_signal_from_pycbc(
-            injection_parameters,
-            low_frequency_cutoff,
-            approximant,
-            injection_parameters["geocent_time"],
-            ifo_names[i],
-        )
         strain_tmp = TimeSeries(
             initial_array=ifos[i].time_domain_strain,
             delta_t=ifos[i].time_array[1] - ifos[i].time_array[0],
             epoch=start_time,
         )
         if inject_from_pycbc:
+            signal = _get_signal_from_pycbc(
+                injection_parameters,
+                low_frequency_cutoff,
+                approximant,
+                injection_parameters["geocent_time"],
+                ifo_names[i],
+            )
             strain_tmp = strain_tmp.inject(signal)
         strains.append(strain_tmp)
 

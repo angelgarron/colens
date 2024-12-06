@@ -49,7 +49,7 @@ def get_strain_list_from_simulation(
         )
     strains = []
     for i in range(len(ifo_names)):
-        signal = _get_strain_list_from_pycbc_injection(
+        signal = _get_signal_from_pycbc(
             injection_parameters,
             low_frequency_cutoff,
             approximant,
@@ -68,7 +68,7 @@ def get_strain_list_from_simulation(
     return strains
 
 
-def _get_strain_list_from_pycbc_injection(
+def _get_signal_from_pycbc(
     injection_parameters,
     low_frequency_cutoff,
     approximant,

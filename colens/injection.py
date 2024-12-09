@@ -6,6 +6,9 @@ from pycbc.detector import Detector
 from pycbc.types.timeseries import TimeSeries
 from pycbc.waveform import get_fd_waveform, get_td_waveform
 
+REFERENCE_FREQUENCY = 50.0
+SAMPLING_FREQUENCY = 4096.0
+
 
 def get_strain_list_from_simulation(
     injection_parameters,
@@ -17,7 +20,6 @@ def get_strain_list_from_simulation(
     approximant,
     inject_from_pycbc=False,
 ):
-    sampling_frequency = 4096.0
     duration = end_time - start_time
 
     # Set up a random seed for result reproducibility.  This is optional!
@@ -25,13 +27,13 @@ def get_strain_list_from_simulation(
 
     waveform_arguments = dict(
         waveform_approximant=approximant,
-        reference_frequency=50.0,
+        reference_frequency=REFERENCE_FREQUENCY,
         minimum_frequency=low_frequency_cutoff,
     )
 
     waveform_generator = bilby.gw.WaveformGenerator(
         duration=duration,
-        sampling_frequency=sampling_frequency,
+        sampling_frequency=SAMPLING_FREQUENCY,
         frequency_domain_source_model=bilby.gw.source.lal_binary_black_hole,
         parameter_conversion=bilby.gw.conversion.convert_to_lal_binary_black_hole_parameters,
         waveform_arguments=waveform_arguments,
@@ -39,7 +41,7 @@ def get_strain_list_from_simulation(
 
     ifos = bilby.gw.detector.InterferometerList(ifo_names)
     ifos.set_strain_data_from_zero_noise(
-        sampling_frequency=sampling_frequency,
+        sampling_frequency=SAMPLING_FREQUENCY,
         duration=duration,
         start_time=start_time,
     )
@@ -59,6 +61,8 @@ def get_strain_list_from_simulation(
             signal = _get_signal_from_pycbc(
                 injection_parameters,
                 low_frequency_cutoff,
+                REFERENCE_FREQUENCY,
+                SAMPLING_FREQUENCY,
                 approximant,
                 ifo_names[i],
             )
@@ -71,6 +75,8 @@ def get_strain_list_from_simulation(
 def _get_signal_from_pycbc(
     injection_parameters,
     low_frequency_cutoff,
+    reference_frequency,
+    sampling_frequency,
     approximant,
     ifo,
 ):
@@ -83,15 +89,14 @@ def _get_signal_from_pycbc(
         inclination=injection_parameters["theta_jn"],
         coa_phase=injection_parameters["phase"],
         distance=injection_parameters["luminosity_distance"],
-        f_ref=50.0,
-        delta_t=1.0 / 4096,
+        f_ref=reference_frequency,
         delta_f=0.0625,
         f_lower=low_frequency_cutoff,
         f_final=2048.0,
     )
 
-    hp = hp.to_timeseries(delta_t=1.0 / 4096)
-    hc = hc.to_timeseries(delta_t=1.0 / 4096)
+    hp = hp.to_timeseries(delta_t=1.0 / sampling_frequency)
+    hc = hc.to_timeseries(delta_t=1.0 / sampling_frequency)
     det = Detector(ifo)
 
     declination = injection_parameters["dec"]
@@ -107,6 +112,7 @@ def _get_signal_from_pycbc(
         method="constant",
         reference_time=injection_parameters["geocent_time"],
     )
+    # we don't want the zero time to be at the end of the array
     signal = signal.cyclic_time_shift(-10)
     signal.start_time += injection_parameters["geocent_time"]
     return signal

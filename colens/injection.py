@@ -19,6 +19,7 @@ def get_strain_list_from_simulation(
     seed,
     approximant,
     inject_from_pycbc=False,
+    is_zero_noise=False,
 ):
     duration = end_time - start_time
 
@@ -40,11 +41,18 @@ def get_strain_list_from_simulation(
     )
 
     ifos = bilby.gw.detector.InterferometerList(ifo_names)
-    ifos.set_strain_data_from_zero_noise(
-        sampling_frequency=SAMPLING_FREQUENCY,
-        duration=duration,
-        start_time=start_time,
-    )
+    if is_zero_noise:
+        ifos.set_strain_data_from_zero_noise(
+            sampling_frequency=SAMPLING_FREQUENCY,
+            duration=duration,
+            start_time=start_time,
+        )
+    else:
+        ifos.set_strain_data_from_power_spectral_densities(
+            sampling_frequency=SAMPLING_FREQUENCY,
+            duration=duration,
+            start_time=start_time,
+        )
 
     if not inject_from_pycbc:
         ifos.inject_signal(

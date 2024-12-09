@@ -1,7 +1,6 @@
 import logging
 
 import numpy as np
-from pesummary.gw import conversions
 from pycbc import init_logging, vetoes, waveform
 from pycbc.filter import MatchedFilterControl
 from pycbc.strain import StrainSegments
@@ -110,9 +109,7 @@ def create_injections(injection_parameters: dict[str, float]):
         seed=1,
         approximant=APPROXIMANT,
     )
-    optimal_snrs = return_value[0]
-    matched_filter_snrs = return_value[1]
-    strain_dict = dict(zip(["H1", "L1"], return_value[2]))
+    strain_dict = dict(zip(["H1", "L1"], return_value))
     # the lensed image
     injection_parameters["geocent_time"] = TIME_GPS_FUTURE_SECONDS
     return_value = get_strain_list_from_simulation(
@@ -124,27 +121,15 @@ def create_injections(injection_parameters: dict[str, float]):
         seed=2,
         approximant=APPROXIMANT,
     )
-    optimal_snrs += return_value[0]
-    matched_filter_snrs += return_value[1]
     strain_dict.update(
         dict(
             zip(
                 ["H1_lensed", "L1_lensed"],
-                return_value[2],
+                return_value,
             )
         )
     )
 
-    optimal_snrs = np.array(optimal_snrs)
-    matched_filter_snrs = np.array(matched_filter_snrs)
-
-    rho = conversions.network_matched_filter_snr(
-        abs(matched_filter_snrs),
-        optimal_snrs,
-    )
-    logging.info(f"NETWORK SNR {rho}")
-    rho = np.sqrt(sum(abs(matched_filter_snrs) ** 2))
-    logging.info(f"COINCIDENCE SNR {rho}")
     return strain_dict
 
 

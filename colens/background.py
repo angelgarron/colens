@@ -2,7 +2,6 @@
 
 import numpy as np
 
-from colens.detector import MyDetector
 from colens.sky import SkyGrid
 
 
@@ -42,6 +41,7 @@ def get_time_delay_at_zerolag_seconds(
     trigger_times_seconds: dict[str, int | float],
     sky_grid: SkyGrid,
     instruments: list[str],
+    detectors,
 ):
     """Compute the difference of arrival time between the earth center and each one of the `instruments` of a signal
     coming from each point in `sky_grid`, .i.e. (t_{instrument}-t_{center}).
@@ -54,7 +54,7 @@ def get_time_delay_at_zerolag_seconds(
     """
     time_delay_zerolag_seconds = [
         {
-            ifo: MyDetector(ifo).time_delay_from_earth_center(
+            ifo: detectors[ifo].time_delay_from_earth_center(
                 sky_position.ra,
                 sky_position.dec,
                 trigger_times_seconds[ifo],

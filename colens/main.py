@@ -8,6 +8,7 @@ from pycbc.types import complex64, float32, zeros
 
 from colens.background import slide_limiter
 from colens.brute_force_filter import brute_force_filter_template
+from colens.detector import MyDetector
 from colens.injection import get_strain_list_from_simulation
 from colens.io import create_filter_bank, get_strain_dict_from_files
 from colens.psd import associate_psd_to_segments
@@ -128,6 +129,8 @@ def create_injections(injection_parameters: dict[str, float]):
 
 def main():
     init_logging(True)
+
+    detectors = {ifo: MyDetector(ifo) for ifo in INSTRUMENTS}
 
     logging.info("Creating template bank")
     create_filter_bank(
@@ -269,6 +272,7 @@ def main():
     for t_num, template in enumerate(bank):
         logging.info("Filtering template %d/%d", t_num + 1, len(bank))
         brute_force_filter_template(
+            detectors,
             segments,
             INSTRUMENTS,
             template,

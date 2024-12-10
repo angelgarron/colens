@@ -18,6 +18,7 @@ from colens.null import null_snr
 
 
 def brute_force_filter_template(
+    detectors,
     segments,
     instruments,
     template,
@@ -120,6 +121,7 @@ def brute_force_filter_template(
                 trigger_times_seconds,
                 sky_grid,
                 instruments,
+                detectors,
             )
             time_slides_seconds = get_time_slides_seconds(
                 num_slides,
@@ -133,7 +135,9 @@ def brute_force_filter_template(
                 time_slides_seconds,
             )
 
-            antenna_pattern = calculate_antenna_pattern(sky_grid, trigger_times_seconds)
+            antenna_pattern = calculate_antenna_pattern(
+                detectors, sky_grid, trigger_times_seconds
+            )
 
             # Loop over (short) time-slides, staring with the zero-lag
             for time_slide_index in range(num_slides):

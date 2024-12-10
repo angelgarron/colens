@@ -6,15 +6,8 @@ from pycbc.filter import MatchedFilterControl
 from pycbc.strain import StrainSegments
 from pycbc.types import complex64, float32, zeros
 
-from colens.background import (
-    get_time_delay_at_zerolag_seconds,
-    get_time_delay_indices,
-    get_time_slides_seconds,
-    slide_limiter,
-)
+from colens.background import slide_limiter
 from colens.brute_force_filter import brute_force_filter_template
-from colens.detector import calculate_antenna_pattern
-from colens.filter import filter_template
 from colens.injection import get_strain_list_from_simulation
 from colens.io import create_filter_bank, get_strain_dict_from_files
 from colens.psd import associate_psd_to_segments
@@ -219,22 +212,6 @@ def main():
             frequency_length,
             delta_f,
         )
-
-    logging.info("Determining time slide shifts and time delays")
-
-    time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
-        TRIGGER_TIMES_SECONDS,
-        sky_grid,
-        INSTRUMENTS,
-    )
-    time_slides_seconds = get_time_slides_seconds(
-        num_slides, SLIDE_SHIFT_SECONDS, UNLENSED_INSTRUMENTS, LENSED_INSTRUMENTS
-    )
-    time_delay_idx = get_time_delay_indices(
-        SAMPLE_RATE,
-        time_delay_zerolag_seconds,
-        time_slides_seconds,
-    )
 
     logging.info("Setting up MatchedFilterControl at each IFO")
     template_mem = zeros(segment_length, dtype=complex64)

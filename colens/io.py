@@ -32,6 +32,7 @@ def create_filter_bank(
     bank_file: str,
     approximant: str,
     low_frequency_cutoff: float,
+    reference_frequency: float,
 ) -> None:
     """Create a file with the template bank.
 
@@ -43,6 +44,7 @@ def create_filter_bank(
         bank_file (str): File name where to store the template bank.
         approximant (str): Name of the waveform to use.
         low_frequency_cutoff (float): Low frequency cutoff.
+        reference_frequency (float): Reference frequency.
     """
     with h5py.File(bank_file, "w") as file:
         for key, value in {
@@ -52,6 +54,9 @@ def create_filter_bank(
             "mass2": mass2,
             "spin1z": spin1z,
             "spin2z": spin2z,
+            "delta_f": 0.0625,
+            "f_final": 2048.0,
+            "f_ref": reference_frequency,
         }.items():
             file.create_dataset(
                 key, data=[value], compression="gzip", compression_opts=9, shuffle=True

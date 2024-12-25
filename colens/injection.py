@@ -6,9 +6,6 @@ from pycbc.detector import Detector
 from pycbc.types.timeseries import TimeSeries
 from pycbc.waveform import get_fd_waveform, get_td_waveform
 
-REFERENCE_FREQUENCY = 50.0
-SAMPLING_FREQUENCY = 4096.0
-
 
 def get_strain_list_from_simulation(
     injection_parameters,
@@ -16,6 +13,8 @@ def get_strain_list_from_simulation(
     start_time,
     end_time,
     low_frequency_cutoff,
+    reference_frequency,
+    sampling_frequency,
     seed,
     approximant,
     inject_from_pycbc=False,
@@ -28,13 +27,13 @@ def get_strain_list_from_simulation(
 
     waveform_arguments = dict(
         waveform_approximant=approximant,
-        reference_frequency=REFERENCE_FREQUENCY,
+        reference_frequency=reference_frequency,
         minimum_frequency=low_frequency_cutoff,
     )
 
     waveform_generator = bilby.gw.WaveformGenerator(
         duration=duration,
-        sampling_frequency=SAMPLING_FREQUENCY,
+        sampling_frequency=sampling_frequency,
         frequency_domain_source_model=bilby.gw.source.lal_binary_black_hole,
         parameter_conversion=bilby.gw.conversion.convert_to_lal_binary_black_hole_parameters,
         waveform_arguments=waveform_arguments,
@@ -43,13 +42,13 @@ def get_strain_list_from_simulation(
     ifos = bilby.gw.detector.InterferometerList(ifo_names)
     if is_zero_noise:
         ifos.set_strain_data_from_zero_noise(
-            sampling_frequency=SAMPLING_FREQUENCY,
+            sampling_frequency=sampling_frequency,
             duration=duration,
             start_time=start_time,
         )
     else:
         ifos.set_strain_data_from_power_spectral_densities(
-            sampling_frequency=SAMPLING_FREQUENCY,
+            sampling_frequency=sampling_frequency,
             duration=duration,
             start_time=start_time,
         )
@@ -69,8 +68,8 @@ def get_strain_list_from_simulation(
             signal = _get_signal_from_pycbc(
                 injection_parameters,
                 low_frequency_cutoff,
-                REFERENCE_FREQUENCY,
-                SAMPLING_FREQUENCY,
+                reference_frequency,
+                sampling_frequency,
                 approximant,
                 ifo_names[i],
             )

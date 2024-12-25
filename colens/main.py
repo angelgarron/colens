@@ -44,6 +44,7 @@ INSTRUMENTS.sort()
 SEGMENT_LENGTH_SECONDS = 256
 SLIDE_SHIFT_SECONDS = 1
 LOW_FREQUENCY_CUTOFF = 30.0
+REFERENCE_FREQUENCY = 50.0
 SNGL_SNR_THRESHOLD = 0.0
 DOWNSAMPLE_FACTOR = 1
 UPSAMPLE_THRESHOLD = None
@@ -100,6 +101,8 @@ def create_injections(injection_parameters: dict[str, float]):
         start_time=GPS_START_SECONDS["H1"] - PAD_SECONDS,
         end_time=GPS_END_SECONDS["H1"] + PAD_SECONDS,
         low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
+        reference_frequency=REFERENCE_FREQUENCY,
+        sampling_frequency=SAMPLE_RATE,
         seed=1,
         approximant=APPROXIMANT,
     )
@@ -112,6 +115,8 @@ def create_injections(injection_parameters: dict[str, float]):
         start_time=GPS_START_SECONDS["H1_lensed"] - PAD_SECONDS,
         end_time=GPS_END_SECONDS["H1_lensed"] + PAD_SECONDS,
         low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
+        reference_frequency=REFERENCE_FREQUENCY,
+        sampling_frequency=SAMPLE_RATE,
         seed=2,
         approximant=APPROXIMANT,
     )
@@ -134,7 +139,14 @@ def main():
 
     logging.info("Creating template bank")
     create_filter_bank(
-        79.45, 48.50, 0.60, 0.05, BANK_FILE, APPROXIMANT, LOW_FREQUENCY_CUTOFF
+        79.45,
+        48.50,
+        0.60,
+        0.05,
+        BANK_FILE,
+        APPROXIMANT,
+        LOW_FREQUENCY_CUTOFF,
+        REFERENCE_FREQUENCY,
     )
 
     # logging.info("Injecting simulated signals on gaussian noise")

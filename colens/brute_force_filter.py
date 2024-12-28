@@ -113,12 +113,22 @@ def brute_force_filter_template(
         TIME_GPS_PAST_SECONDS + 0.001,
         step=snr_dict["H1"]._delta_t,
     ):
+        unlensed_antenna_pattern = calculate_antenna_pattern(
+            unlensed_detectors,
+            sky_grid,
+            original_trigger_time_seconds,
+        )
         # loop over lensed geocentric trigger time
         for lensed_trigger_time_seconds in np.arange(
             TIME_GPS_FUTURE_SECONDS - 0.001,
             TIME_GPS_FUTURE_SECONDS + 0.001,
             snr_dict["H1"]._delta_t,
         ):
+            lensed_antenna_pattern = calculate_antenna_pattern(
+                lensed_detectors,
+                sky_grid,
+                lensed_trigger_time_seconds,
+            )
             trigger_times_seconds = {
                 "H1": original_trigger_time_seconds,
                 "L1": original_trigger_time_seconds,
@@ -141,12 +151,6 @@ def brute_force_filter_template(
                 SAMPLE_RATE,
                 time_delay_zerolag_seconds,
                 time_slides_seconds,
-            )
-
-            antenna_pattern = calculate_antenna_pattern(
-                {**lensed_detectors, **unlensed_detectors},
-                sky_grid,
-                trigger_times_seconds,
             )
 
             # Loop over (short) time-slides, staring with the zero-lag
@@ -275,13 +279,25 @@ def brute_force_filter_template(
                     )
 
                     fp = {
-                        ifo: antenna_pattern[ifo][sky_position_index][0]
-                        for ifo in instruments
+                        ifo: unlensed_antenna_pattern[ifo][sky_position_index][0]
+                        for ifo in unlensed_detectors
                     }
                     fc = {
-                        ifo: antenna_pattern[ifo][sky_position_index][1]
-                        for ifo in instruments
+                        ifo: unlensed_antenna_pattern[ifo][sky_position_index][1]
+                        for ifo in unlensed_detectors
                     }
+                    fp.update(
+                        {
+                            ifo: lensed_antenna_pattern[ifo][sky_position_index][0]
+                            for ifo in lensed_detectors
+                        }
+                    )
+                    fc.update(
+                        {
+                            ifo: lensed_antenna_pattern[ifo][sky_position_index][1]
+                            for ifo in lensed_detectors
+                        }
+                    )
                     project = coh.get_projection_matrix(
                         fp, fc, sigma, projection="standard"
                     )

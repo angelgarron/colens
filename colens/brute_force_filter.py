@@ -20,13 +20,13 @@ from colens.recover_parameters import recover_parameters
 
 
 def brute_force_filter_template(
-    detectors,
+    lensed_detectors,
+    unlensed_detectors,
     segments,
     instruments,
     template,
     matched_filter,
     num_slides,
-    lensed_instruments,
     coinc_threshold,
     null_min,
     null_grad,
@@ -36,10 +36,7 @@ def brute_force_filter_template(
     chisq_nhigh,
     sky_grid,
     cluster_window,
-    sample_rate,
     SLIDE_SHIFT_SECONDS,
-    UNLENSED_INSTRUMENTS,
-    LENSED_INSTRUMENTS,
     SAMPLE_RATE,
     GPS_START_SECONDS,
     TIME_GPS_PAST_SECONDS,
@@ -132,13 +129,13 @@ def brute_force_filter_template(
                 trigger_times_seconds,
                 sky_grid,
                 instruments,
-                detectors,
+                {**lensed_detectors, **unlensed_detectors},
             )
             time_slides_seconds = get_time_slides_seconds(
                 num_slides,
                 SLIDE_SHIFT_SECONDS,
-                UNLENSED_INSTRUMENTS,
-                LENSED_INSTRUMENTS,
+                list(unlensed_detectors),
+                list(lensed_detectors),
             )
             time_delay_idx = get_time_delay_indices(
                 SAMPLE_RATE,
@@ -147,7 +144,9 @@ def brute_force_filter_template(
             )
 
             antenna_pattern = calculate_antenna_pattern(
-                detectors, sky_grid, trigger_times_seconds
+                {**lensed_detectors, **unlensed_detectors},
+                sky_grid,
+                trigger_times_seconds,
             )
 
             # Loop over (short) time-slides, staring with the zero-lag

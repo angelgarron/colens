@@ -135,7 +135,8 @@ def create_injections(injection_parameters: dict[str, float]):
 def main():
     init_logging(True)
 
-    detectors = {ifo: MyDetector(ifo) for ifo in INSTRUMENTS}
+    lensed_detectors = {ifo: MyDetector(ifo) for ifo in LENSED_INSTRUMENTS}
+    unlensed_detectors = {ifo: MyDetector(ifo) for ifo in UNLENSED_INSTRUMENTS}
 
     logging.info("Creating template bank")
     create_filter_bank(
@@ -284,13 +285,13 @@ def main():
     for t_num, template in enumerate(bank):
         logging.info("Filtering template %d/%d", t_num + 1, len(bank))
         brute_force_filter_template(
-            detectors,
+            lensed_detectors,
+            unlensed_detectors,
             segments,
             INSTRUMENTS,
             template,
             matched_filter,
             num_slides,
-            LENSED_INSTRUMENTS,
             COINC_THRESHOLD,
             NULL_MIN,
             NULL_GRAD,
@@ -300,10 +301,7 @@ def main():
             CHISQ_NHIGH,
             sky_grid,
             CLUSTER_WINDOW,
-            SAMPLE_RATE,
             SLIDE_SHIFT_SECONDS,
-            UNLENSED_INSTRUMENTS,
-            LENSED_INSTRUMENTS,
             SAMPLE_RATE,
             GPS_START_SECONDS,
             TIME_GPS_PAST_SECONDS,

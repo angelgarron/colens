@@ -106,6 +106,12 @@ def brute_force_filter_template(
         ifo: template.sigmasq(segments[ifo][segment_index].psd) for ifo in instruments
     }
     sigma = {ifo: np.sqrt(sigmasq[ifo]) for ifo in instruments}
+    time_slides_seconds = get_time_slides_seconds(
+        num_slides,
+        SLIDE_SHIFT_SECONDS,
+        list(unlensed_detectors),
+        list(lensed_detectors),
+    )
 
     # loop over original geocentric trigger time
     for original_trigger_time_seconds in np.arange(
@@ -118,6 +124,16 @@ def brute_force_filter_template(
             sky_grid,
             original_trigger_time_seconds,
         )
+        unlensed_time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
+            original_trigger_time_seconds,
+            sky_grid,
+            unlensed_detectors,
+        )
+        unlensed_time_delay_idx = get_time_delay_indices(
+            SAMPLE_RATE,
+            unlensed_time_delay_zerolag_seconds,
+            time_slides_seconds,
+        )
         # loop over lensed geocentric trigger time
         for lensed_trigger_time_seconds in np.arange(
             TIME_GPS_FUTURE_SECONDS - 0.001,
@@ -129,27 +145,14 @@ def brute_force_filter_template(
                 sky_grid,
                 lensed_trigger_time_seconds,
             )
-            trigger_times_seconds = {
-                "H1": original_trigger_time_seconds,
-                "L1": original_trigger_time_seconds,
-                "H1_lensed": lensed_trigger_time_seconds,
-                "L1_lensed": lensed_trigger_time_seconds,
-            }
-            time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
-                trigger_times_seconds,
+            lensed_time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
+                lensed_trigger_time_seconds,
                 sky_grid,
-                instruments,
-                {**lensed_detectors, **unlensed_detectors},
+                lensed_detectors,
             )
-            time_slides_seconds = get_time_slides_seconds(
-                num_slides,
-                SLIDE_SHIFT_SECONDS,
-                list(unlensed_detectors),
-                list(lensed_detectors),
-            )
-            time_delay_idx = get_time_delay_indices(
+            lensed_time_delay_idx = get_time_delay_indices(
                 SAMPLE_RATE,
-                time_delay_zerolag_seconds,
+                lensed_time_delay_zerolag_seconds,
                 time_slides_seconds,
             )
 
@@ -160,20 +163,24 @@ def brute_force_filter_template(
                     index_trigger_H1_original = int(
                         (original_trigger_time_seconds - GPS_START_SECONDS["H1"])
                         * SAMPLE_RATE
-                        + time_delay_idx[time_slide_index][sky_position_index]["H1"]
+                        + unlensed_time_delay_idx[time_slide_index][sky_position_index][
+                            "H1"
+                        ]
                         - segments["H1"][segment_index].cumulative_index
                     )
 
                     index_trigger_L1_original = int(
                         (original_trigger_time_seconds - GPS_START_SECONDS["L1"])
                         * SAMPLE_RATE
-                        + time_delay_idx[time_slide_index][sky_position_index]["L1"]
+                        + unlensed_time_delay_idx[time_slide_index][sky_position_index][
+                            "L1"
+                        ]
                         - segments["L1"][segment_index].cumulative_index
                     )
                     index_trigger_H1_lensed = int(
                         (lensed_trigger_time_seconds - GPS_START_SECONDS["H1_lensed"])
                         * SAMPLE_RATE
-                        + time_delay_idx[time_slide_index][sky_position_index][
+                        + lensed_time_delay_idx[time_slide_index][sky_position_index][
                             "H1_lensed"
                         ]
                         - segments["H1_lensed"][segment_index].cumulative_index
@@ -181,7 +188,7 @@ def brute_force_filter_template(
                     index_trigger_L1_lensed = int(
                         (lensed_trigger_time_seconds - GPS_START_SECONDS["L1_lensed"])
                         * SAMPLE_RATE
-                        + time_delay_idx[time_slide_index][sky_position_index][
+                        + lensed_time_delay_idx[time_slide_index][sky_position_index][
                             "L1_lensed"
                         ]
                         - segments["L1_lensed"][segment_index].cumulative_index
@@ -214,7 +221,9 @@ def brute_force_filter_template(
                             ],
                         )(
                             original_trigger_time_seconds
-                            + time_delay_zerolag_seconds[sky_position_index]["H1"]
+                            + unlensed_time_delay_zerolag_seconds[sky_position_index][
+                                "H1"
+                            ]
                             + time_slides_seconds["H1"][time_slide_index]
                             - GPS_START_SECONDS["H1"]
                         )
@@ -231,7 +240,9 @@ def brute_force_filter_template(
                             ],
                         )(
                             original_trigger_time_seconds
-                            + time_delay_zerolag_seconds[sky_position_index]["L1"]
+                            + unlensed_time_delay_zerolag_seconds[sky_position_index][
+                                "L1"
+                            ]
                             + time_slides_seconds["L1"][time_slide_index]
                             - GPS_START_SECONDS["L1"]
                         )
@@ -248,7 +259,7 @@ def brute_force_filter_template(
                             ],
                         )(
                             lensed_trigger_time_seconds
-                            + time_delay_zerolag_seconds[sky_position_index][
+                            + lensed_time_delay_zerolag_seconds[sky_position_index][
                                 "H1_lensed"
                             ]
                             + time_slides_seconds["H1_lensed"][time_slide_index]
@@ -267,7 +278,7 @@ def brute_force_filter_template(
                             ],
                         )(
                             lensed_trigger_time_seconds
-                            + time_delay_zerolag_seconds[sky_position_index][
+                            + lensed_time_delay_zerolag_seconds[sky_position_index][
                                 "L1_lensed"
                             ]
                             + time_slides_seconds["L1_lensed"][time_slide_index]

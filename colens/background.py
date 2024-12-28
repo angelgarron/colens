@@ -38,28 +38,26 @@ def slide_limiter(
 
 
 def get_time_delay_at_zerolag_seconds(
-    trigger_times_seconds: dict[str, int | float],
+    trigger_times_seconds: int | float,
     sky_grid: SkyGrid,
-    instruments: list[str],
     detectors,
 ):
     """Compute the difference of arrival time between the earth center and each one of the `instruments` of a signal
     coming from each point in `sky_grid`, .i.e. (t_{instrument}-t_{center}).
 
     Args:
-        trigger_times_seconds (dict[str, int  |  float]): Mapping between detector and trigger time (in seconds).
+        trigger_times_seconds (int | float): Trigger time (in seconds).
         sky_grid (SkyGrid): The sky grid containing the positions in the sky for which the time delay \
         should be computed.
-        instruments (list[str]): A list of all the instruments for which to compute the time delays.
     """
     time_delay_zerolag_seconds = [
         {
             ifo: detectors[ifo].time_delay_from_earth_center(
                 sky_position.ra,
                 sky_position.dec,
-                trigger_times_seconds[ifo],
+                trigger_times_seconds,
             )
-            for ifo in instruments
+            for ifo in detectors
         }
         for sky_position in sky_grid
     ]

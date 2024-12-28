@@ -15,7 +15,6 @@ from colens.coincident import coincident_snr, get_coinc_indexes
 from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_ifos
 from colens.io import write_to_json
-from colens.null import null_snr
 from colens.recover_parameters import recover_parameters
 
 
@@ -81,7 +80,6 @@ def brute_force_filter_template(
         },
         "rho_coinc": [],
         "rho_coh": [],
-        "null": [],
         "A_1": [],
         "A_2": [],
         "A_3": [],
@@ -330,12 +328,6 @@ def brute_force_filter_template(
                     )
                     logging.info(rho_coh)
 
-                    null = null_snr(
-                        rho_coh,
-                        rho_coinc,
-                    )
-                    logging.info(null)
-
                     # recovery of maximized parameters
                     snr_array_at_trigger = np.array(
                         [
@@ -459,7 +451,6 @@ def brute_force_filter_template(
                         output_data[ifo]["chisq"].append(float(chisq[ifo][0]))
                     output_data["rho_coinc"].append(float(rho_coinc[0]))
                     output_data["rho_coh"].append(float(rho_coh[0]))
-                    output_data["null"].append(float(null[0]))
                     output_data["A_1"].append(float(A_1))
                     output_data["A_2"].append(float(A_2))
                     output_data["A_3"].append(float(A_3))

@@ -15,7 +15,6 @@ from colens.coincident import coincident_snr, get_coinc_indexes
 from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_ifos
 from colens.io import write_to_json
-from colens.recover_parameters import recover_parameters
 
 
 def brute_force_filter_template(
@@ -80,14 +79,6 @@ def brute_force_filter_template(
         },
         "rho_coinc": [],
         "rho_coh": [],
-        "A_1": [],
-        "A_2": [],
-        "A_3": [],
-        "A_4": [],
-        "iota": [],
-        "phi": [],
-        "psi": [],
-        "distance": [],
         "network_chisq_values": [],
         "reweighted_snr": [],
         "reweighted_by_null_snr": [],
@@ -104,6 +95,8 @@ def brute_force_filter_template(
         ifo: template.sigmasq(segments[ifo][segment_index].psd) for ifo in instruments
     }
     sigma = {ifo: np.sqrt(sigmasq[ifo]) for ifo in instruments}
+    for ifo in instruments:
+        output_data[ifo]["sigma"].append(sigma[ifo])
     time_slides_seconds = get_time_slides_seconds(
         num_slides,
         SLIDE_SHIFT_SECONDS,
@@ -328,30 +321,6 @@ def brute_force_filter_template(
                     )
                     logging.info(rho_coh)
 
-                    # recovery of maximized parameters
-                    snr_array_at_trigger = np.array(
-                        [
-                            snr_H1_at_trigger_original,
-                            snr_H1_at_trigger_lensed,
-                            snr_L1_at_trigger_original,
-                            snr_L1_at_trigger_lensed,
-                        ]
-                    )
-                    w_p = np.array([sigma[ifo] * fp[ifo] for ifo in instruments])
-                    w_c = np.array([sigma[ifo] * fc[ifo] for ifo in instruments])
-                    denom = np.dot(w_p, w_p) * np.dot(w_c, w_c) - np.dot(w_p, w_c) ** 2
-                    Ap = (
-                        np.dot(w_c, w_c) * np.dot(w_p, snr_array_at_trigger)
-                        - np.dot(w_p, w_c) * np.dot(w_c, snr_array_at_trigger)
-                    ) / denom
-                    Ac = (
-                        -np.dot(w_p, w_c) * np.dot(w_p, snr_array_at_trigger)
-                        + np.dot(w_p, w_p) * np.dot(w_c, snr_array_at_trigger)
-                    ) / denom
-                    A_1 = Ap.real
-                    A_2 = Ac.real
-                    A_3 = -Ap.imag
-                    A_4 = -Ac.imag
 
                     recovered_parameters = recover_parameters(A_1, A_2, A_3, A_4)
                     iota = recovered_parameters["iota"]
@@ -451,14 +420,6 @@ def brute_force_filter_template(
                         output_data[ifo]["chisq"].append(float(chisq[ifo][0]))
                     output_data["rho_coinc"].append(float(rho_coinc[0]))
                     output_data["rho_coh"].append(float(rho_coh[0]))
-                    output_data["A_1"].append(float(A_1))
-                    output_data["A_2"].append(float(A_2))
-                    output_data["A_3"].append(float(A_3))
-                    output_data["A_4"].append(float(A_4))
-                    output_data["iota"].append(float(iota))
-                    output_data["phi"].append(float(phi))
-                    output_data["psi"].append(float(psi))
-                    output_data["distance"].append(float(distance))
                     output_data["network_chisq_values"].append(
                         float(network_chisq_values[0])
                     )

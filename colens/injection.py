@@ -6,6 +6,22 @@ from pycbc.detector import Detector
 from pycbc.types.timeseries import TimeSeries
 from pycbc.waveform import get_fd_waveform, get_td_waveform
 
+from colens.io import get_strain_dict_from_files
+
+FRAME_FILES = {
+    "H1": "/home/angel/Documents/pycbc_checks/H-H1_GWOSC_4KHZ_R1-1185387760-4096.gwf",
+    "L1": "/home/angel/Documents/pycbc_checks/L-L1_GWOSC_4KHZ_R1-1185387760-4096.gwf",
+    "H1_lensed": "/home/angel/Documents/pycbc_checks/H-H1_GWOSC_O2_4KHZ_R1-1185435648-4096.gwf",
+    "L1_lensed": "/home/angel/Documents/pycbc_checks/L-L1_GWOSC_O2_4KHZ_R1-1185435648-4096.gwf",
+}
+CHANNELS = {
+    "H1": "H1:GWOSC-4KHZ_R1_STRAIN",
+    "L1": "L1:GWOSC-4KHZ_R1_STRAIN",
+    "H1_lensed": "H1:GWOSC-4KHZ_R1_STRAIN",
+    "L1_lensed": "L1:GWOSC-4KHZ_R1_STRAIN",
+}
+PAD_SECONDS = 8
+
 
 def get_strain_list_from_simulation(
     injection_parameters,
@@ -19,6 +35,8 @@ def get_strain_list_from_simulation(
     approximant,
     inject_from_pycbc=False,
     is_zero_noise=False,
+    is_real_noise=False,
+    suffix="",
 ):
     duration = end_time - start_time
 
@@ -40,7 +58,7 @@ def get_strain_list_from_simulation(
     )
 
     ifos = bilby.gw.detector.InterferometerList(ifo_names)
-    if is_zero_noise:
+    if is_zero_noise or is_real_noise:
         ifos.set_strain_data_from_zero_noise(
             sampling_frequency=sampling_frequency,
             duration=duration,
@@ -64,6 +82,16 @@ def get_strain_list_from_simulation(
             delta_t=ifos[i].time_array[1] - ifos[i].time_array[0],
             epoch=start_time,
         )
+        if is_real_noise:
+            noise = get_strain_dict_from_files(
+                FRAME_FILES,
+                CHANNELS,
+                [ifo_names[i] + suffix],
+                {ifo_names[i] + suffix: start_time},
+                {ifo_names[i] + suffix: end_time},
+                PAD_SECONDS,
+            )[ifo_names[i] + suffix]
+            strain_tmp = strain_tmp.inject(noise)
         if inject_from_pycbc:
             signal = _get_signal_from_pycbc(
                 injection_parameters,

@@ -306,7 +306,6 @@ def brute_force_filter_template(
                         snr_H1_at_trigger_lensed,
                         snr_L1_at_trigger_lensed,
                     )
-                    logging.info(rho_coinc)
 
                     rho_coh = coherent_snr(
                         snr_H1_at_trigger_original,
@@ -315,66 +314,6 @@ def brute_force_filter_template(
                         snr_L1_at_trigger_lensed,
                         project,
                     )
-                    logging.info(rho_coh)
-
-
-                    recovered_parameters = recover_parameters(A_1, A_2, A_3, A_4)
-                    iota = recovered_parameters["iota"]
-                    phi = recovered_parameters["phi"]
-                    psi = recovered_parameters["psi"]
-                    distance = recovered_parameters["distance"]
-
-                    # consistency tests
-                    coherent_ifo_trigs = {
-                        "H1": np.array([snr_H1_at_trigger_original]),
-                        "H1_lensed": np.array([snr_H1_at_trigger_lensed]),
-                        "L1": np.array([snr_L1_at_trigger_original]),
-                        "L1_lensed": np.array([snr_L1_at_trigger_lensed]),
-                    }
-
-                    # Calculate the powerchi2 values of remaining triggers
-                    # (this uses the SNR timeseries before the time delay,
-                    # so we undo it; the same holds for normalisation)
-                    chisq = {}
-                    chisq_dof = {}
-                    for ifo in instruments:
-                        chisq[ifo], chisq_dof[ifo] = power_chisq.values(
-                            corr_dict[ifo],
-                            coherent_ifo_trigs[ifo] / norm_dict[ifo],
-                            norm_dict[ifo],
-                            stilde[ifo].psd,
-                            {
-                                "H1": np.array([index_trigger_H1_original]),
-                                "H1_lensed": np.array([index_trigger_H1_lensed]),
-                                "L1": np.array([index_trigger_L1_original]),
-                                "L1_lensed": np.array([index_trigger_L1_lensed]),
-                            }[ifo],
-                            template,
-                        )
-                    logging.info(chisq)
-
-                    network_chisq_values = coh.network_chisq(
-                        chisq, chisq_dof, coherent_ifo_trigs
-                    )
-                    logging.info(network_chisq_values)
-
-                    reweighted_snr = ranking.newsnr(
-                        rho_coh,
-                        network_chisq_values,
-                        q=chisq_index,
-                        n=chisq_nhigh,
-                    )
-                    logging.info(reweighted_snr)
-
-                    reweighted_by_null_snr = coh.reweight_snr_by_null(
-                        reweighted_snr,
-                        null,
-                        rho_coh,
-                        null_min=null_min,
-                        null_grad=null_grad,
-                        null_step=null_step,
-                    )
-                    logging.info(reweighted_by_null_snr)
 
                     # writting output
                     output_data["original_trigger_time_seconds"].append(
@@ -410,19 +349,8 @@ def brute_force_filter_template(
                     output_data["L1_lensed"]["snr_imag"].append(
                         float(snr_L1_at_trigger_lensed.imag)
                     )
-                    for ifo in instruments:
-                        output_data[ifo]["sigma"].append(sigma[ifo])
-                        output_data[ifo]["chisq_dof"].append(float(chisq_dof[ifo][0]))
-                        output_data[ifo]["chisq"].append(float(chisq[ifo][0]))
                     output_data["rho_coinc"].append(float(rho_coinc[0]))
                     output_data["rho_coh"].append(float(rho_coh[0]))
-                    output_data["network_chisq_values"].append(
-                        float(network_chisq_values[0])
-                    )
-                    output_data["reweighted_snr"].append(float(reweighted_snr[0]))
-                    output_data["reweighted_by_null_snr"].append(
-                        float(reweighted_by_null_snr[0])
-                    )
 
     output_file = "results.json"
     logging.info(f"Saving results to {output_file}")

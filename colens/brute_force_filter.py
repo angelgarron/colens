@@ -276,10 +276,6 @@ def brute_force_filter_template(
                             - GPS_START_SECONDS["L1_lensed"]
                         )
 
-                    logging.info(
-                        f"The coincident snr is {(abs(snr_H1_at_trigger_original) ** 2 + abs(snr_L1_at_trigger_original) ** 2) ** 0.5}"
-                    )
-
                     fp = {
                         ifo: unlensed_antenna_pattern[ifo][sky_position_index][0]
                         for ifo in unlensed_detectors

@@ -32,7 +32,7 @@ def ra_to_longitude(
         gps_time (float | np.ndarray): GPS time when the longitude will be computed.
 
     Returns:
-        float | np.ndarray: Longitude.
+        float | np.ndarray: Longitude in radians.
     """
     longitude = ra - gmst_accurate(gps_time)
     return longitude
@@ -44,11 +44,11 @@ def longitude_to_ra(
     """Convert from longitude to right ascension at a given time.
 
     Args:
-        longitude (float | np.ndarray): Longitude.
+        longitude (float | np.ndarray): Longitude in radians.
         gps_time (float | np.ndarray): GPS time when the right ascension will be computed.
 
     Returns:
-        float | np.ndarray: Right ascension.
+        float | np.ndarray: Right ascension in radians.
     """
     ra = gmst_accurate(gps_time) + longitude
     return ra

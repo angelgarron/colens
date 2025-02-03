@@ -11,7 +11,7 @@ from scipy.spatial.transform import Rotation as R
 from colens.transformations import (
     cart_to_spher,
     detector_network_to_geographical_coordinates,
-    ra_to_longitude,
+    longitude_to_ra,
     spher_to_cart,
 )
 
@@ -172,7 +172,7 @@ def get_sky_grid_for_three_detectors(
         (
             np.array(
                 [
-                    ra_to_longitude(hanford_location[0], time_gps_past_seconds),
+                    longitude_to_ra(hanford_location[0], time_gps_past_seconds),
                     hanford_location[1],
                 ]
             )
@@ -184,7 +184,7 @@ def get_sky_grid_for_three_detectors(
         (
             np.array(
                 [
-                    ra_to_longitude(livingston_location[0], time_gps_past_seconds),
+                    longitude_to_ra(livingston_location[0], time_gps_past_seconds),
                     livingston_location[1],
                 ]
             )
@@ -197,7 +197,7 @@ def get_sky_grid_for_three_detectors(
         (
             np.array(
                 [
-                    ra_to_longitude(hanford_location[0], time_gps_future_seconds),
+                    longitude_to_ra(hanford_location[0], time_gps_future_seconds),
                     hanford_location[1],
                 ]
             )

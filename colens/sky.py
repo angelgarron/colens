@@ -4,9 +4,16 @@ from dataclasses import dataclass, field
 from typing import Iterable
 
 import numpy as np
+import pandas as pd
+from pycbc.detector import Detector
 from scipy.spatial.transform import Rotation as R
 
-from colens.transformations import cart_to_spher, spher_to_cart
+from colens.transformations import (
+    cart_to_spher,
+    detector_network_to_geographical_coordinates,
+    ra_to_longitude,
+    spher_to_cart,
+)
 
 
 @dataclass
@@ -146,3 +153,128 @@ def get_delays_for_sky_positions(
     new_delays = np.array([new_delays_x, new_delays_y]).T
 
     return new_delays
+
+
+def get_sky_grid_for_three_detectors() -> SkyGrid:
+    detector_h1 = Detector("H1")
+    detector_l1 = Detector("L1")
+    detector_v1 = Detector("V1")
+
+    hanford_location = (
+        np.array([detector_h1.longitude, detector_h1.latitude]) * 180 / np.pi
+    )
+    livingston_location = (
+        np.array([detector_l1.longitude, detector_l1.latitude]) * 180 / np.pi
+    )
+    virgo_location = (
+        np.array([detector_v1.longitude, detector_v1.latitude]) * 180 / np.pi
+    )
+
+    TIME_GPS_PAST_SECONDS = 1185389807.298705
+
+    hanford_location_cart = spher_to_cart(
+        (
+            np.array(
+                [
+                    ra_to_longitude(hanford_location[0], TIME_GPS_PAST_SECONDS),
+                    hanford_location[1],
+                ]
+            )
+            * np.pi
+            / 180
+        ).reshape(1, -1)
+    )
+    livingston_location_cart = spher_to_cart(
+        (
+            np.array(
+                [
+                    ra_to_longitude(livingston_location[0], TIME_GPS_PAST_SECONDS),
+                    livingston_location[1],
+                ]
+            )
+            * np.pi
+            / 180
+        ).reshape(1, -1)
+    )
+    virgo_location_cart = spher_to_cart(
+        (
+            np.array(
+                [
+                    ra_to_longitude(virgo_location[0], TIME_GPS_PAST_SECONDS),
+                    virgo_location[1],
+                ]
+            )
+            * np.pi
+            / 180
+        ).reshape(1, -1)
+    )
+
+    T_HL = detector_h1.light_travel_time_to_detector(detector_l1)
+    T_HV = detector_h1.light_travel_time_to_detector(detector_v1)
+
+    time_to_center = (
+        T_HL
+        / 2
+        / np.sin(
+            np.arccos(np.dot(livingston_location_cart[0], hanford_location_cart[0])) / 2
+        )
+    )
+
+    # correction of time delays to facilitate checking correct result
+    T_HL = (
+        np.linalg.norm(livingston_location_cart[0] - hanford_location_cart[0])
+        * time_to_center
+    )
+    T_HV = (
+        np.linalg.norm(virgo_location_cart[0] - hanford_location_cart[0])
+        * time_to_center
+    )
+
+    alpha_LV = np.arccos(
+        np.dot(
+            (virgo_location_cart[0] - hanford_location_cart[0])
+            / np.linalg.norm(virgo_location_cart[0] - hanford_location_cart[0]),
+            (livingston_location_cart[0] - hanford_location_cart[0])
+            / np.linalg.norm(livingston_location_cart[0] - hanford_location_cart[0]),
+        )
+    )
+
+    # here begins
+    n_samples = 10000
+    samples = pd.read_csv("./sky_position_samples.csv").to_numpy()[
+        :n_samples
+    ]  # this is in radians
+    samples_cart = spher_to_cart(samples)
+
+    samples_delays = get_delays_for_sky_positions(
+        cart_to_spher(samples_cart) * 180 / np.pi,
+        hanford_location_cart,
+        livingston_location_cart,
+        virgo_location_cart,
+        time_to_center,
+    )
+
+    tau = get_physically_admissible_time_delays(T_HL, T_HV, alpha_LV)
+
+    tau_mask = (
+        (np.linalg.norm(tau[np.newaxis, :] - samples_delays[:, np.newaxis], axis=-1))
+        < 0.0001
+    ).any(axis=0)
+
+    phi, theta = project_time_delays_onto_celestial_sphere(
+        tau[tau_mask], T_HL, T_HV, alpha_LV
+    )
+
+    grid = np.array([-phi, theta]).T
+
+    spher = detector_network_to_geographical_coordinates(
+        grid,
+        hanford_location_cart,
+        livingston_location_cart,
+        virgo_location_cart,
+        alpha_LV,
+    )
+
+    spher = spher * np.pi / 180
+
+    return SkyGrid(spher[:, 0], spher[:, 1])

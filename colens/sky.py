@@ -77,3 +77,38 @@ def get_circular_sky_patch(
     # Convert cartesian coordinates back to spherical coordinates
     spher = cart_to_spher(rota)
     return SkyGrid(spher[:, 0], spher[:, 1])
+
+
+def get_physical_admissible_time_delays(
+    T_HL: float, T_HV: float, alpha_LV: float
+) -> np.ndarray:
+    TAU_HL, TAU_HV = np.meshgrid(
+        np.arange(-T_HL, T_HL, 2 / 4096), np.arange(-T_HV, T_HV, 2 / 4096)
+    )
+    A_3 = np.array(
+        [
+            [T_HV**2 / T_HL**2, -T_HV / T_HL * np.cos(alpha_LV)],
+            [-T_HV / T_HL * np.cos(alpha_LV), 1],
+        ]
+    )
+    B_3 = T_HV**2 * np.sin(alpha_LV) ** 2
+    mask = (
+        (
+            np.array([TAU_HL, TAU_HV]).transpose(1, 2, 0)
+            * (A_3 @ (np.array([TAU_HL, TAU_HV]).transpose(1, 0, 2))).transpose(0, 2, 1)
+        ).sum(axis=2)
+    ) < B_3
+    tau = np.array([TAU_HL[mask], TAU_HV[mask]]).T
+    return tau
+
+
+def project_time_delays_onto_celestial_sphere(
+    tau: np.ndarray, T_HL, T_HV, alpha_LV
+) -> tuple[np.ndarray, np.ndarray]:
+    theta = np.arccos(-tau[:, 0] / T_HL)
+    phi = np.arccos(
+        -(T_HL * tau[:, 1] - T_HV * tau[:, 0] * np.cos(alpha_LV))
+        / (T_HV * np.sqrt(T_HL**2 - tau[:, 0] ** 2) * np.sin(alpha_LV))
+    )
+    theta = np.pi / 2 - theta
+    return phi, theta

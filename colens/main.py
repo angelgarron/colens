@@ -105,6 +105,8 @@ def create_injections(injection_parameters: dict[str, float]):
         sampling_frequency=SAMPLE_RATE,
         seed=1,
         approximant=APPROXIMANT,
+        is_zero_noise=False,
+        # is_real_noise=True,
     )
     strain_dict = dict(zip(["H1", "L1"], return_value))
     # the lensed image
@@ -119,6 +121,9 @@ def create_injections(injection_parameters: dict[str, float]):
         sampling_frequency=SAMPLE_RATE,
         seed=2,
         approximant=APPROXIMANT,
+        is_zero_noise=False,
+        # is_real_noise=True,
+        suffix="_lensed",
     )
     strain_dict.update(
         dict(

@@ -239,7 +239,6 @@ def get_sky_grid_for_three_detectors() -> SkyGrid:
         )
     )
 
-    # here begins
     n_samples = 10000
     samples = pd.read_csv("./sky_position_samples.csv").to_numpy()[
         :n_samples

@@ -79,7 +79,7 @@ def get_circular_sky_patch(
     return SkyGrid(spher[:, 0], spher[:, 1])
 
 
-def get_physical_admissible_time_delays(
+def get_physically_admissible_time_delays(
     T_HL: float, T_HV: float, alpha_LV: float
 ) -> np.ndarray:
     TAU_HL, TAU_HV = np.meshgrid(

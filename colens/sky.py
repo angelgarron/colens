@@ -112,3 +112,37 @@ def project_time_delays_onto_celestial_sphere(
     )
     theta = np.pi / 2 - theta
     return phi, theta
+
+
+def get_delays_for_sky_positions(
+    grid,
+    hanford_location_cart,
+    livingston_location_cart,
+    virgo_location_cart,
+    time_to_center,
+) -> np.ndarray:
+    rota = spher_to_cart(grid * np.pi / 180)
+
+    new_delays_x = -(
+        (
+            np.dot(
+                livingston_location_cart[0].reshape(1, -1)
+                - hanford_location_cart[0].reshape(1, -1),
+                rota.T,
+            )
+        )
+        * time_to_center
+    )[0]
+    new_delays_y = -(
+        (
+            np.dot(
+                virgo_location_cart[0].reshape(1, -1)
+                - hanford_location_cart[0].reshape(1, -1),
+                rota.T,
+            )
+        )
+        * time_to_center
+    )[0]
+    new_delays = np.array([new_delays_x, new_delays_y]).T
+
+    return new_delays

@@ -155,10 +155,11 @@ def get_delays_for_sky_positions(
     return new_delays
 
 
-def get_sky_grid_for_three_detectors() -> SkyGrid:
+def get_sky_grid_for_three_detectors(
+    time_gps_past_seconds, time_gps_future_seconds
+) -> SkyGrid:
     detector_h1 = Detector("H1")
     detector_l1 = Detector("L1")
-    detector_v1 = Detector("V1")
 
     hanford_location = (
         np.array([detector_h1.longitude, detector_h1.latitude]) * 180 / np.pi
@@ -166,17 +167,12 @@ def get_sky_grid_for_three_detectors() -> SkyGrid:
     livingston_location = (
         np.array([detector_l1.longitude, detector_l1.latitude]) * 180 / np.pi
     )
-    virgo_location = (
-        np.array([detector_v1.longitude, detector_v1.latitude]) * 180 / np.pi
-    )
-
-    TIME_GPS_PAST_SECONDS = 1185389807.298705
 
     hanford_location_cart = spher_to_cart(
         (
             np.array(
                 [
-                    ra_to_longitude(hanford_location[0], TIME_GPS_PAST_SECONDS),
+                    ra_to_longitude(hanford_location[0], time_gps_past_seconds),
                     hanford_location[1],
                 ]
             )
@@ -188,7 +184,7 @@ def get_sky_grid_for_three_detectors() -> SkyGrid:
         (
             np.array(
                 [
-                    ra_to_longitude(livingston_location[0], TIME_GPS_PAST_SECONDS),
+                    ra_to_longitude(livingston_location[0], time_gps_past_seconds),
                     livingston_location[1],
                 ]
             )
@@ -196,12 +192,13 @@ def get_sky_grid_for_three_detectors() -> SkyGrid:
             / 180
         ).reshape(1, -1)
     )
+    # calling it virgo, although it's actually hanford lensed
     virgo_location_cart = spher_to_cart(
         (
             np.array(
                 [
-                    ra_to_longitude(virgo_location[0], TIME_GPS_PAST_SECONDS),
-                    virgo_location[1],
+                    ra_to_longitude(hanford_location[0], time_gps_future_seconds),
+                    hanford_location[1],
                 ]
             )
             * np.pi
@@ -210,7 +207,6 @@ def get_sky_grid_for_three_detectors() -> SkyGrid:
     )
 
     T_HL = detector_h1.light_travel_time_to_detector(detector_l1)
-    T_HV = detector_h1.light_travel_time_to_detector(detector_v1)
 
     time_to_center = (
         T_HL

@@ -2,6 +2,7 @@
 
 import numpy as np
 from pycbc.detector import gmst_accurate
+from scipy.spatial.transform import Rotation as R
 
 
 def spher_to_cart(sky_points):
@@ -51,3 +52,42 @@ def longitude_to_ra(
     """
     ra = gmst_accurate(gps_time) + longitude
     return ra
+
+
+def detector_network_to_geographical_coordinates(
+    grid: np.ndarray,
+    hanford_location_cart: np.ndarray,
+    livingston_location_cart: np.ndarray,
+    virgo_location_cart: np.ndarray,
+    alpha_LV: float,
+) -> np.ndarray:
+    new_plane_normal = np.cross(
+        livingston_location_cart - hanford_location_cart,
+        virgo_location_cart - hanford_location_cart,
+    )[0]
+    new_plane_normal /= np.linalg.norm(new_plane_normal)
+    y_axis = np.array([0.0, 1.0, 0.0])
+    rotation_axis = np.cross(y_axis, new_plane_normal)
+    rotation_axis /= np.linalg.norm(rotation_axis)
+    rota = spher_to_cart(grid)
+    zero_cart = np.array([1.0, 0.0, 0.0])
+
+    n = np.arccos(np.dot(y_axis, new_plane_normal))
+    u = rotation_axis * n
+    r = R.from_rotvec(u)
+    rota = r.apply(rota)
+    zero_cart = r.apply(zero_cart)
+
+    u = new_plane_normal * (np.pi / 2 - alpha_LV)
+    r = R.from_rotvec(u)
+    xaxis = r.apply(virgo_location_cart[0] - hanford_location_cart[0])
+    xaxis = xaxis / np.linalg.norm(xaxis)
+    n = np.arccos(np.dot(zero_cart, xaxis))
+    u = new_plane_normal * n
+    r = R.from_rotvec(u)
+    rota = r.apply(rota)
+    zero_cart = r.apply(zero_cart)
+
+    spher = cart_to_spher(rota) * 180 / np.pi
+    zero = cart_to_spher(zero_cart.reshape(1, -1)) * 180 / np.pi
+    return spher

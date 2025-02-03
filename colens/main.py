@@ -185,7 +185,7 @@ def main():
     num_slides = slide_limiter(
         SEGMENT_LENGTH_SECONDS, SLIDE_SHIFT_SECONDS, len(LENSED_INSTRUMENTS)
     )
-    num_slides = 2
+    num_slides = 1
 
     # Create a dictionary of Python slice objects that indicate where the segments
     # start and end for each detector timeseries.

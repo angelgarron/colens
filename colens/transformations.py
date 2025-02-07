@@ -7,10 +7,10 @@ from scipy.spatial.transform import Rotation as R
 
 def spher_to_cart(sky_points):
     """Convert spherical coordinates to cartesian coordinates."""
-    cart = np.zeros((len(sky_points), 3))
-    cart[:, 0] = np.cos(sky_points[:, 0]) * np.cos(sky_points[:, 1])
-    cart[:, 1] = np.sin(sky_points[:, 0]) * np.cos(sky_points[:, 1])
-    cart[:, 2] = np.sin(sky_points[:, 1])
+    cart = np.zeros((*sky_points.shape[:-1], 3))
+    cart[..., 0] = np.cos(sky_points[..., 0]) * np.cos(sky_points[..., 1])
+    cart[..., 1] = np.sin(sky_points[..., 0]) * np.cos(sky_points[..., 1])
+    cart[..., 2] = np.sin(sky_points[..., 1])
     return cart
 
 

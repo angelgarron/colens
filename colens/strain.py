@@ -8,9 +8,9 @@ from pycbc.types.timeseries import TimeSeries
 
 def process_strain_dict(
     strain_dict: dict[str, TimeSeries],
-    strain_high_pass_hertz: int | float,
+    strain_high_pass_hertz: float,
     sample_rate: int,
-    pad_seconds: int | float,
+    pad_seconds: float,
 ) -> None:
     """Modify (in-place) the `strain_dict` to apply filters to the timeseries
     and discard `pad_seconds` of corrupted data at the start and end after filtering and
@@ -18,9 +18,9 @@ def process_strain_dict(
 
     Args:
         strain_dict (dict[str, TimeSeries]): Dictionary of timeseries for each detector.
-        strain_high_pass_hertz (int | float): Lower frequency for the high-pass filters.
+        strain_high_pass_hertz (float): Lower frequency for the high-pass filters.
         sample_rate (int): Sample rate to resample the timeseries.
-        pad_seconds (int | float): Padding (in seconds) that should be added at the start and \
+        pad_seconds (float): Padding (in seconds) that should be added at the start and \
         end of each timeseries.
     """
     for ifo in strain_dict:

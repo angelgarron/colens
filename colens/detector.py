@@ -55,12 +55,12 @@ class MyDetector(detector.Detector):
         self.gmst_reference = None
 
 
-def calculate_antenna_pattern(detectors, sky_grid: SkyGrid, trigger_time: int | float):
+def calculate_antenna_pattern(detectors, sky_grid: SkyGrid, trigger_time: float):
     """Calculate the antenna pattern functions for all detectors and sky positions.
 
     Args:
         sky_grid (SkyGrid): Sky grid with all the sky positions for which we want to calculate the antenna patterns.
-        trigger_time (int | float): Time at which the antenna patterns should be computed.
+        trigger_time (float): Time at which the antenna patterns should be computed.
     """
     antenna_pattern = {}
     for ifo in detectors:

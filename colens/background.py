@@ -6,7 +6,7 @@ from colens.sky import SkyGrid
 
 
 def slide_limiter(
-    segment_length_seconds: int | float, slide_shift_seconds: int | float, nifos: int
+    segment_length_seconds: float, slide_shift_seconds: float, nifos: int
 ) -> np.int32:
     """
     Compute the number of shortslides used by the coherent
@@ -17,8 +17,8 @@ def slide_limiter(
     If the data is not time slid, there is a single slide for the zero-lag.
 
     Args:
-        segment_length_seconds (int | float): The length (in seconds) of each segment.
-        slide_shift_seconds (int | float): The time difference (in seconds) between slides.
+        segment_length_seconds (float): The length (in seconds) of each segment.
+        slide_shift_seconds (float): The time difference (in seconds) between slides.
         nifos (int): The number of detectors for which we want to compute slides.
 
     Returns:
@@ -38,7 +38,7 @@ def slide_limiter(
 
 
 def get_time_delay_at_zerolag_seconds(
-    trigger_times_seconds: int | float,
+    trigger_times_seconds: float,
     sky_grid: SkyGrid,
     detectors,
 ):
@@ -46,7 +46,7 @@ def get_time_delay_at_zerolag_seconds(
     coming from each point in `sky_grid`, .i.e. (t_{instrument}-t_{center}).
 
     Args:
-        trigger_times_seconds (int | float): Trigger time (in seconds).
+        trigger_times_seconds (float): Trigger time (in seconds).
         sky_grid (SkyGrid): The sky grid containing the positions in the sky for which the time delay \
         should be computed.
     """
@@ -66,7 +66,7 @@ def get_time_delay_at_zerolag_seconds(
 
 def get_time_slides_seconds(
     num_slides: int,
-    slide_shift_seconds: int | float,
+    slide_shift_seconds: float,
     unlensed_instruments: list[str],
     lensed_instruments: list[str],
 ):
@@ -75,7 +75,7 @@ def get_time_slides_seconds(
 
     Args:
         num_slides (int): Number of time slides we wish to compute.
-        slide_shift_seconds (int | float): The time difference (in seconds) between slides.
+        slide_shift_seconds (float): The time difference (in seconds) between slides.
         unlensed_instruments (list[str]): List of unlensed instruments.
         lensed_instruments (list[str]): List of lensed instruments.
     """
@@ -94,7 +94,7 @@ def get_time_slides_seconds(
 
 
 def get_time_delay_indices(
-    sample_rate: int | float,
+    sample_rate: float,
     time_delay_zerolag_seconds: list[dict[str, float]],
     time_slides_seconds: dict[str, np.ndarray],
 ):
@@ -103,7 +103,7 @@ def get_time_delay_indices(
     i.e. (time delay from geocenter + time slide)*sampling_rate
 
     Args:
-        sample_rate (int | float): Sample rate (in Hertz).
+        sample_rate (float): Sample rate (in Hertz).
         time_delay_zerolag_seconds (list[dict[str, float]]): Time difference (in seconds) \
         of arrival time between earth center and instruments of a grid of sky positions.
         time_slides_seconds (dict[str, np.ndarray]): Time slides (in seconds) for each instrument.

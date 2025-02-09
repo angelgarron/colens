@@ -6,9 +6,9 @@ from pycbc.types import FrequencySeries, TimeSeries, float32
 def associate_psd_to_segments(
     strain: TimeSeries,
     segments: list[FrequencySeries],
-    psd_segment_stride_seconds: int | float,
+    psd_segment_stride_seconds: float,
     sample_rate: int,
-    psd_segment_length_seconds: int | float,
+    psd_segment_length_seconds: float,
     psd_num_segments: int,
     frequency_length: int,
     delta_f: float,
@@ -20,10 +20,10 @@ def associate_psd_to_segments(
         strain (TimeSeries): Time series containing the data from which the PSD should be measured.
         segments (list[FrequencySeries]): A list of frequencyseries corresponding to each segment \
         in which the strain of the science block is divided.
-        psd_segment_stride_seconds (int | float): The separation (in seconds) of the consecutive \
+        psd_segment_stride_seconds (float): The separation (in seconds) of the consecutive \
         sub-segments inside each segment of the science block used for computing the PSD.
         sample_rate (int): The sample rate (in Hertz).
-        psd_segment_length_seconds (int | float): The duration (in seconds) of each sub-segment \
+        psd_segment_length_seconds (float): The duration (in seconds) of each sub-segment \
         used for the estimation of the PSD.
         psd_num_segments (int): PSDs will be estimated using only this number of segments.
         frequency_length (int): The length (in samples) of the output PSD.

@@ -1,6 +1,7 @@
 import numpy as np
+import pytest
 
-from colens.transformations import spher_to_cart
+from colens.transformations import DimensionError, spher_to_cart
 
 
 def test_spher_to_cart_shape_two():
@@ -23,6 +24,20 @@ def test_spher_to_cart_shape_one_two():
     expected_z = np.sin(theta)
     expected_coordinates_cart = np.array([[expected_x, expected_y, expected_z]])
     np.testing.assert_equal(spher_to_cart(coordinates_spher), expected_coordinates_cart)
+
+
+def test_spher_to_cart_shape_one_three():
+    phi = 0
+    theta = 1
+    coordinates_spher = np.array([[phi, theta, 1.5]])
+    expected_x = np.cos(phi) * np.cos(theta)
+    expected_y = np.sin(phi) * np.cos(theta)
+    expected_z = np.sin(theta)
+    expected_coordinates_cart = np.array([[expected_x, expected_y, expected_z]])
+    with pytest.raises(DimensionError):
+        np.testing.assert_equal(
+            spher_to_cart(coordinates_spher), expected_coordinates_cart
+        )
 
 
 def test_spher_to_cart_shape_two_two():

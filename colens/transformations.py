@@ -5,9 +5,16 @@ from pycbc.detector import gmst_accurate
 from scipy.spatial.transform import Rotation as R
 
 
+class DimensionError(Exception):
+    pass
+
+
 def spher_to_cart(sky_points):
     """Convert spherical coordinates to cartesian coordinates."""
-    cart = np.zeros((*sky_points.shape[:-1], 3))
+    shape = sky_points.shape
+    if shape[-1] != 2:
+        raise DimensionError("Last dimension should have size 2")
+    cart = np.zeros((*shape[:-1], 3))
     cart[..., 0] = np.cos(sky_points[..., 0]) * np.cos(sky_points[..., 1])
     cart[..., 1] = np.sin(sky_points[..., 0]) * np.cos(sky_points[..., 1])
     cart[..., 2] = np.sin(sky_points[..., 1])
@@ -16,6 +23,9 @@ def spher_to_cart(sky_points):
 
 def cart_to_spher(sky_points):
     """Convert cartesian coordinates to spherical coordinates."""
+    shape = sky_points.shape
+    if shape[-1] != 3:
+        raise DimensionError("Last dimension should have size 2")
     spher = np.zeros((*sky_points.shape[:-1], 2))
     spher[..., 0] = np.arctan2(sky_points[..., 1], sky_points[..., 0])
     spher[..., 1] = np.arcsin(sky_points[..., 2])

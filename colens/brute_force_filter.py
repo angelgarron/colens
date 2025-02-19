@@ -16,6 +16,7 @@ from colens.coincident import coincident_snr, get_coinc_indexes
 from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_ifos
 from colens.io import write_to_json
+from colens.sky import SkyGrid
 
 
 def brute_force_filter_template(
@@ -33,7 +34,6 @@ def brute_force_filter_template(
     power_chisq,
     chisq_index,
     chisq_nhigh,
-    sky_grid,
     cluster_window,
     SLIDE_SHIFT_SECONDS,
     SAMPLE_RATE,
@@ -113,6 +113,7 @@ def brute_force_filter_template(
     ) in timing.get_timing_iterator(
         TIME_GPS_PAST_SECONDS, TIME_GPS_FUTURE_SECONDS, snr_dict["H1"]._delta_t
     ):
+        sky_grid = SkyGrid([phi], [theta])
         unlensed_antenna_pattern = calculate_antenna_pattern(
             unlensed_detectors,
             sky_grid,

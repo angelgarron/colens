@@ -304,7 +304,6 @@ def main():
             power_chisq,
             CHISQ_INDEX,
             CHISQ_NHIGH,
-            sky_grid,
             CLUSTER_WINDOW,
             SLIDE_SHIFT_SECONDS,
             SAMPLE_RATE,

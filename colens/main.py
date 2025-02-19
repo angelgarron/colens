@@ -9,7 +9,7 @@ from pycbc.types import complex64, float32, zeros
 from colens.background import slide_limiter
 from colens.brute_force_filter import brute_force_filter_template
 from colens.detector import MyDetector
-from colens.injection import get_strain_list_from_simulation
+from colens.injection import get_strain_list_from_bilby_simulation
 from colens.io import create_filter_bank, get_strain_dict_from_files
 from colens.psd import associate_psd_to_segments
 from colens.sky import get_circular_sky_patch
@@ -95,7 +95,7 @@ SKY_ERROR = 0.1 * np.pi / 180  # radians
 
 def create_injections(injection_parameters: dict[str, float]):
     # The extra padding we are adding here is going to get removed after highpassing
-    return_value = get_strain_list_from_simulation(
+    return_value = get_strain_list_from_bilby_simulation(
         injection_parameters,
         ["H1", "L1"],
         start_time=GPS_START_SECONDS["H1"] - PAD_SECONDS,
@@ -111,7 +111,7 @@ def create_injections(injection_parameters: dict[str, float]):
     strain_dict = dict(zip(["H1", "L1"], return_value))
     # the lensed image
     injection_parameters["geocent_time"] = TIME_GPS_FUTURE_SECONDS
-    return_value = get_strain_list_from_simulation(
+    return_value = get_strain_list_from_bilby_simulation(
         injection_parameters,
         ["H1", "L1"],
         start_time=GPS_START_SECONDS["H1_lensed"] - PAD_SECONDS,

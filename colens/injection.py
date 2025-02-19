@@ -68,7 +68,7 @@ def strongly_lensed_BBH_waveform(
     return wf
 
 
-def get_strain_list_from_simulation(
+def get_strain_list_from_bilby_simulation(
     injection_parameters,
     ifo_names,
     start_time,
@@ -78,7 +78,6 @@ def get_strain_list_from_simulation(
     sampling_frequency,
     seed,
     approximant,
-    inject_from_pycbc=False,
     is_zero_noise=False,
     is_real_noise=False,
     suffix="",
@@ -117,10 +116,9 @@ def get_strain_list_from_simulation(
             start_time=start_time,
         )
 
-    if not inject_from_pycbc:
-        ifos.inject_signal(
-            waveform_generator=waveform_generator, parameters=injection_parameters
-        )
+    ifos.inject_signal(
+        waveform_generator=waveform_generator, parameters=injection_parameters
+    )
     strains = []
     for i in range(len(ifo_names)):
         strain_tmp = TimeSeries(
@@ -138,16 +136,70 @@ def get_strain_list_from_simulation(
                 PAD_SECONDS,
             )[ifo_names[i] + suffix]
             strain_tmp = strain_tmp.inject(noise)
-        if inject_from_pycbc:
-            signal = _get_signal_from_pycbc(
-                injection_parameters,
-                low_frequency_cutoff,
-                reference_frequency,
-                sampling_frequency,
-                approximant,
-                ifo_names[i],
-            )
-            strain_tmp = strain_tmp.inject(signal)
+        strains.append(strain_tmp)
+
+    return strains
+
+
+def get_strain_list_from_pycbc_simulation(
+    injection_parameters,
+    ifo_names,
+    start_time,
+    end_time,
+    low_frequency_cutoff,
+    reference_frequency,
+    sampling_frequency,
+    seed,
+    approximant,
+    is_zero_noise=False,
+    is_real_noise=False,
+    suffix="",
+):
+    duration = end_time - start_time
+
+    # Set up a random seed for result reproducibility.  This is optional!
+    bilby.core.utils.random.seed(seed)
+
+    ifos = bilby.gw.detector.InterferometerList(ifo_names)
+    if is_zero_noise or is_real_noise:
+        ifos.set_strain_data_from_zero_noise(
+            sampling_frequency=sampling_frequency,
+            duration=duration,
+            start_time=start_time,
+        )
+    else:
+        ifos.set_strain_data_from_power_spectral_densities(
+            sampling_frequency=sampling_frequency,
+            duration=duration,
+            start_time=start_time,
+        )
+
+    strains = []
+    for i in range(len(ifo_names)):
+        strain_tmp = TimeSeries(
+            initial_array=ifos[i].time_domain_strain,
+            delta_t=ifos[i].time_array[1] - ifos[i].time_array[0],
+            epoch=start_time,
+        )
+        if is_real_noise:
+            noise = get_strain_dict_from_files(
+                FRAME_FILES,
+                CHANNELS,
+                [ifo_names[i] + suffix],
+                {ifo_names[i] + suffix: start_time},
+                {ifo_names[i] + suffix: end_time},
+                PAD_SECONDS,
+            )[ifo_names[i] + suffix]
+            strain_tmp = strain_tmp.inject(noise)
+        signal = _get_signal_from_pycbc(
+            injection_parameters,
+            low_frequency_cutoff,
+            reference_frequency,
+            sampling_frequency,
+            approximant,
+            ifo_names[i],
+        )
+        strain_tmp = strain_tmp.inject(signal)
         strains.append(strain_tmp)
 
     return strains

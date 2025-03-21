@@ -79,3 +79,64 @@ def physical_parameters_to_a(distance, iota, psi, phi):
         2 * psi
     )
     return AmplitudeParameters(A_1, A_2, A_3, A_4, A_p, A_c)
+
+
+def XLALAmplitudeParams2Vect(distance, cosi, psi, phi0) -> tuple[float]:
+    aPlus = 0.5 * distance * (1.0 + cosi**2)
+    aCross = distance * cosi
+    cos2psi = np.cos(2.0 * psi)
+    sin2psi = np.sin(2.0 * psi)
+    cosphi0 = np.cos(phi0)
+    sinphi0 = np.sin(phi0)
+
+    A_1 = aPlus * cos2psi * cosphi0 - aCross * sin2psi * sinphi0
+    A_2 = aPlus * sin2psi * cosphi0 + aCross * cos2psi * sinphi0
+    A_3 = -aPlus * cos2psi * sinphi0 - aCross * sin2psi * cosphi0
+    A_4 = -aPlus * sin2psi * sinphi0 + aCross * cos2psi * cosphi0
+    return A_1, A_2, A_3, A_4, aPlus, aCross
+
+
+def XLALAmplitudeVect2Params(
+    A1: float, A2: float, A3: float, A4: float
+) -> tuple[float]:
+    Asq = A1**2 + A2**2 + A3**2 + A4**2
+    Da = A1 * A4 - A2 * A3
+
+    disc = np.sqrt(Asq**2 - 4.0 * Da**2)
+
+    Ap2 = 0.5 * (Asq + disc)
+    aPlus = np.sqrt(Ap2)
+
+    Ac2 = 0.5 * (Asq - disc)
+    aCross = np.sign(Da) * np.sqrt(Ac2)
+
+    beta = aCross / aPlus
+
+    b1 = A4 - beta * A1
+    b2 = A3 + beta * A2
+    b3 = -A1 + beta * A4
+
+    psiRet = 0.5 * np.arctan2(b1, b2)
+    phi0Ret = np.arctan2(b2, b3)
+
+    A1check = aPlus * np.cos(phi0Ret) * np.cos(2.0 * psiRet) - aCross * np.sin(
+        phi0Ret
+    ) * np.sin(2 * psiRet)
+    if A1check * A1 < 0:
+        phi0Ret += np.pi
+
+    while psiRet > np.pi / 4:
+        psiRet -= np.pi / 2
+        phi0Ret -= np.pi
+
+    while psiRet < -np.pi / 4:
+        psiRet += np.pi / 2
+        phi0Ret += np.pi
+
+    while phi0Ret < 0:
+        phi0Ret += 2 * np.pi
+
+    while phi0Ret > 2 * np.pi:
+        phi0Ret -= 2 * np.pi
+
+    return aPlus, aCross, psiRet, phi0Ret

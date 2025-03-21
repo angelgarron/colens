@@ -1,7 +1,6 @@
 import logging
 
 import numpy as np
-from pycbc.events import coherent as coh
 from pycbc.events import ranking
 from scipy.interpolate import interp1d
 
@@ -11,7 +10,6 @@ from colens.background import (
     get_time_delay_indices,
     get_time_slides_seconds,
 )
-from colens.coherent import coherent_snr
 from colens.coincident import coincident_snr, get_coinc_indexes
 from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_ifos
@@ -40,6 +38,7 @@ def brute_force_filter_template(
     GPS_START_SECONDS,
     TIME_GPS_PAST_SECONDS,
     TIME_GPS_FUTURE_SECONDS,
+    coherent_func,
     is_time_precise=False,
 ):
     output_data = {
@@ -282,9 +281,6 @@ def brute_force_filter_template(
                         for ifo in lensed_detectors
                     }
                 )
-                project = coh.get_projection_matrix(
-                    fp, fc, sigma, projection="standard"
-                )
 
                 rho_coinc = coincident_snr(
                     snr_H1_at_trigger_original,
@@ -293,12 +289,17 @@ def brute_force_filter_template(
                     snr_L1_at_trigger_lensed,
                 )
 
-                rho_coh = coherent_snr(
-                    snr_H1_at_trigger_original,
-                    snr_L1_at_trigger_original,
-                    snr_H1_at_trigger_lensed,
-                    snr_L1_at_trigger_lensed,
-                    project,
+                rho_coh = (
+                    coherent_func(
+                        snr_H1_at_trigger_original,
+                        snr_L1_at_trigger_original,
+                        snr_H1_at_trigger_lensed,
+                        snr_L1_at_trigger_lensed,
+                        sigma,
+                        fp,
+                        fc,
+                    )
+                    ** 0.5
                 )
 
                 # writting output
@@ -336,7 +337,7 @@ def brute_force_filter_template(
                     float(snr_L1_at_trigger_lensed.imag)
                 )
                 output_data["rho_coinc"].append(float(rho_coinc[0]))
-                output_data["rho_coh"].append(float(rho_coh[0]))
+                output_data["rho_coh"].append(float(rho_coh))
 
     output_file = "results.json"
     logging.info(f"Saving results to {output_file}")

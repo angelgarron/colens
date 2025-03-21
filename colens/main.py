@@ -1,4 +1,5 @@
 import logging
+from functools import partial
 
 import numpy as np
 from pycbc import init_logging, vetoes, waveform
@@ -8,11 +9,13 @@ from pycbc.types import complex64, float32, zeros
 
 from colens.background import slide_limiter
 from colens.brute_force_filter import brute_force_filter_template
+from colens.coherent import coherent_statistic_adapter
 from colens.detector import MyDetector
+from colens.fstatistic import get_two_f
 from colens.injection import get_strain_list_from_bilby_simulation
 from colens.io import create_filter_bank, get_strain_dict_from_files
 from colens.psd import associate_psd_to_segments
-from colens.sky import get_circular_sky_patch
+from colens.sky import get_circular_sky_patch, get_sky_grid_for_three_detectors
 from colens.strain import process_strain_dict
 
 FRAME_FILES = {
@@ -139,6 +142,9 @@ def create_injections(injection_parameters: dict[str, float]):
 
 def main():
     init_logging(True)
+    coherent_func = partial(
+        coherent_statistic_adapter, coherent_function=get_two_f, instruments=INSTRUMENTS
+    )
 
     lensed_detectors = {ifo: MyDetector(ifo) for ifo in LENSED_INSTRUMENTS}
     unlensed_detectors = {ifo: MyDetector(ifo) for ifo in UNLENSED_INSTRUMENTS}
@@ -310,6 +316,7 @@ def main():
             GPS_START_SECONDS,
             TIME_GPS_PAST_SECONDS,
             TIME_GPS_FUTURE_SECONDS,
+            coherent_func,
         )
 
     logging.info("Filtering completed")

@@ -13,7 +13,7 @@ from colens.background import (
 from colens.coincident import coincident_snr, get_coinc_indexes
 from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_ifos
-from colens.io import write_to_json
+from colens.io import Output
 from colens.sky import SkyGrid
 
 
@@ -39,50 +39,9 @@ def brute_force_filter_template(
     TIME_GPS_PAST_SECONDS,
     TIME_GPS_FUTURE_SECONDS,
     coherent_func,
+    output_data: Output,
     is_time_precise=False,
 ):
-    output_data = {
-        "original_trigger_time_seconds": [],
-        "lensed_trigger_time_seconds": [],
-        "time_slide_index": [],
-        "sky_position": {
-            "ra": [],
-            "dec": [],
-        },
-        "H1": {
-            "snr_real": [],
-            "snr_imag": [],
-            "sigma": [],
-            "chisq_dof": [],
-            "chisq": [],
-        },
-        "L1": {
-            "snr_real": [],
-            "snr_imag": [],
-            "sigma": [],
-            "chisq_dof": [],
-            "chisq": [],
-        },
-        "H1_lensed": {
-            "snr_real": [],
-            "snr_imag": [],
-            "sigma": [],
-            "chisq_dof": [],
-            "chisq": [],
-        },
-        "L1_lensed": {
-            "snr_real": [],
-            "snr_imag": [],
-            "sigma": [],
-            "chisq_dof": [],
-            "chisq": [],
-        },
-        "rho_coinc": [],
-        "rho_coh": [],
-        "network_chisq_values": [],
-        "reweighted_snr": [],
-        "reweighted_by_null_snr": [],
-    }
     # TODO loop over segments (or maybe we just create a big segment)
     # get the single detector snrs
     segment_index = 0
@@ -96,7 +55,7 @@ def brute_force_filter_template(
     }
     sigma = {ifo: np.sqrt(sigmasq[ifo]) for ifo in instruments}
     for ifo in instruments:
-        output_data[ifo]["sigma"].append(sigma[ifo])
+        output_data.__getattribute__(ifo).sigma.append(sigma[ifo])
     time_slides_seconds = get_time_slides_seconds(
         num_slides,
         SLIDE_SHIFT_SECONDS,
@@ -303,42 +262,30 @@ def brute_force_filter_template(
                 )
 
                 # writting output
-                output_data["original_trigger_time_seconds"].append(
+                output_data.original_trigger_time_seconds.append(
                     original_trigger_time_seconds
                 )
-                output_data["lensed_trigger_time_seconds"].append(
+                output_data.lensed_trigger_time_seconds.append(
                     lensed_trigger_time_seconds
                 )
-                output_data["time_slide_index"].append(time_slide_index)
-                output_data["sky_position"]["ra"].append(sky_position.ra)
-                output_data["sky_position"]["dec"].append(sky_position.dec)
-                output_data["H1"]["snr_real"].append(
-                    float(snr_H1_at_trigger_original.real)
-                )
-                output_data["H1"]["snr_imag"].append(
-                    float(snr_H1_at_trigger_original.imag)
-                )
-                output_data["L1"]["snr_real"].append(
-                    float(snr_L1_at_trigger_original.real)
-                )
-                output_data["L1"]["snr_imag"].append(
-                    float(snr_L1_at_trigger_original.imag)
-                )
-                output_data["H1_lensed"]["snr_real"].append(
+                output_data.time_slide_index.append(time_slide_index)
+                output_data.ra.append(sky_position.ra)
+                output_data.dec.append(sky_position.dec)
+                output_data.H1.snr_real.append(float(snr_H1_at_trigger_original.real))
+                output_data.H1.snr_imag.append(float(snr_H1_at_trigger_original.imag))
+                output_data.L1.snr_real.append(float(snr_L1_at_trigger_original.real))
+                output_data.L1.snr_imag.append(float(snr_L1_at_trigger_original.imag))
+                output_data.H1_lensed.snr_real.append(
                     float(snr_H1_at_trigger_lensed.real)
                 )
-                output_data["H1_lensed"]["snr_imag"].append(
+                output_data.H1_lensed.snr_imag.append(
                     float(snr_H1_at_trigger_lensed.imag)
                 )
-                output_data["L1_lensed"]["snr_real"].append(
+                output_data.L1_lensed.snr_real.append(
                     float(snr_L1_at_trigger_lensed.real)
                 )
-                output_data["L1_lensed"]["snr_imag"].append(
+                output_data.L1_lensed.snr_imag.append(
                     float(snr_L1_at_trigger_lensed.imag)
                 )
-                output_data["rho_coinc"].append(float(rho_coinc[0]))
-                output_data["rho_coh"].append(float(rho_coh))
-
-    output_file = "results.json"
-    logging.info(f"Saving results to {output_file}")
-    write_to_json(output_file, output_data)
+                output_data.rho_coinc.append(float(rho_coinc[0]))
+                output_data.rho_coh.append(float(rho_coh))

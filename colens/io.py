@@ -1,11 +1,43 @@
 """Functions to manage loading and saving data."""
 
 import json
+from dataclasses import asdict, dataclass, field
 
 import h5py
 from pycbc.frame import read_frame
 
 from colens.data import NumpyArrayEncoder
+
+
+@dataclass
+class PerDetectorOutput:
+    snr_real: list = field(default_factory=list)
+    snr_imag: list = field(default_factory=list)
+    sigma: list = field(default_factory=list)
+    chisq_dof: list = field(default_factory=list)
+    chisq: list = field(default_factory=list)
+
+
+@dataclass
+class Output:
+    H1: PerDetectorOutput
+    L1: PerDetectorOutput
+    H1_lensed: PerDetectorOutput
+    L1_lensed: PerDetectorOutput
+    original_trigger_time_seconds: list = field(default_factory=list)
+    lensed_trigger_time_seconds: list = field(default_factory=list)
+    time_slide_index: list = field(default_factory=list)
+    ra: list = field(default_factory=list)
+    dec: list = field(default_factory=list)
+    rho_coinc: list = field(default_factory=list)
+    rho_coh: list = field(default_factory=list)
+    network_chisq_values: list = field(default_factory=list)
+    reweighted_snr: list = field(default_factory=list)
+    reweighted_by_null_snr: list = field(default_factory=list)
+
+    def write_to_json(self, output_file):
+        with open(output_file, "w") as file:
+            json.dump(asdict(self), file, cls=NumpyArrayEncoder, indent=4)
 
 
 def get_strain_dict_from_files(
@@ -61,8 +93,3 @@ def create_filter_bank(
             file.create_dataset(
                 key, data=[value], compression="gzip", compression_opts=9, shuffle=True
             )
-
-
-def write_to_json(output_file, data):
-    with open(output_file, "w") as file:
-        json.dump(data, file, cls=NumpyArrayEncoder, indent=4)

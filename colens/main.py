@@ -13,7 +13,12 @@ from colens.coherent import coherent_statistic_adapter
 from colens.detector import MyDetector
 from colens.fstatistic import get_two_f
 from colens.injection import get_strain_list_from_bilby_simulation
-from colens.io import create_filter_bank, get_strain_dict_from_files
+from colens.io import (
+    Output,
+    PerDetectorOutput,
+    create_filter_bank,
+    get_strain_dict_from_files,
+)
 from colens.psd import associate_psd_to_segments
 from colens.sky import get_circular_sky_patch, get_sky_grid_for_three_detectors
 from colens.strain import process_strain_dict
@@ -62,7 +67,7 @@ NULL_MIN = 5.25
 NULL_GRAD = 0.2
 NULL_STEP = 20.0
 CLUSTER_WINDOW = 0.1
-OUTPUT = "results.hdf"
+OUTPUT_FILE_NAME = "results.json"
 PAD_SECONDS = 8
 GPS_START_SECONDS = dict()
 GPS_END_SECONDS = dict()
@@ -144,6 +149,12 @@ def main():
     init_logging(True)
     coherent_func = partial(
         coherent_statistic_adapter, coherent_function=get_two_f, instruments=INSTRUMENTS
+    )
+    output_data = Output(
+        H1=PerDetectorOutput(),
+        H1_lensed=PerDetectorOutput(),
+        L1=PerDetectorOutput(),
+        L1_lensed=PerDetectorOutput(),
     )
 
     lensed_detectors = {ifo: MyDetector(ifo) for ifo in LENSED_INSTRUMENTS}
@@ -317,9 +328,12 @@ def main():
             TIME_GPS_PAST_SECONDS,
             TIME_GPS_FUTURE_SECONDS,
             coherent_func,
+            output_data,
         )
 
     logging.info("Filtering completed")
+    logging.info(f"Saving results to {OUTPUT_FILE_NAME}")
+    output_data.write_to_json(OUTPUT_FILE_NAME)
 
 
 if __name__ == "__main__":

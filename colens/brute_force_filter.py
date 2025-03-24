@@ -170,35 +170,57 @@ def brute_force_filter_template(
                         time_slides_seconds=time_slides_seconds["H1"][time_slide_index],
                         margin=10,
                     )
-                    snr_L1_at_trigger_original = interpolate_timeseries_at(
-                        time=original_trigger_time_seconds
-                        + unlensed_time_delay_zerolag_seconds[sky_position_index]["L1"]
-                        + time_slides_seconds["L1"][time_slide_index]
-                        - GPS_START_SECONDS["L1"],
+                    snr_L1_at_trigger_original = get_snr_interpolated(
+                        time_delay_zerolag_seconds=unlensed_time_delay_zerolag_seconds[
+                            sky_position_index
+                        ]["L1"],
                         timeseries=snr_dict["L1"],
-                        index=index_trigger_L1_original,
+                        trigger_time_seconds=original_trigger_time_seconds,
+                        gps_start_seconds=GPS_START_SECONDS["L1"],
+                        sample_rate=SAMPLE_RATE,
+                        time_delay_idx=unlensed_time_delay_idx[time_slide_index][
+                            sky_position_index
+                        ]["L1"],
+                        cumulative_index=segments["L1"][segment_index].cumulative_index,
+                        time_slides_seconds=time_slides_seconds["L1"][time_slide_index],
                         margin=10,
                     )
-                    snr_H1_at_trigger_lensed = interpolate_timeseries_at(
-                        time=lensed_trigger_time_seconds
-                        + lensed_time_delay_zerolag_seconds[sky_position_index][
-                            "H1_lensed"
-                        ]
-                        + time_slides_seconds["H1_lensed"][time_slide_index]
-                        - GPS_START_SECONDS["H1_lensed"],
+                    snr_H1_at_trigger_lensed = get_snr_interpolated(
+                        time_delay_zerolag_seconds=lensed_time_delay_zerolag_seconds[
+                            sky_position_index
+                        ]["H1_lensed"],
                         timeseries=snr_dict["H1_lensed"],
-                        index=index_trigger_H1_lensed,
+                        trigger_time_seconds=lensed_trigger_time_seconds,
+                        gps_start_seconds=GPS_START_SECONDS["H1_lensed"],
+                        sample_rate=SAMPLE_RATE,
+                        time_delay_idx=lensed_time_delay_idx[time_slide_index][
+                            sky_position_index
+                        ]["H1_lensed"],
+                        cumulative_index=segments["H1_lensed"][
+                            segment_index
+                        ].cumulative_index,
+                        time_slides_seconds=time_slides_seconds["H1_lensed"][
+                            time_slide_index
+                        ],
                         margin=10,
                     )
-                    snr_L1_at_trigger_lensed = interpolate_timeseries_at(
-                        time=lensed_trigger_time_seconds
-                        + lensed_time_delay_zerolag_seconds[sky_position_index][
-                            "L1_lensed"
-                        ]
-                        + time_slides_seconds["L1_lensed"][time_slide_index]
-                        - GPS_START_SECONDS["L1_lensed"],
+                    snr_L1_at_trigger_lensed = get_snr_interpolated(
+                        time_delay_zerolag_seconds=lensed_time_delay_zerolag_seconds[
+                            sky_position_index
+                        ]["L1_lensed"],
                         timeseries=snr_dict["L1_lensed"],
-                        index=index_trigger_L1_lensed,
+                        trigger_time_seconds=lensed_trigger_time_seconds,
+                        gps_start_seconds=GPS_START_SECONDS["L1_lensed"],
+                        sample_rate=SAMPLE_RATE,
+                        time_delay_idx=lensed_time_delay_idx[time_slide_index][
+                            sky_position_index
+                        ]["L1_lensed"],
+                        cumulative_index=segments["L1_lensed"][
+                            segment_index
+                        ].cumulative_index,
+                        time_slides_seconds=time_slides_seconds["L1_lensed"][
+                            time_slide_index
+                        ],
                         margin=10,
                     )
 

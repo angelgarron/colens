@@ -167,10 +167,10 @@ def main():
         48.50,
         0.60,
         0.05,
-        BANK_FILE,
-        APPROXIMANT,
-        LOW_FREQUENCY_CUTOFF,
-        REFERENCE_FREQUENCY,
+        conf.injection.bank_file,
+        conf.injection.approximant,
+        conf.injection.low_frequency_cutoff,
+        conf.injection.reference_frequency,
     )
 
     # logging.info("Injecting simulated signals on gaussian noise")

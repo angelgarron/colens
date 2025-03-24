@@ -193,17 +193,12 @@ def main():
     # )
     # strain_dict = create_injections(injection_parameters)
 
-    logging.info("Loading frame files")
-    strain_dict = get_strain_dict_from_files(
-        FRAME_FILES,
-        CHANNELS,
-        INSTRUMENTS,
-        GPS_START_SECONDS,
-        GPS_END_SECONDS,
-        PAD_SECONDS,
+    process_strain_dict(
+        strain_dict,
+        conf.psd.strain_high_pass_hertz,
+        conf.injection.sample_rate,
+        conf.injection.pad_seconds,
     )
-
-    process_strain_dict(strain_dict, STRAIN_HIGH_PASS_HERTZ, SAMPLE_RATE, PAD_SECONDS)
 
     num_slides = slide_limiter(
         SEGMENT_LENGTH_SECONDS, SLIDE_SHIFT_SECONDS, len(LENSED_INSTRUMENTS)

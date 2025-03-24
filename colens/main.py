@@ -230,10 +230,10 @@ def main():
     )
 
     delta_f = (
-        1.0 / SEGMENT_LENGTH_SECONDS
+        1.0 / conf.injection.segment_length_seconds
     )  # frequency step of the fourier transform of each segment
     segment_length = int(
-        SEGMENT_LENGTH_SECONDS * SAMPLE_RATE
+        conf.injection.segment_length_seconds * conf.injection.sample_rate
     )  # number of samples of each segment
     frequency_length = int(
         segment_length // 2 + 1

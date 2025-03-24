@@ -201,7 +201,9 @@ def main():
     )
 
     num_slides = slide_limiter(
-        SEGMENT_LENGTH_SECONDS, SLIDE_SHIFT_SECONDS, len(LENSED_INSTRUMENTS)
+        conf.injection.segment_length_seconds,
+        conf.injection.slide_shift_seconds,
+        len(conf.injection.lensed_instruments),
     )
     num_slides = 1
 

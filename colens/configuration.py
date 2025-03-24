@@ -5,6 +5,8 @@ from configparser import ConfigParser
 from dataclasses import dataclass, field
 from typing import Type
 
+import numpy as np
+
 
 @dataclass
 class Data:
@@ -173,8 +175,8 @@ class SkyPatch:
     @classmethod
     def from_dict(cls: Type[SkyPatch], obj: ConfigParser) -> SkyPatch:
         return cls(
-            angular_spacing=obj.getfloat("angular_spacing"),
-            sky_error=obj.getfloat("sky_error"),
+            angular_spacing=obj.getfloat("angular_spacing") * np.pi / 180,
+            sky_error=obj.getfloat("sky_error") * np.pi / 180,
         )
 
 

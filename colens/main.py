@@ -110,8 +110,8 @@ def create_injections(injection_parameters: dict[str, float]):
     return_value = get_strain_list_from_bilby_simulation(
         injection_parameters,
         ["H1", "L1"],
-        start_time=GPS_START_SECONDS["H1"] - conf.injection.pad_seconds,
-        end_time=GPS_END_SECONDS["H1"] + conf.injection.pad_seconds,
+        start_time=conf.injection.gps_start_seconds["H1"] - conf.injection.pad_seconds,
+        end_time=conf.injection.gps_end_seconds["H1"] + conf.injection.pad_seconds,
         low_frequency_cutoff=conf.injection.low_frequency_cutoff,
         reference_frequency=conf.injection.reference_frequency,
         sampling_frequency=conf.injection.sample_rate,
@@ -126,8 +126,10 @@ def create_injections(injection_parameters: dict[str, float]):
     return_value = get_strain_list_from_bilby_simulation(
         injection_parameters,
         ["H1", "L1"],
-        start_time=GPS_START_SECONDS["H1_lensed"] - conf.injection.pad_seconds,
-        end_time=GPS_END_SECONDS["H1_lensed"] + conf.injection.pad_seconds,
+        start_time=conf.injection.gps_start_seconds["H1_lensed"]
+        - conf.injection.pad_seconds,
+        end_time=conf.injection.gps_end_seconds["H1_lensed"]
+        + conf.injection.pad_seconds,
         low_frequency_cutoff=conf.injection.low_frequency_cutoff,
         reference_frequency=conf.injection.reference_frequency,
         sampling_frequency=conf.injection.sample_rate,
@@ -214,14 +216,14 @@ def main():
     # Create a dictionary of Python slice objects that indicate where the segments
     # start and end for each detector timeseries.
     segments = dict()
-    for ifo in INSTRUMENTS:
+    for ifo in conf.injection.instruments:
         segments[ifo] = StrainSegments(
             strain_dict[ifo],
             segment_length=conf.injection.segment_length_seconds,
             segment_start_pad=conf.injection.segment_start_pad_seconds,
             segment_end_pad=conf.injection.segment_end_pad_seconds,
-            trigger_start=TRIG_START_TIME_SECONDS[ifo],
-            trigger_end=TRIG_END_TIME_SECONDS[ifo],
+            trigger_start=conf.injection.trig_start_time_seconds[ifo],
+            trigger_end=conf.injection.trig_end_time_seconds[ifo],
             filter_inj_only=False,
             allow_zero_padding=False,
         ).fourier_segments()
@@ -244,7 +246,7 @@ def main():
     )  # number of samples of the fourier transform of each segment
 
     logging.info("Associating PSDs to the fourier segments")
-    for ifo in INSTRUMENTS:
+    for ifo in conf.injection.instruments:
         associate_psd_to_segments(
             strain_dict[ifo],
             segments[ifo],
@@ -269,9 +271,9 @@ def main():
     #       Clustering happens at the end of the template loop.
     matched_filter = {
         ifo: MatchedFilterControl(
-            LOW_FREQUENCY_CUTOFF,
+            conf.injection.low_frequency_cutoff,
             None,
-            SNGL_SNR_THRESHOLD,
+            conf.injection.sngl_snr_threshold,
             segment_length,
             delta_f,
             complex64,
@@ -282,14 +284,14 @@ def main():
             upsample_threshold=conf.injection.upsample_threshold,
             upsample_method=conf.injection.upsample_method,
         )
-        for ifo in INSTRUMENTS
+        for ifo in conf.injection.instruments
     }
 
     logging.info("Initializing signal-based vetoes: power")
     power_chisq = vetoes.SingleDetPowerChisq(conf.chisq.chisq_bins)
 
     logging.info("Overwhitening frequency-domain data segments")
-    for ifo in INSTRUMENTS:
+    for ifo in conf.injection.instruments:
         for seg in segments[ifo]:
             seg /= seg.psd
 
@@ -315,7 +317,7 @@ def main():
             lensed_detectors,
             unlensed_detectors,
             segments,
-            INSTRUMENTS,
+            conf.injection.instruments,
             template,
             matched_filter,
             num_slides,
@@ -329,7 +331,7 @@ def main():
             conf.injection.cluster_window,
             conf.injection.slide_shift_seconds,
             conf.injection.sample_rate,
-            GPS_START_SECONDS,
+            conf.injection.gps_start_seconds,
             conf.injection.time_gps_past_seconds,
             conf.injection.time_gps_future_seconds,
             get_two_f,

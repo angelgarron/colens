@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from configparser import ConfigParser
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Type
 
 
@@ -23,11 +23,16 @@ class Data:
 class Injection:
     time_gps_past_seconds: float
     time_gps_future_seconds: float
+    gps_start_seconds: dict = field(init=False)
+    gps_end_seconds: dict = field(init=False)
+    trig_start_time_seconds: dict = field(init=False)
+    trig_end_time_seconds: dict = field(init=False)
     ra: float
     dec: float
     sample_rate: float
     unlensed_instruments: list
     lensed_instruments: list
+    instruments: list = field(init=False)
     segment_length_seconds: float
     slide_shift_seconds: float
     low_frequency_cutoff: float
@@ -49,6 +54,36 @@ class Injection:
     pad_seconds: float
     segment_start_pad_seconds: float
     segment_end_pad_seconds: float
+
+    def __post_init__(self):
+        self.instruments = self.lensed_instruments + self.unlensed_instruments
+        self.instruments.sort()
+
+        trigger_times_seconds = {
+            "H1": self.time_gps_past_seconds,
+            "L1": self.time_gps_past_seconds,
+            "H1_lensed": self.time_gps_future_seconds,
+            "L1_lensed": self.time_gps_future_seconds,
+        }
+        self.gps_start_seconds = dict()
+        self.gps_end_seconds = dict()
+        for ifo in self.instruments:
+            self.gps_start_seconds[ifo] = (
+                int(trigger_times_seconds[ifo]) - 192 - self.pad_seconds
+            )
+            self.gps_end_seconds[ifo] = (
+                int(trigger_times_seconds[ifo]) + 192 + self.pad_seconds
+            )
+
+        self.trig_start_time_seconds = dict()
+        self.trig_end_time_seconds = dict()
+        for ifo in self.instruments:
+            self.trig_start_time_seconds[ifo] = (
+                self.gps_start_seconds[ifo] + self.segment_start_pad_seconds
+            )
+            self.trig_end_time_seconds[ifo] = (
+                self.gps_end_seconds[ifo] - self.segment_end_pad_seconds
+            )
 
     @classmethod
     def from_dict(cls: Type[Injection], obj: ConfigParser) -> Injection:

@@ -11,67 +11,67 @@ def interpolate_timeseries_at(time, timeseries, index, margin):
 
 
 def get_index(
-    original_trigger_time_seconds,
+    trigger_time_seconds,
     gps_start_seconds,
     sample_rate,
-    unlensed_time_delay_idx,
+    time_delay_idx,
     cumulative_index,
 ):
-    index_trigger_H1_original = int(
-        (original_trigger_time_seconds - gps_start_seconds) * sample_rate
-        + unlensed_time_delay_idx
+    index_trigger = int(
+        (trigger_time_seconds - gps_start_seconds) * sample_rate
+        + time_delay_idx
         - cumulative_index
     )
-    return index_trigger_H1_original
+    return index_trigger
 
 
 def get_snr(
-    unlensed_time_delay_zerolag_seconds,
+    time_delay_zerolag_seconds,
     timeseries,
-    original_trigger_time_seconds,
+    trigger_time_seconds,
     gps_start_seconds,
     sample_rate,
-    unlensed_time_delay_idx,
+    time_delay_idx,
     cumulative_index,
     time_slides_seconds,
     margin,
 ):
-    index_trigger_H1_original = get_index(
-        original_trigger_time_seconds,
+    index_trigger = get_index(
+        trigger_time_seconds,
         gps_start_seconds,
         sample_rate,
-        unlensed_time_delay_idx,
+        time_delay_idx,
         cumulative_index,
     )
-    snr_H1_at_trigger_original = timeseries[index_trigger_H1_original]
-    return snr_H1_at_trigger_original
+    snr_at_trigger = timeseries[index_trigger]
+    return snr_at_trigger
 
 
 def get_snr_interpolated(
-    unlensed_time_delay_zerolag_seconds,
+    time_delay_zerolag_seconds,
     timeseries,
-    original_trigger_time_seconds,
+    trigger_time_seconds,
     gps_start_seconds,
     sample_rate,
-    unlensed_time_delay_idx,
+    time_delay_idx,
     cumulative_index,
     time_slides_seconds,
     margin,
 ):
-    index_trigger_H1_original = get_index(
-        original_trigger_time_seconds,
+    index_trigger = get_index(
+        trigger_time_seconds,
         gps_start_seconds,
         sample_rate,
-        unlensed_time_delay_idx,
+        time_delay_idx,
         cumulative_index,
     )
-    snr_H1_at_trigger_original = interpolate_timeseries_at(
-        time=original_trigger_time_seconds
-        + unlensed_time_delay_zerolag_seconds
+    snr_at_trigger = interpolate_timeseries_at(
+        time=trigger_time_seconds
+        + time_delay_zerolag_seconds
         + time_slides_seconds
         - gps_start_seconds,
         timeseries=timeseries,
-        index=index_trigger_H1_original,
+        index=index_trigger,
         margin=margin,
     )
-    return snr_H1_at_trigger_original
+    return snr_at_trigger

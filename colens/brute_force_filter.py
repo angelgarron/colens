@@ -155,28 +155,17 @@ def brute_force_filter_template(
                         index_trigger_L1_lensed
                     ]
                 else:
-                    snr_H1_at_trigger_original = interpolate_timeseries_at(
-                        time=original_trigger_time_seconds
-                        + unlensed_time_delay_zerolag_seconds[sky_position_index]["H1"]
-                        + time_slides_seconds["H1"][time_slide_index]
-                        - GPS_START_SECONDS["H1"],
-                        timeseries=snr_dict["H1"],
-                        index=index_trigger_H1_original,
-                        margin=10,
-                    )
                     snr_H1_at_trigger_original = get_snr_interpolated(
-                        unlensed_time_delay_zerolag_seconds=unlensed_time_delay_zerolag_seconds[
+                        time_delay_zerolag_seconds=unlensed_time_delay_zerolag_seconds[
                             sky_position_index
-                        ][
-                            "H1"
-                        ],
+                        ]["H1"],
                         timeseries=snr_dict["H1"],
-                        original_trigger_time_seconds=original_trigger_time_seconds,
+                        trigger_time_seconds=original_trigger_time_seconds,
                         gps_start_seconds=GPS_START_SECONDS["H1"],
                         sample_rate=SAMPLE_RATE,
-                        unlensed_time_delay_idx=unlensed_time_delay_idx[
-                            time_slide_index
-                        ][sky_position_index]["H1"],
+                        time_delay_idx=unlensed_time_delay_idx[time_slide_index][
+                            sky_position_index
+                        ]["H1"],
                         cumulative_index=segments["H1"][segment_index].cumulative_index,
                         time_slides_seconds=time_slides_seconds["H1"][time_slide_index],
                         margin=10,

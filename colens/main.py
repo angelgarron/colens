@@ -213,9 +213,9 @@ def main():
     for ifo in INSTRUMENTS:
         segments[ifo] = StrainSegments(
             strain_dict[ifo],
-            segment_length=SEGMENT_LENGTH_SECONDS,
-            segment_start_pad=SEGMENT_START_PAD_SECONDS,
-            segment_end_pad=SEGMENT_END_PAD_SECONDS,
+            segment_length=conf.injection.segment_length_seconds,
+            segment_start_pad=conf.injection.segment_start_pad_seconds,
+            segment_end_pad=conf.injection.segment_end_pad_seconds,
             trigger_start=TRIG_START_TIME_SECONDS[ifo],
             trigger_end=TRIG_END_TIME_SECONDS[ifo],
             filter_inj_only=False,

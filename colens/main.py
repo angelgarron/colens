@@ -154,8 +154,12 @@ def main():
         L1_lensed=PerDetectorOutput(),
     )
 
-    lensed_detectors = {ifo: MyDetector(ifo) for ifo in LENSED_INSTRUMENTS}
-    unlensed_detectors = {ifo: MyDetector(ifo) for ifo in UNLENSED_INSTRUMENTS}
+    lensed_detectors = {
+        ifo: MyDetector(ifo) for ifo in conf.injection.lensed_instruments
+    }
+    unlensed_detectors = {
+        ifo: MyDetector(ifo) for ifo in conf.injection.unlensed_instruments
+    }
 
     logging.info("Creating template bank")
     create_filter_bank(

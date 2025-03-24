@@ -4,7 +4,7 @@ import numpy as np
 from scipy.special import gamma as gamma_func
 from scipy.special import hyp1f1 as hyp1f1_func
 
-from colens.bstatistic.convertions import (
+from colens.bstatistic.convert import (
     convert_A_to_A_tilde,
     convert_A_to_polar_coordinates,
     convert_M_to_M_tilde,

@@ -244,10 +244,10 @@ def main():
         associate_psd_to_segments(
             strain_dict[ifo],
             segments[ifo],
-            PSD_SEGMENT_STRIDE_SECONDS,
-            SAMPLE_RATE,
-            PSD_SEGMENT_LENGTH_SECONDS,
-            PSD_NUM_SEGMENTS,
+            conf.psd.psd_segment_stride_seconds,
+            conf.injection.sample_rate,
+            conf.psd.psd_segment_length_seconds,
+            conf.psd.psd_num_segments,
             frequency_length,
             delta_f,
         )

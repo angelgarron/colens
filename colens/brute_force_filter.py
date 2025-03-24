@@ -2,7 +2,6 @@ import logging
 
 import numpy as np
 from pycbc.events import ranking
-from scipy.interpolate import interp1d
 
 from colens import timing
 from colens.background import (
@@ -13,6 +12,7 @@ from colens.background import (
 from colens.coincident import coincident_snr, get_coinc_indexes
 from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_ifos
+from colens.interpolate import interpolate_timeseries_at
 from colens.io import Output
 from colens.sky import SkyGrid
 
@@ -155,69 +155,45 @@ def brute_force_filter_template(
                         index_trigger_L1_lensed
                     ]
                 else:
-                    snr_H1_at_trigger_original = interp1d(
-                        np.array(snr_dict["H1"].sample_times)[
-                            index_trigger_H1_original
-                            - 10 : index_trigger_H1_original
-                            + 10
-                        ],
-                        np.array(snr_dict["H1"])[
-                            index_trigger_H1_original
-                            - 10 : index_trigger_H1_original
-                            + 10
-                        ],
-                    )(
-                        original_trigger_time_seconds
+                    snr_H1_at_trigger_original = interpolate_timeseries_at(
+                        time=original_trigger_time_seconds
                         + unlensed_time_delay_zerolag_seconds[sky_position_index]["H1"]
                         + time_slides_seconds["H1"][time_slide_index]
-                        - GPS_START_SECONDS["H1"]
+                        - GPS_START_SECONDS["H1"],
+                        timeseries=snr_dict["H1"],
+                        index=index_trigger_H1_original,
+                        margin=10,
                     )
-                    snr_L1_at_trigger_original = interp1d(
-                        np.array(snr_dict["L1"].sample_times)[
-                            index_trigger_L1_original
-                            - 10 : index_trigger_L1_original
-                            + 10
-                        ],
-                        np.array(snr_dict["L1"])[
-                            index_trigger_L1_original
-                            - 10 : index_trigger_L1_original
-                            + 10
-                        ],
-                    )(
-                        original_trigger_time_seconds
+                    snr_L1_at_trigger_original = interpolate_timeseries_at(
+                        time=original_trigger_time_seconds
                         + unlensed_time_delay_zerolag_seconds[sky_position_index]["L1"]
                         + time_slides_seconds["L1"][time_slide_index]
-                        - GPS_START_SECONDS["L1"]
+                        - GPS_START_SECONDS["L1"],
+                        timeseries=snr_dict["L1"],
+                        index=index_trigger_L1_original,
+                        margin=10,
                     )
-                    snr_H1_at_trigger_lensed = interp1d(
-                        np.array(snr_dict["H1_lensed"].sample_times)[
-                            index_trigger_H1_lensed - 10 : index_trigger_H1_lensed + 10
-                        ],
-                        np.array(snr_dict["H1_lensed"])[
-                            index_trigger_H1_lensed - 10 : index_trigger_H1_lensed + 10
-                        ],
-                    )(
-                        lensed_trigger_time_seconds
+                    snr_H1_at_trigger_lensed = interpolate_timeseries_at(
+                        time=lensed_trigger_time_seconds
                         + lensed_time_delay_zerolag_seconds[sky_position_index][
                             "H1_lensed"
                         ]
                         + time_slides_seconds["H1_lensed"][time_slide_index]
-                        - GPS_START_SECONDS["H1_lensed"]
+                        - GPS_START_SECONDS["H1_lensed"],
+                        timeseries=snr_dict["H1_lensed"],
+                        index=index_trigger_H1_lensed,
+                        margin=10,
                     )
-                    snr_L1_at_trigger_lensed = interp1d(
-                        np.array(snr_dict["L1_lensed"].sample_times)[
-                            index_trigger_L1_lensed - 10 : index_trigger_L1_lensed + 10
-                        ],
-                        np.array(snr_dict["L1_lensed"])[
-                            index_trigger_L1_lensed - 10 : index_trigger_L1_lensed + 10
-                        ],
-                    )(
-                        lensed_trigger_time_seconds
+                    snr_L1_at_trigger_lensed = interpolate_timeseries_at(
+                        time=lensed_trigger_time_seconds
                         + lensed_time_delay_zerolag_seconds[sky_position_index][
                             "L1_lensed"
                         ]
                         + time_slides_seconds["L1_lensed"][time_slide_index]
-                        - GPS_START_SECONDS["L1_lensed"]
+                        - GPS_START_SECONDS["L1_lensed"],
+                        timeseries=snr_dict["L1_lensed"],
+                        index=index_trigger_L1_lensed,
+                        margin=10,
                     )
 
                 fp = {

@@ -223,7 +223,10 @@ def main():
         ).fourier_segments()
 
     sky_grid = get_circular_sky_patch(
-        ra=RA, dec=DEC, sky_error=SKY_ERROR, angular_spacing=ANGULAR_SPACING
+        ra=conf.injection.ra,
+        dec=conf.injection.dec,
+        sky_error=conf.sky_patch.sky_error,
+        angular_spacing=conf.sky_patch.angular_spacing,
     )
 
     delta_f = (

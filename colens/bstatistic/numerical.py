@@ -15,7 +15,9 @@ def numerical_bstatistic(
 
     def bstat_integrand(params: list[float]) -> float:
         h0, cosi, psi, phi0 = params
-        A_1, A_2, A_3, A_4 = XLALAmplitudeParams2Vect(h0, cosi, psi, phi0)
+        A_1, A_2, A_3, A_4, aPlus, aCross = XLALAmplitudeParams2Vect(
+            h0, cosi, psi, phi0
+        )
         A_sup_mu = np.array([A_1, A_2, A_3, A_4])
         Ax = np.dot(A_sup_mu, x_mu)
         rho2 = np.dot(A_sup_mu, M_mu_nu @ A_sup_mu)

@@ -118,17 +118,17 @@ def create_injections(injection_parameters: dict[str, float]):
     )
     strain_dict = dict(zip(["H1", "L1"], return_value))
     # the lensed image
-    injection_parameters["geocent_time"] = TIME_GPS_FUTURE_SECONDS
+    injection_parameters["geocent_time"] = conf.injection.time_gps_future_seconds
     return_value = get_strain_list_from_bilby_simulation(
         injection_parameters,
         ["H1", "L1"],
-        start_time=GPS_START_SECONDS["H1_lensed"] - PAD_SECONDS,
-        end_time=GPS_END_SECONDS["H1_lensed"] + PAD_SECONDS,
-        low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
-        reference_frequency=REFERENCE_FREQUENCY,
-        sampling_frequency=SAMPLE_RATE,
+        start_time=GPS_START_SECONDS["H1_lensed"] - conf.injection.pad_seconds,
+        end_time=GPS_END_SECONDS["H1_lensed"] + conf.injection.pad_seconds,
+        low_frequency_cutoff=conf.injection.low_frequency_cutoff,
+        reference_frequency=conf.injection.reference_frequency,
+        sampling_frequency=conf.injection.sample_rate,
         seed=2,
-        approximant=APPROXIMANT,
+        approximant=conf.injection.approximant,
         is_zero_noise=False,
         # is_real_noise=True,
         suffix="_lensed",

@@ -9,7 +9,6 @@ from pycbc.types import complex64, float32, zeros
 
 from colens.background import slide_limiter
 from colens.brute_force_filter import brute_force_filter_template
-from colens.coherent import coherent_statistic_adapter
 from colens.detector import MyDetector
 from colens.fstatistic import get_two_f
 from colens.injection import get_strain_list_from_bilby_simulation
@@ -148,9 +147,6 @@ def create_injections(injection_parameters: dict[str, float]):
 
 def main():
     init_logging(True)
-    coherent_func = partial(
-        coherent_statistic_adapter, coherent_function=get_two_f, instruments=INSTRUMENTS
-    )
     output_data = Output(
         H1=PerDetectorOutput(),
         H1_lensed=PerDetectorOutput(),
@@ -328,7 +324,7 @@ def main():
             GPS_START_SECONDS,
             TIME_GPS_PAST_SECONDS,
             TIME_GPS_FUTURE_SECONDS,
-            coherent_func,
+            get_two_f,
             output_data,
             get_snr_interpolated,
         )

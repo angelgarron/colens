@@ -9,6 +9,7 @@ from colens.background import (
     get_time_delay_indices,
     get_time_slides_seconds,
 )
+from colens.coherent import coherent_statistic_adapter
 from colens.coincident import coincident_snr, get_coinc_indexes
 from colens.detector import calculate_antenna_pattern
 from colens.filter import filter_ifos
@@ -203,15 +204,20 @@ def brute_force_filter_template(
                     snr_L1_at_trigger_lensed,
                 )
 
+                M_mu_nu, x_mu = coherent_statistic_adapter(
+                    snr_H1_at_trigger_original,
+                    snr_L1_at_trigger_original,
+                    snr_H1_at_trigger_lensed,
+                    snr_L1_at_trigger_lensed,
+                    sigma,
+                    fp,
+                    fc,
+                    instruments,
+                )
                 rho_coh = (
                     coherent_func(
-                        snr_H1_at_trigger_original,
-                        snr_L1_at_trigger_original,
-                        snr_H1_at_trigger_lensed,
-                        snr_L1_at_trigger_lensed,
-                        sigma,
-                        fp,
-                        fc,
+                        M_mu_nu,
+                        x_mu,
                     )
                     ** 0.5
                 )

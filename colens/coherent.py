@@ -32,7 +32,6 @@ def coherent_statistic_adapter(
     fp,
     fc,
     instruments,
-    coherent_function,
 ):
     snr_dict_at_trigger = {
         "H1": snr_H1_at_trigger_original,
@@ -69,4 +68,4 @@ def coherent_statistic_adapter(
     x_mu[3] = -sum(
         [fc[ifo] * snr_dict_at_trigger[ifo].imag * sigma[ifo] for ifo in instruments]
     )
-    return coherent_function(M_mu_nu, x_mu)
+    return M_mu_nu, x_mu

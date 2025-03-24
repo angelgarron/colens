@@ -9,6 +9,7 @@ from pycbc.types import complex64, float32, zeros
 
 from colens.background import slide_limiter
 from colens.brute_force_filter import brute_force_filter_template
+from colens.configuration import read_configuration_from
 from colens.detector import MyDetector
 from colens.fstatistic import get_two_f
 from colens.injection import get_strain_list_from_bilby_simulation
@@ -99,6 +100,9 @@ PSD_NUM_SEGMENTS = 29  # PSD estimated using only this number of segments
 STRAIN_HIGH_PASS_HERTZ = 25.0
 ANGULAR_SPACING = 1.8 * np.pi / 180  # radians
 SKY_ERROR = 0.1 * np.pi / 180  # radians
+
+
+conf = read_configuration_from("config.ini")
 
 
 def create_injections(injection_parameters: dict[str, float]):
@@ -282,7 +286,7 @@ def main():
     }
 
     logging.info("Initializing signal-based vetoes: power")
-    power_chisq = vetoes.SingleDetPowerChisq(CHISQ_BINS)
+    power_chisq = vetoes.SingleDetPowerChisq(conf.chisq.chisq_bins)
 
     logging.info("Overwhitening frequency-domain data segments")
     for ifo in INSTRUMENTS:
@@ -291,14 +295,14 @@ def main():
 
     logging.info("Read in template bank")
     bank = waveform.FilterBank(
-        BANK_FILE,
+        conf.injection.bank_file,
         frequency_length,
         delta_f,
         complex64,
-        low_frequency_cutoff=LOW_FREQUENCY_CUTOFF,
-        phase_order=ORDER,
-        taper=TAPER_TEMPLATE,
-        approximant=APPROXIMANT,
+        low_frequency_cutoff=conf.injection.low_frequency_cutoff,
+        phase_order=conf.injection.order,
+        taper=conf.injection.taper_template,
+        approximant=conf.injection.approximant,
         out=template_mem,
     )
 
@@ -315,27 +319,27 @@ def main():
             template,
             matched_filter,
             num_slides,
-            COINC_THRESHOLD,
-            NULL_MIN,
-            NULL_GRAD,
-            NULL_STEP,
+            conf.injection.coinc_threshold,
+            conf.injection.null_min,
+            conf.injection.null_grad,
+            conf.injection.null_step,
             power_chisq,
-            CHISQ_INDEX,
-            CHISQ_NHIGH,
-            CLUSTER_WINDOW,
-            SLIDE_SHIFT_SECONDS,
-            SAMPLE_RATE,
-            GPS_START_SECONDS,
-            TIME_GPS_PAST_SECONDS,
-            TIME_GPS_FUTURE_SECONDS,
+            conf.chisq.chisq_index,
+            conf.chisq.chisq_nhigh,
+            conf.injection.cluster_window,
+            conf.injection.slide_shift_seconds,
+            conf.injection.sample_rate,
+            conf.injection.gps_start_seconds,
+            conf.injection.time_gps_past_seconds,
+            conf.injection.time_gps_future_seconds,
             get_two_f,
             output_data,
             get_snr_interpolated,
         )
 
     logging.info("Filtering completed")
-    logging.info(f"Saving results to {OUTPUT_FILE_NAME}")
-    output_data.write_to_json(OUTPUT_FILE_NAME)
+    logging.info(f"Saving results to {conf.output.output_file_name}")
+    output_data.write_to_json(conf.output.output_file_name)
 
 
 if __name__ == "__main__":

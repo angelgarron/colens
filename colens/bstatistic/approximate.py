@@ -14,7 +14,12 @@ from colens.fstatistic import get_maximizing_A, get_two_f
 
 def whelan2014(M_mu_nu: np.ndarray, x_mu: np.ndarray, h0A: float) -> float:
     A_sup_mu_max = get_maximizing_A(M_mu_nu, x_mu)
-    A_sup_mu_max_tilde = convert_A_to_A_tilde(A_sup_mu_max)
+    A_sup_mu_max_tilde = convert_A_to_A_tilde(
+        A_sup_mu_max[0],
+        A_sup_mu_max[1],
+        A_sup_mu_max[2],
+        A_sup_mu_max[3],
+    )
     k = (A_sup_mu_max_tilde[0] ** 2 + A_sup_mu_max_tilde[1] ** 2) * (
         A_sup_mu_max_tilde[2] ** 2 + A_sup_mu_max_tilde[3] ** 2
     )
@@ -22,7 +27,7 @@ def whelan2014(M_mu_nu: np.ndarray, x_mu: np.ndarray, h0A: float) -> float:
     alpha_mu = (
         (-3 / 4 / k)
         * 2
-        * A_sup_mu_max_tilde
+        * np.array(A_sup_mu_max_tilde)
         * np.array(
             [
                 A_sup_mu_max_tilde[2] ** 2 + A_sup_mu_max_tilde[3] ** 2,

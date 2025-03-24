@@ -274,9 +274,9 @@ def main():
             segments[ifo],
             template_mem,
             use_cluster=False,
-            downsample_factor=DOWNSAMPLE_FACTOR,
-            upsample_threshold=UPSAMPLE_THRESHOLD,
-            upsample_method=UPSAMPLE_METHOD,
+            downsample_factor=conf.injection.downsample_factor,
+            upsample_threshold=conf.injection.upsample_threshold,
+            upsample_method=conf.injection.upsample_method,
         )
         for ifo in INSTRUMENTS
     }

@@ -13,6 +13,7 @@ from colens.coherent import coherent_statistic_adapter
 from colens.detector import MyDetector
 from colens.fstatistic import get_two_f
 from colens.injection import get_strain_list_from_bilby_simulation
+from colens.interpolate import get_snr, get_snr_interpolated
 from colens.io import (
     Output,
     PerDetectorOutput,
@@ -329,6 +330,7 @@ def main():
             TIME_GPS_FUTURE_SECONDS,
             coherent_func,
             output_data,
+            get_snr_interpolated,
         )
 
     logging.info("Filtering completed")

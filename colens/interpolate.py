@@ -2,7 +2,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 
-def interpolate_timeseries_at(time, timeseries, index, margin):
+def _interpolate_timeseries_at(time, timeseries, index, margin):
     value = interp1d(
         np.array(timeseries.sample_times)[index - margin : index + margin],
         np.array(timeseries)[index - margin : index + margin],
@@ -10,7 +10,7 @@ def interpolate_timeseries_at(time, timeseries, index, margin):
     return value
 
 
-def get_index(
+def _get_index(
     trigger_time_seconds,
     gps_start_seconds,
     sample_rate,
@@ -36,7 +36,7 @@ def get_snr(
     time_slides_seconds,
     margin,
 ):
-    index_trigger = get_index(
+    index_trigger = _get_index(
         trigger_time_seconds,
         gps_start_seconds,
         sample_rate,
@@ -58,14 +58,14 @@ def get_snr_interpolated(
     time_slides_seconds,
     margin,
 ):
-    index_trigger = get_index(
+    index_trigger = _get_index(
         trigger_time_seconds,
         gps_start_seconds,
         sample_rate,
         time_delay_idx,
         cumulative_index,
     )
-    snr_at_trigger = interpolate_timeseries_at(
+    snr_at_trigger = _interpolate_timeseries_at(
         time=trigger_time_seconds
         + time_delay_zerolag_seconds
         + time_slides_seconds

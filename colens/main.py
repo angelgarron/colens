@@ -329,7 +329,7 @@ def main():
             conf.injection.cluster_window,
             conf.injection.slide_shift_seconds,
             conf.injection.sample_rate,
-            conf.injection.gps_start_seconds,
+            GPS_START_SECONDS,
             conf.injection.time_gps_past_seconds,
             conf.injection.time_gps_future_seconds,
             get_two_f,

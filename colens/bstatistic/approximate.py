@@ -9,19 +9,12 @@ from colens.bstatistic.convert import (
     convert_A_to_polar_coordinates,
     convert_M_to_M_tilde,
 )
+from colens.bstatistic.limits import get_h0A
 from colens.fstatistic import get_maximizing_A, get_two_f
 
 
-def _get_h0A(M_mu_nu: np.ndarray, x_mu: np.ndarray) -> float:
-    det_M = M_mu_nu[0, 0] * M_mu_nu[1, 1] - M_mu_nu[0, 1] ** 2
-    return (1.0 / det_M) * np.sqrt(
-        M_mu_nu[1, 1] ** 2 * (x_mu[0] ** 2 + x_mu[2] ** 2)
-        + M_mu_nu[0, 0] ** 2 * (x_mu[1] ** 2 + x_mu[3] ** 2)
-    )
-
-
 def whelan2014(M_mu_nu: np.ndarray, x_mu: np.ndarray) -> float:
-    h0A = _get_h0A(M_mu_nu, x_mu)
+    h0A = get_h0A(M_mu_nu, x_mu)
     A_sup_mu_max = get_maximizing_A(M_mu_nu, x_mu)
     A_sup_mu_max_tilde = convert_A_to_A_tilde(
         A_sup_mu_max[0],
@@ -73,7 +66,7 @@ def whelan2014(M_mu_nu: np.ndarray, x_mu: np.ndarray) -> float:
 
 
 def dhurandhar2017(M_mu_nu: np.ndarray, x_mu: np.ndarray) -> float:
-    h0A = _get_h0A(M_mu_nu, x_mu)
+    h0A = get_h0A(M_mu_nu, x_mu)
     f = get_two_f(M_mu_nu, x_mu) / 2
     A_sup_mu_max = get_maximizing_A(M_mu_nu, x_mu)
     A_r_max, A_l_max, phi_r_max, phi_l_max = convert_A_to_polar_coordinates(
@@ -88,7 +81,7 @@ def dhurandhar2017(M_mu_nu: np.ndarray, x_mu: np.ndarray) -> float:
 
 
 def bero2018(M_mu_nu: np.ndarray, x_mu: np.ndarray) -> float:
-    h0A = _get_h0A(M_mu_nu, x_mu)
+    h0A = get_h0A(M_mu_nu, x_mu)
     M_mu_nu_tilde = convert_M_to_M_tilde(M_mu_nu)
     I = M_mu_nu_tilde[0, 0]
     J = M_mu_nu_tilde[2, 2]

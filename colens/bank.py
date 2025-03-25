@@ -42,10 +42,20 @@ class MyFilterBank(FilterBank):
     def template_bank__init__(
         self, filename, approximant=None, parameters=None, **kwds
     ):
+        f = {
+            "appoximant": np.array(["IMRPhenomXAS"]),
+            "f_lower": np.array([30.0]),
+            "mass1": np.array([79.45]),
+            "mass2": np.array([48.50]),
+            "spin1z": np.array([0.60]),
+            "spin2z": np.array([0.05]),
+            "delta_f": np.array([0.0625]),
+            "f_final": np.array([2048.0]),
+            "f_ref": np.array([50.0]),
+        }
         self.has_compressed_waveforms = False
 
         self.indoc = None
-        f = pycbc.io.HFile(filename, "r")
         # just assume all of the top-level groups are the parameters
         fileparams = list(f.keys())
         logging.info(
@@ -74,7 +84,7 @@ class MyFilterBank(FilterBank):
         for key in common_fields + add_fields:
             data[key] = f[key][:]
             dtype.append((key, data[key].dtype))
-        num = f[fileparams[0]].size
+        num = len(f[fileparams[0]])
         self.table = pycbc.io.WaveformArray(num, dtype=dtype)
         for key in data:
             self.table[key] = data[key]

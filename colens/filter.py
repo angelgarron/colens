@@ -9,10 +9,9 @@ from colens.coincident import get_coinc_indexes
 
 def filter_ifos(
     instruments,
-    template,
+    sigmasq,
     matched_filter,
     segment_number,
-    stilde,
 ):
     # The following dicts with IFOs as keys are created to store
     # copies of the matched filtering results computed below.
@@ -33,7 +32,7 @@ def filter_ifos(
         # filtering results for the current template, segment, and IFO.
         # No clustering happens in the coherent search until the end.
         snr_ts, norm, corr, ind, snrv = matched_filter[ifo].matched_filter_and_cluster(
-            segment_number, template.sigmasq(stilde[ifo].psd), window=0
+            segment_number, sigmasq[ifo], window=0
         )
         snr_dict[ifo] = (
             snr_ts[matched_filter[ifo].segments[segment_number].analyze] * norm

@@ -1,13 +1,13 @@
 import numpy as np
-from pycbc.events import coherent as coh
+import pytest
 
 from colens.coherent import coherent_statistic_adapter
-from colens.detector import MyDetector
 from colens.fstatistic import get_two_f
 
 
-def test_coherent_snr():
-    M_mu_nu = np.array(
+@pytest.fixture
+def M_mu_nu():
+    return np.array(
         [
             [5.27449863e08, -4.98476855e08, 0.00000000e00, 0.00000000e00],
             [-4.98476855e08, 7.05533110e09, 0.00000000e00, 0.00000000e00],
@@ -15,9 +15,16 @@ def test_coherent_snr():
             [0.00000000e00, 0.00000000e00, -4.98476855e08, 7.05533110e09],
         ]
     )
-    x_mu = np.array(
+
+
+@pytest.fixture
+def x_mu():
+    return np.array(
         [101478.72780461, 227021.81579813, 137157.94876497, -306334.07181856]
     )
+
+
+def test_coherent_snr(M_mu_nu, x_mu):
     expected_coherent_snr = 8.704664414533402
     np.testing.assert_allclose(
         get_two_f(M_mu_nu, x_mu) ** 0.5,
@@ -25,7 +32,7 @@ def test_coherent_snr():
     )
 
 
-def test_coherent_statistic_adapter():
+def test_coherent_statistic_adapter(M_mu_nu, x_mu):
     snr_H1_at_trigger_original = 1.5710026025772095 - 6.665505409240723j
     snr_H1_at_trigger_lensed = 0.6309635639190674 - 1.0601197481155396j
     snr_L1_at_trigger_original = 8.013982772827148 - 1.995304822921753j
@@ -49,7 +56,7 @@ def test_coherent_statistic_adapter():
         "H1_lensed": 0.46580796967133664,
         "L1_lensed": -0.4474797457859099,
     }
-    M_mu_nu, x_mu = coherent_statistic_adapter(
+    M_mu_nu_computed, x_mu_computed = coherent_statistic_adapter(
         snr_H1_at_trigger_original,
         snr_L1_at_trigger_original,
         snr_H1_at_trigger_lensed,
@@ -59,16 +66,5 @@ def test_coherent_statistic_adapter():
         fc,
         instruments,
     )
-    M_mu_nu_expected = np.array(
-        [
-            [5.27449863e08, -4.98476855e08, 0.00000000e00, 0.00000000e00],
-            [-4.98476855e08, 7.05533110e09, 0.00000000e00, 0.00000000e00],
-            [0.00000000e00, 0.00000000e00, 5.27449863e08, -4.98476855e08],
-            [0.00000000e00, 0.00000000e00, -4.98476855e08, 7.05533110e09],
-        ]
-    )
-    x_mu_expected = np.array(
-        [101478.72780461, 227021.81579813, 137157.94876497, -306334.07181856]
-    )
-    np.testing.assert_allclose(M_mu_nu, M_mu_nu_expected)
-    np.testing.assert_allclose(x_mu, x_mu_expected)
+    np.testing.assert_allclose(M_mu_nu_computed, M_mu_nu)
+    np.testing.assert_allclose(x_mu_computed, x_mu)

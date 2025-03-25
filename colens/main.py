@@ -8,6 +8,7 @@ from pycbc.strain import StrainSegments
 from pycbc.types import complex64, float32, zeros
 
 from colens.background import slide_limiter
+from colens.bank import MyFilterBank
 from colens.brute_force_filter import brute_force_filter_template
 from colens.configuration import read_configuration_from
 from colens.detector import MyDetector
@@ -218,7 +219,18 @@ def main():
             seg /= seg.psd
 
     logging.info("Read in template bank")
-    bank = waveform.FilterBank(
+    template_parameters = {
+        "appoximant": np.array([conf.injection.approximant]),
+        "f_lower": np.array([conf.injection.low_frequency_cutoff]),
+        "mass1": np.array([79.45]),
+        "mass2": np.array([48.50]),
+        "spin1z": np.array([0.60]),
+        "spin2z": np.array([0.05]),
+        "delta_f": np.array([0.0625]),
+        "f_final": np.array([2048.0]),
+        "f_ref": np.array([conf.injection.reference_frequency]),
+    }
+    bank = MyFilterBank(
         conf.injection.bank_file,
         frequency_length,
         delta_f,
@@ -228,6 +240,7 @@ def main():
         taper=conf.injection.taper_template,
         approximant=conf.injection.approximant,
         out=template_mem,
+        template_parameters=template_parameters,
     )
 
     logging.info("Full template bank size: %d", len(bank))

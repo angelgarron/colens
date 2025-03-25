@@ -1,3 +1,6 @@
+"""Hacky implementation of a filter bank that doesn't require storing a file. If at some point this
+gets implemented in pycbc, replace with their implementation."""
+
 import logging
 
 import h5py
@@ -42,22 +45,12 @@ class MyFilterBank(FilterBank):
     def template_bank__init__(
         self, filename, approximant=None, parameters=None, **kwds
     ):
-        f = {
-            "appoximant": np.array(["IMRPhenomXAS"]),
-            "f_lower": np.array([30.0]),
-            "mass1": np.array([79.45]),
-            "mass2": np.array([48.50]),
-            "spin1z": np.array([0.60]),
-            "spin2z": np.array([0.05]),
-            "delta_f": np.array([0.0625]),
-            "f_final": np.array([2048.0]),
-            "f_ref": np.array([50.0]),
-        }
+        template_parameters = kwds["template_parameters"]
         self.has_compressed_waveforms = False
 
         self.indoc = None
         # just assume all of the top-level groups are the parameters
-        fileparams = list(f.keys())
+        fileparams = list(template_parameters.keys())
         logging.info(
             "WARNING: no parameters attribute found. "
             "Assuming that %s " % (", ".join(fileparams)) + "are the parameters."
@@ -82,14 +75,14 @@ class MyFilterBank(FilterBank):
         dtype = []
         data = {}
         for key in common_fields + add_fields:
-            data[key] = f[key][:]
+            data[key] = template_parameters[key][:]
             dtype.append((key, data[key].dtype))
-        num = len(f[fileparams[0]])
+        num = len(template_parameters[fileparams[0]])
         self.table = pycbc.io.WaveformArray(num, dtype=dtype)
         for key in data:
             self.table[key] = data[key]
         # add the compressed waveforms, if they exist
-        self.has_compressed_waveforms = "compressed_waveforms" in f
+        self.has_compressed_waveforms = "compressed_waveforms" in template_parameters
 
         # if approximant is specified, override whatever was in the file
         # (if anything was in the file)

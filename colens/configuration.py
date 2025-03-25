@@ -216,6 +216,3 @@ def read_configuration_from(filename: str) -> Configuration:
     config = ConfigParser()
     config.read(filename)
     return Configuration.from_dict(config)
-
-
-print(read_configuration_from("config.ini").output.output_file_name)

@@ -68,6 +68,18 @@ def strongly_lensed_BBH_waveform(
     return wf
 
 
+def get_strains_from(ifos, ifo_names, start_time):
+    strains = []
+    for i in range(len(ifo_names)):
+        strain_tmp = TimeSeries(
+            initial_array=ifos[i].time_domain_strain,
+            delta_t=ifos[i].time_array[1] - ifos[i].time_array[0],
+            epoch=start_time,
+        )
+        strains.append(strain_tmp)
+    return strains
+
+
 def get_ifos_without_noise(ifo_names, sampling_frequency, duration, start_time):
     ifos = bilby.gw.detector.InterferometerList(ifo_names)
     ifos.set_strain_data_from_zero_noise(
@@ -126,14 +138,7 @@ def get_strain_list_from_bilby_simulation(
     ifos.inject_signal(
         waveform_generator=waveform_generator, parameters=injection_parameters
     )
-    strains = []
-    for i in range(len(ifo_names)):
-        strain_tmp = TimeSeries(
-            initial_array=ifos[i].time_domain_strain,
-            delta_t=ifos[i].time_array[1] - ifos[i].time_array[0],
-            epoch=start_time,
-        )
-        strains.append(strain_tmp)
+    strains = get_strains_from(ifos, ifo_names, start_time)
     if is_real_noise:
         for i in range(len(ifo_names)):
             noise = get_strain_dict_from_files(
@@ -170,14 +175,7 @@ def get_strain_list_from_pycbc_simulation(
 
     ifos = get_ifos_function(ifo_names, sampling_frequency, duration, start_time)
 
-    strains = []
-    for i in range(len(ifo_names)):
-        strain_tmp = TimeSeries(
-            initial_array=ifos[i].time_domain_strain,
-            delta_t=ifos[i].time_array[1] - ifos[i].time_array[0],
-            epoch=start_time,
-        )
-        strains.append(strain_tmp)
+    strains = get_strains_from(ifos, ifo_names, start_time)
     if is_real_noise:
         for i in range(len(ifo_names)):
             noise = get_strain_dict_from_files(

@@ -25,7 +25,8 @@ from colens.strain import process_strain_dict
 
 
 def create_injections(
-    injection_parameters: dict[str, float], conf_injection: configuration.Injection
+    injection_parameters: configuration.InjectionParameters,
+    conf_injection: configuration.Injection,
 ):
     # The extra padding we are adding here is going to get removed after highpassing
     return_value = get_strain_list_from_bilby_simulation(
@@ -42,7 +43,7 @@ def create_injections(
     )
     strain_dict = dict(zip(["H1", "L1"], return_value))
     # the lensed image
-    injection_parameters["geocent_time"] = conf_injection.time_gps_future_seconds
+    injection_parameters.geocent_time = conf_injection.time_gps_future_seconds
     return_value = get_strain_list_from_bilby_simulation(
         injection_parameters,
         ["H1", "L1"],
@@ -85,37 +86,8 @@ def main():
         ifo: MyDetector(ifo) for ifo in conf.injection.unlensed_instruments
     }
 
-    logging.info("Creating template bank")
-    create_filter_bank(
-        79.45,
-        48.50,
-        0.60,
-        0.05,
-        conf.injection.bank_file,
-        conf.injection.approximant,
-        conf.injection.low_frequency_cutoff,
-        conf.injection.reference_frequency,
-    )
-
-    # logging.info("Injecting simulated signals on gaussian noise")
-    # injection_parameters = dict(
-    #     mass_1=79.45,
-    #     mass_2=48.5,
-    #     a_1=0.6,
-    #     a_2=0.05,
-    #     tilt_1=0.0,
-    #     tilt_2=0.0,
-    #     phi_12=0.0,
-    #     phi_jl=0.0,
-    #     luminosity_distance=2000.0,
-    #     theta_jn=0.0,
-    #     psi=0.0,
-    #     phase=0.0,
-    #     geocent_time=TIME_GPS_PAST_SECONDS,
-    #     ra=6.0,
-    #     dec=-1.2,
-    # )
-    # strain_dict = create_injections(injection_parameters)
+    logging.info("Injecting simulated signals on gaussian noise")
+    strain_dict = create_injections(conf.injection_parameters, conf.injection)
 
     process_strain_dict(
         strain_dict,

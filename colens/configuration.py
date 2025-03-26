@@ -191,6 +191,45 @@ class Output:
 
 
 @dataclass
+class InjectionParameters:
+    mass_1: float
+    mass_2: float
+    a_1: float
+    a_2: float
+    tilt_1: float
+    tilt_2: float
+    phi_12: float
+    phi_jl: float
+    luminosity_distance: float
+    theta_jn: float
+    psi: float
+    phase: float
+    geocent_time: float
+    ra: float
+    dec: float
+
+    @classmethod
+    def from_dict(cls: Type[InjectionParameters], obj: dict) -> InjectionParameters:
+        return cls(
+            mass_1=obj["mass_1"],
+            mass_2=obj["mass_2"],
+            a_1=obj["a_1"],
+            a_2=obj["a_2"],
+            tilt_1=obj["tilt_1"],
+            tilt_2=obj["tilt_2"],
+            phi_12=obj["phi_12"],
+            phi_jl=obj["phi_jl"],
+            luminosity_distance=obj["luminosity_distance"],
+            theta_jn=obj["theta_jn"],
+            psi=obj["psi"],
+            phase=obj["phase"],
+            geocent_time=obj["geocent_time"],
+            ra=obj["ra"],
+            dec=obj["dec"],
+        )
+
+
+@dataclass
 class Configuration:
     data: Data
     injection: Injection
@@ -198,6 +237,7 @@ class Configuration:
     psd: Psd
     sky_patch: SkyPatch
     output: Output
+    injection_parameters: InjectionParameters
 
     @classmethod
     def from_dict(cls: Type[Configuration], obj: dict) -> Configuration:
@@ -208,6 +248,9 @@ class Configuration:
             psd=Psd.from_dict(obj["psd"]),
             sky_patch=SkyPatch.from_dict(obj["sky_patch"]),
             output=Output.from_dict(obj["output"]),
+            injection_parameters=InjectionParameters.from_dict(
+                obj["injection_parameters"]
+            ),
         )
 
 

@@ -1,7 +1,8 @@
 """Functions used to inject simulated signals."""
 
+import dataclasses
+
 import bilby
-import numpy as np
 from pycbc.detector import Detector
 from pycbc.types.timeseries import TimeSeries
 from pycbc.waveform import get_fd_waveform, get_td_waveform
@@ -78,7 +79,8 @@ def get_strain_list_from_bilby_simulation(
     )
 
     ifos.inject_signal(
-        waveform_generator=waveform_generator, parameters=injection_parameters
+        waveform_generator=waveform_generator,
+        parameters=dataclasses.asdict(injection_parameters),
     )
     strains = _get_strains_from(ifos, ifo_names, start_time)
 

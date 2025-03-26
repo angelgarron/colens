@@ -64,3 +64,20 @@ sky_patch:
 
 output:
     output_file_name: "results.json"
+
+injection_parameters:
+    mass_1: 79.45
+    mass_2: 48.5
+    a_1: 0.6
+    a_2: 0.05
+    tilt_1: 0.0
+    tilt_2: 0.0
+    phi_12: 0.0
+    phi_jl: 0.0
+    luminosity_distance: 2000.0
+    theta_jn: 1.3
+    psi: 0.5
+    phase: 0.1
+    geocent_time: 1185389807.298705
+    ra: 6.0
+    dec: -1.2

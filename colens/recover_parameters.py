@@ -140,3 +140,11 @@ def XLALAmplitudeVect2Params(
         phi0Ret -= 2 * np.pi
 
     return aPlus, aCross, psiRet, phi0Ret
+
+
+def aplus_across_to_distance_cosi(aplus, across):
+    cosi = aplus / across + (aplus**2 / across**2 - 1) ** 0.5
+    if np.abs(cosi) > 1:
+        cosi = aplus / across - (aplus**2 / across**2 - 1) ** 0.5
+    distance = across / cosi
+    return distance, cosi

@@ -38,7 +38,6 @@ def create_injections(injection_parameters: dict[str, float]):
         seed=1,
         approximant=conf.injection.approximant,
         get_ifos_function=get_ifos_with_simulated_noise,
-        # is_real_noise=True,
     )
     strain_dict = dict(zip(["H1", "L1"], return_value))
     # the lensed image
@@ -56,7 +55,6 @@ def create_injections(injection_parameters: dict[str, float]):
         seed=2,
         approximant=conf.injection.approximant,
         get_ifos_function=get_ifos_with_simulated_noise,
-        # is_real_noise=True,
         suffix="_lensed",
     )
     strain_dict.update(

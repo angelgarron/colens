@@ -100,6 +100,10 @@ def get_ifos_with_simulated_noise(ifo_names, sampling_frequency, duration, start
     return ifos
 
 
+def get_ifos_with_real_noise(ifo_names, sampling_frequency, duration, start_time):
+    return get_ifos_without_noise(ifo_names, sampling_frequency, duration, start_time)
+
+
 def inject_real_noise(strains, ifo_names, start_time, end_time, suffix):
     for i in range(len(ifo_names)):
         noise = get_strain_dict_from_files(
@@ -124,7 +128,6 @@ def get_strain_list_from_bilby_simulation(
     seed,
     approximant,
     get_ifos_function,
-    is_real_noise=False,
     suffix="",
 ):
     # Set up a random seed for result reproducibility.  This is optional!
@@ -152,7 +155,7 @@ def get_strain_list_from_bilby_simulation(
         waveform_generator=waveform_generator, parameters=injection_parameters
     )
     strains = get_strains_from(ifos, ifo_names, start_time)
-    if is_real_noise:
+    if get_ifos_function == get_ifos_with_real_noise:
         inject_real_noise(strains, ifo_names, start_time, end_time, suffix)
 
     return strains
@@ -169,7 +172,6 @@ def get_strain_list_from_pycbc_simulation(
     seed,
     approximant,
     get_ifos_function,
-    is_real_noise=False,
     suffix="",
 ):
     duration = end_time - start_time
@@ -190,7 +192,7 @@ def get_strain_list_from_pycbc_simulation(
             ifo_names[i],
         )
         strains[i] = strains[i].inject(signal)
-    if is_real_noise:
+    if get_ifos_function == get_ifos_with_real_noise:
         inject_real_noise(strains, ifo_names, start_time, end_time, suffix)
 
     return strains

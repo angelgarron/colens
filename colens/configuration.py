@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import json
-from configparser import ConfigParser
 from dataclasses import dataclass, field
 from typing import Type
 
 import numpy as np
+import yaml
 
 
 @dataclass
@@ -14,10 +13,10 @@ class Data:
     channels: dict
 
     @classmethod
-    def from_dict(cls: Type[Data], obj: ConfigParser) -> Data:
+    def from_dict(cls: Type[Data], obj: dict) -> Data:
         return cls(
-            frame_files=json.loads(obj["frame_files"]),
-            channels=json.loads(obj["channels"]),
+            frame_files=obj["frame_files"],
+            channels=obj["channels"],
         )
 
 
@@ -88,36 +87,36 @@ class Injection:
             )
 
     @classmethod
-    def from_dict(cls: Type[Injection], obj: ConfigParser) -> Injection:
+    def from_dict(cls: Type[Injection], obj: dict) -> Injection:
         return cls(
-            time_gps_past_seconds=obj.getfloat("time_gps_past_seconds"),
-            time_gps_future_seconds=obj.getfloat("time_gps_future_seconds"),
-            ra=obj.getfloat("ra"),
-            dec=obj.getfloat("dec"),
-            sample_rate=obj.getfloat("sample_rate"),
-            unlensed_instruments=json.loads(obj["unlensed_instruments"]),
-            lensed_instruments=json.loads(obj["lensed_instruments"]),
-            segment_length_seconds=obj.getfloat("segment_length_seconds"),
-            slide_shift_seconds=obj.getfloat("slide_shift_seconds"),
-            low_frequency_cutoff=obj.getfloat("low_frequency_cutoff"),
-            reference_frequency=obj.getfloat("reference_frequency"),
-            sngl_snr_threshold=obj.getfloat("sngl_snr_threshold"),
-            downsample_factor=obj.getint("downsample_factor"),
-            upsample_threshold=obj.getfloat("upsample_threshold"),
+            time_gps_past_seconds=obj["time_gps_past_seconds"],
+            time_gps_future_seconds=obj["time_gps_future_seconds"],
+            ra=obj["ra"],
+            dec=obj["dec"],
+            sample_rate=obj["sample_rate"],
+            unlensed_instruments=obj["unlensed_instruments"],
+            lensed_instruments=obj["lensed_instruments"],
+            segment_length_seconds=obj["segment_length_seconds"],
+            slide_shift_seconds=obj["slide_shift_seconds"],
+            low_frequency_cutoff=obj["low_frequency_cutoff"],
+            reference_frequency=obj["reference_frequency"],
+            sngl_snr_threshold=obj["sngl_snr_threshold"],
+            downsample_factor=obj["downsample_factor"],
+            upsample_threshold=obj["upsample_threshold"],
             upsample_method=obj["upsample_method"],
             bank_file=obj["bank_file"],
             order=obj["order"],
             taper_template=obj["taper_template"],
             approximant=obj["approximant"],
-            coinc_threshold=obj.getfloat("coinc_threshold"),
-            do_null_cut=obj.getboolean("do_null_cut"),
-            null_min=obj.getfloat("null_min"),
-            null_grad=obj.getfloat("null_grad"),
-            null_step=obj.getfloat("null_step"),
-            cluster_window=obj.getfloat("cluster_window"),
-            pad_seconds=obj.getfloat("pad_seconds"),
-            segment_start_pad_seconds=obj.getfloat("segment_start_pad_seconds"),
-            segment_end_pad_seconds=obj.getfloat("segment_end_pad_seconds"),
+            coinc_threshold=obj["coinc_threshold"],
+            do_null_cut=obj["do_null_cut"],
+            null_min=obj["null_min"],
+            null_grad=obj["null_grad"],
+            null_step=obj["null_step"],
+            cluster_window=obj["cluster_window"],
+            pad_seconds=obj["pad_seconds"],
+            segment_start_pad_seconds=obj["segment_start_pad_seconds"],
+            segment_end_pad_seconds=obj["segment_end_pad_seconds"],
         )
 
 
@@ -135,18 +134,18 @@ class Chisq:
     chisq_nhigh: float
 
     @classmethod
-    def from_dict(cls: Type[Chisq], obj: ConfigParser) -> Chisq:
+    def from_dict(cls: Type[Chisq], obj: dict) -> Chisq:
         return cls(
             chisq_bins=obj["chisq_bins"],
-            autochi_stride=obj.getint("autochi_stride"),
-            autochi_number_points=obj.getint("autochi_number_points"),
+            autochi_stride=obj["autochi_stride"],
+            autochi_number_points=obj["autochi_number_points"],
             autochi_onesided=obj["autochi_onesided"],
-            autochi_two_phase=obj.getboolean("autochi_two_phase"),
-            autochi_reverse_template=obj.getboolean("autochi_reverse_template"),
+            autochi_two_phase=obj["autochi_two_phase"],
+            autochi_reverse_template=obj["autochi_reverse_template"],
             autochi_max_valued=obj["autochi_max_valued"],
             autochi_max_valued_dof=obj["autochi_max_valued_dof"],
-            chisq_index=obj.getfloat("chisq_index"),
-            chisq_nhigh=obj.getfloat("chisq_nhigh"),
+            chisq_index=obj["chisq_index"],
+            chisq_nhigh=obj["chisq_nhigh"],
         )
 
 
@@ -158,12 +157,12 @@ class Psd:
     strain_high_pass_hertz: float
 
     @classmethod
-    def from_dict(cls: Type[Psd], obj: ConfigParser) -> Psd:
+    def from_dict(cls: Type[Psd], obj: dict) -> Psd:
         return cls(
-            psd_segment_stride_seconds=obj.getfloat("psd_segment_stride_seconds"),
-            psd_segment_length_seconds=obj.getfloat("psd_segment_length_seconds"),
-            psd_num_segments=obj.getint("psd_num_segments"),
-            strain_high_pass_hertz=obj.getfloat("strain_high_pass_hertz"),
+            psd_segment_stride_seconds=obj["psd_segment_stride_seconds"],
+            psd_segment_length_seconds=obj["psd_segment_length_seconds"],
+            psd_num_segments=obj["psd_num_segments"],
+            strain_high_pass_hertz=obj["strain_high_pass_hertz"],
         )
 
 
@@ -173,10 +172,10 @@ class SkyPatch:
     sky_error: float
 
     @classmethod
-    def from_dict(cls: Type[SkyPatch], obj: ConfigParser) -> SkyPatch:
+    def from_dict(cls: Type[SkyPatch], obj: dict) -> SkyPatch:
         return cls(
-            angular_spacing=obj.getfloat("angular_spacing") * np.pi / 180,
-            sky_error=obj.getfloat("sky_error") * np.pi / 180,
+            angular_spacing=obj["angular_spacing"] * np.pi / 180,
+            sky_error=obj["sky_error"] * np.pi / 180,
         )
 
 
@@ -185,7 +184,7 @@ class Output:
     output_file_name: str
 
     @classmethod
-    def from_dict(cls: Type[SkyPatch], obj: ConfigParser) -> SkyPatch:
+    def from_dict(cls: Type[SkyPatch], obj: dict) -> SkyPatch:
         return cls(
             output_file_name=obj["output_file_name"],
         )
@@ -201,7 +200,7 @@ class Configuration:
     output: Output
 
     @classmethod
-    def from_dict(cls: Type[Configuration], obj: ConfigParser) -> Configuration:
+    def from_dict(cls: Type[Configuration], obj: dict) -> Configuration:
         return cls(
             data=Data.from_dict(obj["data"]),
             injection=Injection.from_dict(obj["injection"]),
@@ -213,6 +212,6 @@ class Configuration:
 
 
 def read_configuration_from(filename: str) -> Configuration:
-    config = ConfigParser()
-    config.read(filename)
+    with open(filename, "r") as file:
+        config = yaml.safe_load(file)
     return Configuration.from_dict(config)

@@ -144,14 +144,6 @@ def main():
     logging.info("Setting up MatchedFilterControl at each IFO")
     template_mem = zeros(segment_length, dtype=complex64)
 
-    # All MatchedFilterControl instances are initialized in the same way.
-    # This allows to track where the single detector SNR timeseries are
-    # greater than args.sngl_snr_threshold. Later, coh.get_coinc_indexes
-    # will enforce the requirement that at least two single detector SNR
-    # are above args.sngl_snr_threshold, rescuing, where necessary, SNR
-    # timeseries points for detectors below that threshold.
-    # NOTE: Do not cluster here for a coherent search (use_cluster=False).
-    #       Clustering happens at the end of the template loop.
     matched_filter = {
         ifo: MatchedFilterControl(
             conf.injection.low_frequency_cutoff,

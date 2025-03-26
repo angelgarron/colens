@@ -9,26 +9,32 @@ from colens.fstatistic import get_two_f
 def M_mu_nu():
     return np.array(
         [
-            [5.27449863e08, -4.98476855e08, 0.00000000e00, 0.00000000e00],
-            [-4.98476855e08, 7.05533110e09, 0.00000000e00, 0.00000000e00],
-            [0.00000000e00, 0.00000000e00, 5.27449863e08, -4.98476855e08],
-            [0.00000000e00, 0.00000000e00, -4.98476855e08, 7.05533110e09],
+            [0.17, 0.50, 0.67, 0.93],
+            [0.43, 0.23, 0.51, 0.42],
+            [0.65, 0.71, 0.18, 0.22],
+            [0.58, 0.89, 0.65, 0.47],
         ]
     )
 
 
 @pytest.fixture
 def x_mu():
-    return np.array(
-        [101478.72780461, 227021.81579813, 137157.94876497, -306334.07181856]
+    return np.array([0.54, 0.68, 0.21, 0.87])
+
+
+def test_get_two_f(M_mu_nu, x_mu):
+    M_sup_mu_sup_nu = np.linalg.inv(M_mu_nu)
+    expected_two_f = np.sum(
+        np.array(
+            [
+                [x_mu[i] * M_sup_mu_sup_nu[i, j] * x_mu[j] for j in range(4)]
+                for i in range(4)
+            ]
+        )
     )
-
-
-def test_coherent_snr(M_mu_nu, x_mu):
-    expected_coherent_snr = 8.704664414533402
     np.testing.assert_allclose(
-        get_two_f(M_mu_nu, x_mu) ** 0.5,
-        expected_coherent_snr,
+        get_two_f(M_mu_nu, x_mu),
+        expected_two_f,
     )
 
 

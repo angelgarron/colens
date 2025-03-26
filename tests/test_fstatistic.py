@@ -1,13 +1,10 @@
 import numpy as np
-import pytest
 
-from colens.coherent import coherent_statistic_adapter
 from colens.fstatistic import get_two_f
 
 
-@pytest.fixture
-def M_mu_nu():
-    return np.array(
+def test_get_two_f():
+    M_mu_nu = np.array(
         [
             [0.17, 0.50, 0.67, 0.93],
             [0.43, 0.23, 0.51, 0.42],
@@ -15,14 +12,8 @@ def M_mu_nu():
             [0.58, 0.89, 0.65, 0.47],
         ]
     )
+    x_mu = np.array([0.54, 0.68, 0.21, 0.87])
 
-
-@pytest.fixture
-def x_mu():
-    return np.array([0.54, 0.68, 0.21, 0.87])
-
-
-def test_get_two_f(M_mu_nu, x_mu):
     M_sup_mu_sup_nu = np.linalg.inv(M_mu_nu)
     expected_two_f = np.sum(
         np.array(

@@ -228,11 +228,6 @@ def _get_signal_from_pycbc(
         f_final=2048.0,
     )
 
-    # TODO accounting for the morse phase shift (hanabi wasn't accounting for sign(f))
-    # should I multiply by np.sign(frequency_array)?
-    # hp = np.exp(-1j * morse_phase) * np.ones_like(hp) * hp
-    # hc = np.exp(-1j * morse_phase) * np.ones_like(hc) * hc
-
     hp = hp.to_timeseries(delta_t=1.0 / sampling_frequency)
     hc = hc.to_timeseries(delta_t=1.0 / sampling_frequency)
     det = Detector(ifo)

@@ -22,7 +22,7 @@ from colens.io import Output, PerDetectorOutput, get_strain_dict_from_files
 from colens.psd import associate_psd_to_segments
 from colens.strain import process_strain_dict
 
-conf = read_configuration_from("config.ini")
+conf = read_configuration_from("config.yaml")
 
 
 def create_injections(injection_parameters: dict[str, float]):

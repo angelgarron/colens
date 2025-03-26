@@ -100,6 +100,19 @@ def get_ifos_with_simulated_noise(ifo_names, sampling_frequency, duration, start
     return ifos
 
 
+def inject_real_noise(strains, ifo_names, start_time, end_time, suffix):
+    for i in range(len(ifo_names)):
+        noise = get_strain_dict_from_files(
+            FRAME_FILES,
+            CHANNELS,
+            [ifo_names[i] + suffix],
+            {ifo_names[i] + suffix: start_time},
+            {ifo_names[i] + suffix: end_time},
+            PAD_SECONDS,
+        )[ifo_names[i] + suffix]
+        strains[i] = strains[i].inject(noise)
+
+
 def get_strain_list_from_bilby_simulation(
     injection_parameters,
     ifo_names,
@@ -140,16 +153,7 @@ def get_strain_list_from_bilby_simulation(
     )
     strains = get_strains_from(ifos, ifo_names, start_time)
     if is_real_noise:
-        for i in range(len(ifo_names)):
-            noise = get_strain_dict_from_files(
-                FRAME_FILES,
-                CHANNELS,
-                [ifo_names[i] + suffix],
-                {ifo_names[i] + suffix: start_time},
-                {ifo_names[i] + suffix: end_time},
-                PAD_SECONDS,
-            )[ifo_names[i] + suffix]
-            strains[i] = strains[i].inject(noise)
+        inject_real_noise(strains, ifo_names, start_time, end_time, suffix)
 
     return strains
 
@@ -176,17 +180,6 @@ def get_strain_list_from_pycbc_simulation(
     ifos = get_ifos_function(ifo_names, sampling_frequency, duration, start_time)
 
     strains = get_strains_from(ifos, ifo_names, start_time)
-    if is_real_noise:
-        for i in range(len(ifo_names)):
-            noise = get_strain_dict_from_files(
-                FRAME_FILES,
-                CHANNELS,
-                [ifo_names[i] + suffix],
-                {ifo_names[i] + suffix: start_time},
-                {ifo_names[i] + suffix: end_time},
-                PAD_SECONDS,
-            )[ifo_names[i] + suffix]
-            strains[i] = strains[i].inject(noise)
     for i in range(len(ifo_names)):
         signal = _get_signal_from_pycbc(
             injection_parameters,
@@ -197,6 +190,8 @@ def get_strain_list_from_pycbc_simulation(
             ifo_names[i],
         )
         strains[i] = strains[i].inject(signal)
+    if is_real_noise:
+        inject_real_noise(strains, ifo_names, start_time, end_time, suffix)
 
     return strains
 

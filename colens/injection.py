@@ -78,7 +78,7 @@ def get_ifos_without_noise(ifo_names, sampling_frequency, duration, start_time):
     return ifos
 
 
-def get_ifos_with_noise(ifo_names, sampling_frequency, duration, start_time):
+def get_ifos_with_simulated_noise(ifo_names, sampling_frequency, duration, start_time):
     ifos = bilby.gw.detector.InterferometerList(ifo_names)
     ifos.set_strain_data_from_power_spectral_densities(
         sampling_frequency=sampling_frequency,

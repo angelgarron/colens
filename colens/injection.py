@@ -68,6 +68,26 @@ def strongly_lensed_BBH_waveform(
     return wf
 
 
+def get_ifos_without_noise(ifo_names, sampling_frequency, duration, start_time):
+    ifos = bilby.gw.detector.InterferometerList(ifo_names)
+    ifos.set_strain_data_from_zero_noise(
+        sampling_frequency=sampling_frequency,
+        duration=duration,
+        start_time=start_time,
+    )
+    return ifos
+
+
+def get_ifos_with_noise(ifo_names, sampling_frequency, duration, start_time):
+    ifos = bilby.gw.detector.InterferometerList(ifo_names)
+    ifos.set_strain_data_from_power_spectral_densities(
+        sampling_frequency=sampling_frequency,
+        duration=duration,
+        start_time=start_time,
+    )
+    return ifos
+
+
 def get_strain_list_from_bilby_simulation(
     injection_parameters,
     ifo_names,
@@ -78,14 +98,16 @@ def get_strain_list_from_bilby_simulation(
     sampling_frequency,
     seed,
     approximant,
+    get_ifos_function,
     is_zero_noise=False,
     is_real_noise=False,
     suffix="",
 ):
-    duration = end_time - start_time
-
     # Set up a random seed for result reproducibility.  This is optional!
     bilby.core.utils.random.seed(seed)
+    duration = end_time - start_time
+
+    ifos = get_ifos_function(ifo_names, sampling_frequency, duration, start_time)
 
     waveform_arguments = dict(
         waveform_approximant=approximant,
@@ -101,20 +123,6 @@ def get_strain_list_from_bilby_simulation(
         parameter_conversion=bilby.gw.conversion.convert_to_lal_binary_black_hole_parameters,
         waveform_arguments=waveform_arguments,
     )
-
-    ifos = bilby.gw.detector.InterferometerList(ifo_names)
-    if is_zero_noise or is_real_noise:
-        ifos.set_strain_data_from_zero_noise(
-            sampling_frequency=sampling_frequency,
-            duration=duration,
-            start_time=start_time,
-        )
-    else:
-        ifos.set_strain_data_from_power_spectral_densities(
-            sampling_frequency=sampling_frequency,
-            duration=duration,
-            start_time=start_time,
-        )
 
     ifos.inject_signal(
         waveform_generator=waveform_generator, parameters=injection_parameters
@@ -151,6 +159,7 @@ def get_strain_list_from_pycbc_simulation(
     sampling_frequency,
     seed,
     approximant,
+    get_ifos_function,
     is_zero_noise=False,
     is_real_noise=False,
     suffix="",
@@ -160,19 +169,7 @@ def get_strain_list_from_pycbc_simulation(
     # Set up a random seed for result reproducibility.  This is optional!
     bilby.core.utils.random.seed(seed)
 
-    ifos = bilby.gw.detector.InterferometerList(ifo_names)
-    if is_zero_noise or is_real_noise:
-        ifos.set_strain_data_from_zero_noise(
-            sampling_frequency=sampling_frequency,
-            duration=duration,
-            start_time=start_time,
-        )
-    else:
-        ifos.set_strain_data_from_power_spectral_densities(
-            sampling_frequency=sampling_frequency,
-            duration=duration,
-            start_time=start_time,
-        )
+    ifos = get_ifos_function(ifo_names, sampling_frequency, duration, start_time)
 
     strains = []
     for i in range(len(ifo_names)):

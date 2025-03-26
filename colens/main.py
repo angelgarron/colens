@@ -13,7 +13,7 @@ from colens.brute_force_filter import brute_force_filter_template
 from colens.configuration import read_configuration_from
 from colens.detector import MyDetector
 from colens.fstatistic import get_two_f
-from colens.injection import get_strain_list_from_bilby_simulation
+from colens.injection import get_ifos_with_noise, get_strain_list_from_bilby_simulation
 from colens.interpolate import get_snr, get_snr_interpolated
 from colens.io import Output, PerDetectorOutput, get_strain_dict_from_files
 from colens.psd import associate_psd_to_segments
@@ -34,6 +34,7 @@ def create_injections(injection_parameters: dict[str, float]):
         sampling_frequency=conf.injection.sample_rate,
         seed=1,
         approximant=conf.injection.approximant,
+        get_ifos_function=get_ifos_with_noise,
         is_zero_noise=False,
         # is_real_noise=True,
     )
@@ -52,6 +53,7 @@ def create_injections(injection_parameters: dict[str, float]):
         sampling_frequency=conf.injection.sample_rate,
         seed=2,
         approximant=conf.injection.approximant,
+        get_ifos_function=get_ifos_with_noise,
         is_zero_noise=False,
         # is_real_noise=True,
         suffix="_lensed",

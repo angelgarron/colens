@@ -55,7 +55,6 @@ def create_injections(injection_parameters: dict[str, float]):
         seed=2,
         approximant=conf.injection.approximant,
         get_ifos_function=get_ifos_with_simulated_noise,
-        suffix="_lensed",
     )
     strain_dict.update(
         dict(

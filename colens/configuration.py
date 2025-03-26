@@ -14,10 +14,7 @@ class Data:
 
     @classmethod
     def from_dict(cls: Type[Data], obj: dict) -> Data:
-        return cls(
-            frame_files=obj["frame_files"],
-            channels=obj["channels"],
-        )
+        return cls(**{key: obj[key] for key in cls.__match_args__})
 
 
 @dataclass
@@ -88,36 +85,7 @@ class Injection:
 
     @classmethod
     def from_dict(cls: Type[Injection], obj: dict) -> Injection:
-        return cls(
-            time_gps_past_seconds=obj["time_gps_past_seconds"],
-            time_gps_future_seconds=obj["time_gps_future_seconds"],
-            ra=obj["ra"],
-            dec=obj["dec"],
-            sample_rate=obj["sample_rate"],
-            unlensed_instruments=obj["unlensed_instruments"],
-            lensed_instruments=obj["lensed_instruments"],
-            segment_length_seconds=obj["segment_length_seconds"],
-            slide_shift_seconds=obj["slide_shift_seconds"],
-            low_frequency_cutoff=obj["low_frequency_cutoff"],
-            reference_frequency=obj["reference_frequency"],
-            sngl_snr_threshold=obj["sngl_snr_threshold"],
-            downsample_factor=obj["downsample_factor"],
-            upsample_threshold=obj["upsample_threshold"],
-            upsample_method=obj["upsample_method"],
-            bank_file=obj["bank_file"],
-            order=obj["order"],
-            taper_template=obj["taper_template"],
-            approximant=obj["approximant"],
-            coinc_threshold=obj["coinc_threshold"],
-            do_null_cut=obj["do_null_cut"],
-            null_min=obj["null_min"],
-            null_grad=obj["null_grad"],
-            null_step=obj["null_step"],
-            cluster_window=obj["cluster_window"],
-            pad_seconds=obj["pad_seconds"],
-            segment_start_pad_seconds=obj["segment_start_pad_seconds"],
-            segment_end_pad_seconds=obj["segment_end_pad_seconds"],
-        )
+        return cls(**{key: obj[key] for key in cls.__match_args__})
 
 
 @dataclass
@@ -135,18 +103,7 @@ class Chisq:
 
     @classmethod
     def from_dict(cls: Type[Chisq], obj: dict) -> Chisq:
-        return cls(
-            chisq_bins=obj["chisq_bins"],
-            autochi_stride=obj["autochi_stride"],
-            autochi_number_points=obj["autochi_number_points"],
-            autochi_onesided=obj["autochi_onesided"],
-            autochi_two_phase=obj["autochi_two_phase"],
-            autochi_reverse_template=obj["autochi_reverse_template"],
-            autochi_max_valued=obj["autochi_max_valued"],
-            autochi_max_valued_dof=obj["autochi_max_valued_dof"],
-            chisq_index=obj["chisq_index"],
-            chisq_nhigh=obj["chisq_nhigh"],
-        )
+        return cls(**{key: obj[key] for key in cls.__match_args__})
 
 
 @dataclass
@@ -158,12 +115,7 @@ class Psd:
 
     @classmethod
     def from_dict(cls: Type[Psd], obj: dict) -> Psd:
-        return cls(
-            psd_segment_stride_seconds=obj["psd_segment_stride_seconds"],
-            psd_segment_length_seconds=obj["psd_segment_length_seconds"],
-            psd_num_segments=obj["psd_num_segments"],
-            strain_high_pass_hertz=obj["strain_high_pass_hertz"],
-        )
+        return cls(**{key: obj[key] for key in cls.__match_args__})
 
 
 @dataclass
@@ -171,12 +123,13 @@ class SkyPatch:
     angular_spacing: float
     sky_error: float
 
+    def __post_init__(self):
+        self.angular_spacing *= np.pi / 180
+        self.sky_error *= np.pi / 180
+
     @classmethod
     def from_dict(cls: Type[SkyPatch], obj: dict) -> SkyPatch:
-        return cls(
-            angular_spacing=obj["angular_spacing"] * np.pi / 180,
-            sky_error=obj["sky_error"] * np.pi / 180,
-        )
+        return cls(**{key: obj[key] for key in cls.__match_args__})
 
 
 @dataclass
@@ -185,9 +138,7 @@ class Output:
 
     @classmethod
     def from_dict(cls: Type[SkyPatch], obj: dict) -> SkyPatch:
-        return cls(
-            output_file_name=obj["output_file_name"],
-        )
+        return cls(**{key: obj[key] for key in cls.__match_args__})
 
 
 @dataclass
@@ -210,23 +161,7 @@ class InjectionParameters:
 
     @classmethod
     def from_dict(cls: Type[InjectionParameters], obj: dict) -> InjectionParameters:
-        return cls(
-            mass_1=obj["mass_1"],
-            mass_2=obj["mass_2"],
-            a_1=obj["a_1"],
-            a_2=obj["a_2"],
-            tilt_1=obj["tilt_1"],
-            tilt_2=obj["tilt_2"],
-            phi_12=obj["phi_12"],
-            phi_jl=obj["phi_jl"],
-            luminosity_distance=obj["luminosity_distance"],
-            theta_jn=obj["theta_jn"],
-            psi=obj["psi"],
-            phase=obj["phase"],
-            geocent_time=obj["geocent_time"],
-            ra=obj["ra"],
-            dec=obj["dec"],
-        )
+        return cls(**{key: obj[key] for key in cls.__match_args__})
 
 
 @dataclass

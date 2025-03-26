@@ -24,6 +24,34 @@ from colens.psd import associate_psd_to_segments
 from colens.strain import process_strain_dict
 
 
+def create_template_bank(
+    conf_injection: configuration.Injection, template_mem, frequency_length, delta_f
+) -> MyFilterBank:
+    template_parameters = {
+        "appoximant": np.array([conf_injection.approximant]),
+        "f_lower": np.array([conf_injection.low_frequency_cutoff]),
+        "mass1": np.array([79.45]),
+        "mass2": np.array([48.50]),
+        "spin1z": np.array([0.60]),
+        "spin2z": np.array([0.05]),
+        "delta_f": np.array([0.0625]),
+        "f_final": np.array([2048.0]),
+        "f_ref": np.array([conf_injection.reference_frequency]),
+    }
+    return MyFilterBank(
+        conf_injection.bank_file,
+        frequency_length,
+        delta_f,
+        complex64,
+        low_frequency_cutoff=conf_injection.low_frequency_cutoff,
+        phase_order=conf_injection.order,
+        taper=conf_injection.taper_template,
+        approximant=conf_injection.approximant,
+        out=template_mem,
+        template_parameters=template_parameters,
+    )
+
+
 def create_injections(
     injection_parameters: configuration.InjectionParameters,
     conf_injection: configuration.Injection,
@@ -171,29 +199,7 @@ def main():
             seg /= seg.psd
 
     logging.info("Read in template bank")
-    template_parameters = {
-        "appoximant": np.array([conf.injection.approximant]),
-        "f_lower": np.array([conf.injection.low_frequency_cutoff]),
-        "mass1": np.array([79.45]),
-        "mass2": np.array([48.50]),
-        "spin1z": np.array([0.60]),
-        "spin2z": np.array([0.05]),
-        "delta_f": np.array([0.0625]),
-        "f_final": np.array([2048.0]),
-        "f_ref": np.array([conf.injection.reference_frequency]),
-    }
-    bank = MyFilterBank(
-        conf.injection.bank_file,
-        frequency_length,
-        delta_f,
-        complex64,
-        low_frequency_cutoff=conf.injection.low_frequency_cutoff,
-        phase_order=conf.injection.order,
-        taper=conf.injection.taper_template,
-        approximant=conf.injection.approximant,
-        out=template_mem,
-        template_parameters=template_parameters,
-    )
+    bank = create_template_bank(conf.injection, template_mem, frequency_length, delta_f)
 
     logging.info("Full template bank size: %d", len(bank))
 

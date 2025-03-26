@@ -99,7 +99,6 @@ def get_strain_list_from_bilby_simulation(
     seed,
     approximant,
     get_ifos_function,
-    is_zero_noise=False,
     is_real_noise=False,
     suffix="",
 ):
@@ -160,7 +159,6 @@ def get_strain_list_from_pycbc_simulation(
     seed,
     approximant,
     get_ifos_function,
-    is_zero_noise=False,
     is_real_noise=False,
     suffix="",
 ):

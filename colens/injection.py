@@ -133,7 +133,9 @@ def get_strain_list_from_bilby_simulation(
             delta_t=ifos[i].time_array[1] - ifos[i].time_array[0],
             epoch=start_time,
         )
-        if is_real_noise:
+        strains.append(strain_tmp)
+    if is_real_noise:
+        for i in range(len(ifo_names)):
             noise = get_strain_dict_from_files(
                 FRAME_FILES,
                 CHANNELS,
@@ -142,8 +144,7 @@ def get_strain_list_from_bilby_simulation(
                 {ifo_names[i] + suffix: end_time},
                 PAD_SECONDS,
             )[ifo_names[i] + suffix]
-            strain_tmp = strain_tmp.inject(noise)
-        strains.append(strain_tmp)
+            strains[i] = strains[i].inject(noise)
 
     return strains
 
@@ -176,7 +177,9 @@ def get_strain_list_from_pycbc_simulation(
             delta_t=ifos[i].time_array[1] - ifos[i].time_array[0],
             epoch=start_time,
         )
-        if is_real_noise:
+        strains.append(strain_tmp)
+    if is_real_noise:
+        for i in range(len(ifo_names)):
             noise = get_strain_dict_from_files(
                 FRAME_FILES,
                 CHANNELS,
@@ -185,7 +188,8 @@ def get_strain_list_from_pycbc_simulation(
                 {ifo_names[i] + suffix: end_time},
                 PAD_SECONDS,
             )[ifo_names[i] + suffix]
-            strain_tmp = strain_tmp.inject(noise)
+            strains[i] = strains[i].inject(noise)
+    for i in range(len(ifo_names)):
         signal = _get_signal_from_pycbc(
             injection_parameters,
             low_frequency_cutoff,
@@ -194,8 +198,7 @@ def get_strain_list_from_pycbc_simulation(
             approximant,
             ifo_names[i],
         )
-        strain_tmp = strain_tmp.inject(signal)
-        strains.append(strain_tmp)
+        strains[i] = strains[i].inject(signal)
 
     return strains
 

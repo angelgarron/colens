@@ -15,14 +15,8 @@ from colens.detector import MyDetector
 from colens.fstatistic import get_two_f
 from colens.injection import get_strain_list_from_bilby_simulation
 from colens.interpolate import get_snr, get_snr_interpolated
-from colens.io import (
-    Output,
-    PerDetectorOutput,
-    create_filter_bank,
-    get_strain_dict_from_files,
-)
+from colens.io import Output, PerDetectorOutput, get_strain_dict_from_files
 from colens.psd import associate_psd_to_segments
-from colens.sky import get_circular_sky_patch, get_sky_grid_for_three_detectors
 from colens.strain import process_strain_dict
 
 conf = read_configuration_from("config.ini")
@@ -150,13 +144,6 @@ def main():
             filter_inj_only=False,
             allow_zero_padding=False,
         ).fourier_segments()
-
-    sky_grid = get_circular_sky_patch(
-        ra=conf.injection.ra,
-        dec=conf.injection.dec,
-        sky_error=conf.sky_patch.sky_error,
-        angular_spacing=conf.sky_patch.angular_spacing,
-    )
 
     delta_f = (
         1.0 / conf.injection.segment_length_seconds

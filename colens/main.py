@@ -7,6 +7,7 @@ from pycbc.filter import MatchedFilterControl
 from pycbc.strain import StrainSegments
 from pycbc.types import complex64, float32, zeros
 
+from colens import configuration
 from colens.background import slide_limiter
 from colens.bank import MyFilterBank
 from colens.brute_force_filter import brute_force_filter_template
@@ -22,38 +23,38 @@ from colens.io import Output, PerDetectorOutput, get_strain_dict_from_files
 from colens.psd import associate_psd_to_segments
 from colens.strain import process_strain_dict
 
-conf = read_configuration_from("config.yaml")
 
-
-def create_injections(injection_parameters: dict[str, float]):
+def create_injections(
+    injection_parameters: dict[str, float], conf_injection: configuration.Injection
+):
     # The extra padding we are adding here is going to get removed after highpassing
     return_value = get_strain_list_from_bilby_simulation(
         injection_parameters,
         ["H1", "L1"],
-        start_time=conf.injection.gps_start_seconds["H1"] - conf.injection.pad_seconds,
-        end_time=conf.injection.gps_end_seconds["H1"] + conf.injection.pad_seconds,
-        low_frequency_cutoff=conf.injection.low_frequency_cutoff,
-        reference_frequency=conf.injection.reference_frequency,
-        sampling_frequency=conf.injection.sample_rate,
+        start_time=conf_injection.gps_start_seconds["H1"] - conf_injection.pad_seconds,
+        end_time=conf_injection.gps_end_seconds["H1"] + conf_injection.pad_seconds,
+        low_frequency_cutoff=conf_injection.low_frequency_cutoff,
+        reference_frequency=conf_injection.reference_frequency,
+        sampling_frequency=conf_injection.sample_rate,
         seed=1,
-        approximant=conf.injection.approximant,
+        approximant=conf_injection.approximant,
         get_ifos_function=get_ifos_with_simulated_noise,
     )
     strain_dict = dict(zip(["H1", "L1"], return_value))
     # the lensed image
-    injection_parameters["geocent_time"] = conf.injection.time_gps_future_seconds
+    injection_parameters["geocent_time"] = conf_injection.time_gps_future_seconds
     return_value = get_strain_list_from_bilby_simulation(
         injection_parameters,
         ["H1", "L1"],
-        start_time=conf.injection.gps_start_seconds["H1_lensed"]
-        - conf.injection.pad_seconds,
-        end_time=conf.injection.gps_end_seconds["H1_lensed"]
-        + conf.injection.pad_seconds,
-        low_frequency_cutoff=conf.injection.low_frequency_cutoff,
-        reference_frequency=conf.injection.reference_frequency,
-        sampling_frequency=conf.injection.sample_rate,
+        start_time=conf_injection.gps_start_seconds["H1_lensed"]
+        - conf_injection.pad_seconds,
+        end_time=conf_injection.gps_end_seconds["H1_lensed"]
+        + conf_injection.pad_seconds,
+        low_frequency_cutoff=conf_injection.low_frequency_cutoff,
+        reference_frequency=conf_injection.reference_frequency,
+        sampling_frequency=conf_injection.sample_rate,
         seed=2,
-        approximant=conf.injection.approximant,
+        approximant=conf_injection.approximant,
         get_ifos_function=get_ifos_with_simulated_noise,
     )
     strain_dict.update(
@@ -64,12 +65,12 @@ def create_injections(injection_parameters: dict[str, float]):
             )
         )
     )
-
     return strain_dict
 
 
 def main():
     init_logging(True)
+    conf = read_configuration_from("config.yaml")
     output_data = Output(
         H1=PerDetectorOutput(),
         H1_lensed=PerDetectorOutput(),

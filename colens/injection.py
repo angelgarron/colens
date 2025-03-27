@@ -109,7 +109,7 @@ def get_strain_list_from_pycbc_simulation(
     strains = _get_strains_from(ifos, ifo_names, start_time)
     for i in range(len(ifo_names)):
         signal = _get_signal_from_pycbc(
-            injection_parameters,
+            dataclasses.asdict(injection_parameters),
             low_frequency_cutoff,
             reference_frequency,
             sampling_frequency,

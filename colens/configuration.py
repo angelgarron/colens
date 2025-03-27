@@ -1,3 +1,5 @@
+"""Dataclasses to store the configuration read from a yaml file."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -7,6 +9,23 @@ import numpy as np
 import yaml
 
 
+class UnknownSectionError(Exception):
+    pass
+
+
+class UnknownSubsectionError(Exception):
+    pass
+
+
+def construct_subsection_dict(match_args: tuple[str], obj: dict) -> dict:
+    unknown_subsections = set(obj) - set(match_args)
+    if unknown_subsections:
+        raise UnknownSubsectionError(
+            f"The following subsections are not known: {', '.join(unknown_subsections)}"
+        )
+    return {key: obj[key] for key in match_args}
+
+
 @dataclass
 class Data:
     frame_files: dict
@@ -14,7 +33,7 @@ class Data:
 
     @classmethod
     def from_dict(cls: Type[Data], obj: dict) -> Data:
-        return cls(**{key: obj[key] for key in cls.__match_args__})
+        return cls(**construct_subsection_dict(cls.__match_args__, obj))
 
 
 @dataclass
@@ -85,7 +104,7 @@ class Injection:
 
     @classmethod
     def from_dict(cls: Type[Injection], obj: dict) -> Injection:
-        return cls(**{key: obj[key] for key in cls.__match_args__})
+        return cls(**construct_subsection_dict(cls.__match_args__, obj))
 
 
 @dataclass
@@ -103,7 +122,7 @@ class Chisq:
 
     @classmethod
     def from_dict(cls: Type[Chisq], obj: dict) -> Chisq:
-        return cls(**{key: obj[key] for key in cls.__match_args__})
+        return cls(**construct_subsection_dict(cls.__match_args__, obj))
 
 
 @dataclass
@@ -115,7 +134,7 @@ class Psd:
 
     @classmethod
     def from_dict(cls: Type[Psd], obj: dict) -> Psd:
-        return cls(**{key: obj[key] for key in cls.__match_args__})
+        return cls(**construct_subsection_dict(cls.__match_args__, obj))
 
 
 @dataclass
@@ -124,12 +143,13 @@ class SkyPatch:
     sky_error: float
 
     def __post_init__(self):
+        # convert from degrees to radians
         self.angular_spacing *= np.pi / 180
         self.sky_error *= np.pi / 180
 
     @classmethod
     def from_dict(cls: Type[SkyPatch], obj: dict) -> SkyPatch:
-        return cls(**{key: obj[key] for key in cls.__match_args__})
+        return cls(**construct_subsection_dict(cls.__match_args__, obj))
 
 
 @dataclass
@@ -138,7 +158,7 @@ class Output:
 
     @classmethod
     def from_dict(cls: Type[SkyPatch], obj: dict) -> SkyPatch:
-        return cls(**{key: obj[key] for key in cls.__match_args__})
+        return cls(**construct_subsection_dict(cls.__match_args__, obj))
 
 
 @dataclass
@@ -161,7 +181,7 @@ class InjectionParameters:
 
     @classmethod
     def from_dict(cls: Type[InjectionParameters], obj: dict) -> InjectionParameters:
-        return cls(**{key: obj[key] for key in cls.__match_args__})
+        return cls(**construct_subsection_dict(cls.__match_args__, obj))
 
 
 @dataclass
@@ -176,6 +196,11 @@ class Configuration:
 
     @classmethod
     def from_dict(cls: Type[Configuration], obj: dict) -> Configuration:
+        unknown_sections = set(obj) - set(cls.__match_args__)
+        if unknown_sections:
+            raise UnknownSectionError(
+                f"The following sections are not known: {', '.join(unknown_sections)}"
+            )
         return cls(
             data=Data.from_dict(obj["data"]),
             injection=Injection.from_dict(obj["injection"]),

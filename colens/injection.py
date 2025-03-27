@@ -4,18 +4,13 @@ import dataclasses
 
 import bilby
 from pycbc.detector import Detector
-from pycbc.types.timeseries import TimeSeries
 from pycbc.waveform import get_fd_waveform, get_td_waveform
 
 
-def _get_strains_from(ifos, ifo_names, start_time):
+def _get_strains_from(ifos, ifo_names):
     strains = []
     for i in range(len(ifo_names)):
-        strain_tmp = TimeSeries(
-            initial_array=ifos[i].time_domain_strain,
-            delta_t=ifos[i].time_array[1] - ifos[i].time_array[0],
-            epoch=start_time,
-        )
+        strain_tmp = ifos[i].strain_data.to_pycbc_timeseries()
         strains.append(strain_tmp)
     return strains
 
@@ -82,7 +77,7 @@ def get_strain_list_from_bilby_simulation(
         waveform_generator=waveform_generator,
         parameters=dataclasses.asdict(injection_parameters),
     )
-    strains = _get_strains_from(ifos, ifo_names, start_time)
+    strains = _get_strains_from(ifos, ifo_names)
 
     return strains
 
@@ -106,7 +101,7 @@ def get_strain_list_from_pycbc_simulation(
 
     ifos = get_ifos_function(ifo_names, sampling_frequency, duration, start_time)
 
-    strains = _get_strains_from(ifos, ifo_names, start_time)
+    strains = _get_strains_from(ifos, ifo_names)
     for i in range(len(ifo_names)):
         signal = _get_signal_from_pycbc(
             dataclasses.asdict(injection_parameters),

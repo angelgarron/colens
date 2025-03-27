@@ -146,18 +146,13 @@ def _get_signal_from_pycbc(
 
     hp = hp.to_timeseries(delta_t=1.0 / sampling_frequency)
     hc = hc.to_timeseries(delta_t=1.0 / sampling_frequency)
-    det = Detector(ifo)
 
-    declination = injection_parameters["dec"]
-    right_ascension = injection_parameters["ra"]
-    polarization = injection_parameters["psi"]
-
-    signal = det.project_wave(
-        hp,
-        hc,
-        right_ascension,
-        declination,
-        polarization,
+    signal = Detector(ifo).project_wave(
+        hp=hp,
+        hc=hc,
+        ra=injection_parameters["ra"],
+        dec=injection_parameters["dec"],
+        polarization=injection_parameters["psi"],
         method="constant",
         reference_time=injection_parameters["geocent_time"],
     )

@@ -3,26 +3,32 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from typing import Type
+from typing import Iterable, Type
 
 import numpy as np
 import yaml
 
 
 class UnknownSectionError(Exception):
-    pass
+    def __init__(self, unknown_section: Iterable[str]):
+        self.message = f"The following sections are not known: {', '.join(sorted(unknown_section))}"
+        super().__init__(self.message)
 
 
 class UnknownSubsectionError(Exception):
-    pass
+    def __init__(self, unknown_subsection: Iterable[str]):
+        self.message = f"The following subsections are not known: {', '.join(sorted(unknown_subsection))}"
+        super().__init__(self.message)
 
 
-def construct_subsection_dict(match_args: tuple[str], obj: dict) -> dict:
-    unknown_subsections = set(obj) - set(match_args)
-    if unknown_subsections:
-        raise UnknownSubsectionError(
-            f"The following subsections are not known: {', '.join(sorted(unknown_subsections))}"
-        )
+def _check_unknown_entries(expected, given, error):
+    unknown_entry = set(given) - set(expected)
+    if unknown_entry:
+        raise error(unknown_entry)
+
+
+def _construct_subsection_dict(match_args: tuple[str], obj: dict) -> dict:
+    _check_unknown_entries(match_args, obj.keys(), UnknownSubsectionError)
     return {key: obj[key] for key in match_args}
 
 
@@ -33,7 +39,7 @@ class Data:
 
     @classmethod
     def from_dict(cls: Type[Data], obj: dict) -> Data:
-        return cls(**construct_subsection_dict(cls.__match_args__, obj))
+        return cls(**_construct_subsection_dict(cls.__match_args__, obj))
 
     def asdict(self) -> Data:
         return asdict(self)
@@ -107,7 +113,7 @@ class Injection:
 
     @classmethod
     def from_dict(cls: Type[Injection], obj: dict) -> Injection:
-        return cls(**construct_subsection_dict(cls.__match_args__, obj))
+        return cls(**_construct_subsection_dict(cls.__match_args__, obj))
 
     def asdict(self) -> Injection:
         return asdict(self)
@@ -128,7 +134,7 @@ class Chisq:
 
     @classmethod
     def from_dict(cls: Type[Chisq], obj: dict) -> Chisq:
-        return cls(**construct_subsection_dict(cls.__match_args__, obj))
+        return cls(**_construct_subsection_dict(cls.__match_args__, obj))
 
     def asdict(self) -> Chisq:
         return asdict(self)
@@ -143,7 +149,7 @@ class Psd:
 
     @classmethod
     def from_dict(cls: Type[Psd], obj: dict) -> Psd:
-        return cls(**construct_subsection_dict(cls.__match_args__, obj))
+        return cls(**_construct_subsection_dict(cls.__match_args__, obj))
 
     def asdict(self) -> Psd:
         return asdict(self)
@@ -161,7 +167,7 @@ class SkyPatch:
 
     @classmethod
     def from_dict(cls: Type[SkyPatch], obj: dict) -> SkyPatch:
-        return cls(**construct_subsection_dict(cls.__match_args__, obj))
+        return cls(**_construct_subsection_dict(cls.__match_args__, obj))
 
     def asdict(self) -> SkyPatch:
         return asdict(self)
@@ -173,7 +179,7 @@ class Output:
 
     @classmethod
     def from_dict(cls: Type[SkyPatch], obj: dict) -> SkyPatch:
-        return cls(**construct_subsection_dict(cls.__match_args__, obj))
+        return cls(**_construct_subsection_dict(cls.__match_args__, obj))
 
     def asdict(self) -> Output:
         return asdict(self)
@@ -199,7 +205,7 @@ class InjectionParameters:
 
     @classmethod
     def from_dict(cls: Type[InjectionParameters], obj: dict) -> InjectionParameters:
-        return cls(**construct_subsection_dict(cls.__match_args__, obj))
+        return cls(**_construct_subsection_dict(cls.__match_args__, obj))
 
     def asdict(self) -> InjectionParameters:
         return asdict(self)
@@ -217,11 +223,7 @@ class Configuration:
 
     @classmethod
     def from_dict(cls: Type[Configuration], obj: dict) -> Configuration:
-        unknown_sections = set(obj) - set(cls.__match_args__)
-        if unknown_sections:
-            raise UnknownSectionError(
-                f"The following sections are not known: {', '.join(sorted(unknown_sections))}"
-            )
+        _check_unknown_entries(cls.__match_args__, obj.keys(), UnknownSectionError)
         return cls(
             data=Data.from_dict(obj["data"]),
             injection=Injection.from_dict(obj["injection"]),

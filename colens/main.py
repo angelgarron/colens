@@ -28,12 +28,10 @@ def create_template_bank(
     conf_injection: configuration.Injection, template_mem, frequency_length, delta_f
 ) -> MyFilterBank:
     template_parameters = {
-        "f_lower": np.array([conf_injection.low_frequency_cutoff]),
         "mass1": np.array([79.45]),
         "mass2": np.array([48.50]),
         "spin1z": np.array([0.60]),
         "spin2z": np.array([0.05]),
-        "delta_f": np.array([0.0625]),
         "f_final": np.array([2048.0]),
         "f_ref": np.array([conf_injection.reference_frequency]),
     }
@@ -44,7 +42,6 @@ def create_template_bank(
         template_parameters=template_parameters,
         low_frequency_cutoff=conf_injection.low_frequency_cutoff,
         phase_order=conf_injection.order,
-        taper=conf_injection.taper_template,
         approximant=conf_injection.approximant,
         out=template_mem,
     )

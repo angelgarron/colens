@@ -57,7 +57,7 @@ def create_injections(
 ):
     # The extra padding we are adding here is going to get removed after highpassing
     return_value = get_strain_list_from_bilby_simulation(
-        injection_parameters,
+        injection_parameters.asdict(),
         ["H1", "L1"],
         start_time=conf_injection.gps_start_seconds["H1"] - conf_injection.pad_seconds,
         end_time=conf_injection.gps_end_seconds["H1"] + conf_injection.pad_seconds,
@@ -72,7 +72,7 @@ def create_injections(
     # the lensed image
     injection_parameters.geocent_time = conf_injection.time_gps_future_seconds
     return_value = get_strain_list_from_bilby_simulation(
-        injection_parameters,
+        injection_parameters.asdict(),
         ["H1", "L1"],
         start_time=conf_injection.gps_start_seconds["H1_lensed"]
         - conf_injection.pad_seconds,

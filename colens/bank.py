@@ -12,10 +12,10 @@ from pycbc.waveform.bank import FilterBank
 class MyFilterBank(FilterBank):
     def __init__(
         self,
-        filename,
         filter_length,
         delta_f,
         dtype,
+        template_parameters,
         out=None,
         max_template_length=None,
         approximant=None,
@@ -28,7 +28,6 @@ class MyFilterBank(FilterBank):
         self.out = out
         self.dtype = dtype
         self.f_lower = low_frequency_cutoff
-        self.filename = filename
         self.delta_f = delta_f
         self.N = (filter_length - 1) * 2
         self.delta_t = 1.0 / (self.N * self.delta_f)
@@ -38,14 +37,16 @@ class MyFilterBank(FilterBank):
         self.waveform_decompression_method = waveform_decompression_method
 
         self.template_bank__init__(
-            filename, approximant=approximant, parameters=parameters, **kwds
+            approximant=approximant,
+            parameters=parameters,
+            template_parameters=template_parameters,
+            **kwds
         )
         self.ensure_standard_filter_columns(low_frequency_cutoff=low_frequency_cutoff)
 
     def template_bank__init__(
-        self, filename, approximant=None, parameters=None, **kwds
+        self, approximant=None, parameters=None, template_parameters=None, **kwds
     ):
-        template_parameters = kwds["template_parameters"]
         self.has_compressed_waveforms = False
 
         self.indoc = None

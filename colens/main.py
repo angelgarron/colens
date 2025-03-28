@@ -39,16 +39,15 @@ def create_template_bank(
         "f_ref": np.array([conf_injection.reference_frequency]),
     }
     return MyFilterBank(
-        conf_injection.bank_file,
-        frequency_length,
-        delta_f,
-        complex64,
+        filter_length=frequency_length,
+        delta_f=delta_f,
+        dtype=complex64,
+        template_parameters=template_parameters,
         low_frequency_cutoff=conf_injection.low_frequency_cutoff,
         phase_order=conf_injection.order,
         taper=conf_injection.taper_template,
         approximant=conf_injection.approximant,
         out=template_mem,
-        template_parameters=template_parameters,
     )
 
 

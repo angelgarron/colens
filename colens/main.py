@@ -28,7 +28,6 @@ def create_template_bank(
     conf_injection: configuration.Injection, template_mem, frequency_length, delta_f
 ) -> MyFilterBank:
     template_parameters = {
-        "appoximant": np.array([conf_injection.approximant]),
         "f_lower": np.array([conf_injection.low_frequency_cutoff]),
         "mass1": np.array([79.45]),
         "mass2": np.array([48.50]),

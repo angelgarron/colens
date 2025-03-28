@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Type
 
 import numpy as np
@@ -34,6 +34,9 @@ class Data:
     @classmethod
     def from_dict(cls: Type[Data], obj: dict) -> Data:
         return cls(**construct_subsection_dict(cls.__match_args__, obj))
+
+    def asdict(self) -> Data:
+        return asdict(self)
 
 
 @dataclass
@@ -106,6 +109,9 @@ class Injection:
     def from_dict(cls: Type[Injection], obj: dict) -> Injection:
         return cls(**construct_subsection_dict(cls.__match_args__, obj))
 
+    def asdict(self) -> Injection:
+        return asdict(self)
+
 
 @dataclass
 class Chisq:
@@ -124,6 +130,9 @@ class Chisq:
     def from_dict(cls: Type[Chisq], obj: dict) -> Chisq:
         return cls(**construct_subsection_dict(cls.__match_args__, obj))
 
+    def asdict(self) -> Chisq:
+        return asdict(self)
+
 
 @dataclass
 class Psd:
@@ -135,6 +144,9 @@ class Psd:
     @classmethod
     def from_dict(cls: Type[Psd], obj: dict) -> Psd:
         return cls(**construct_subsection_dict(cls.__match_args__, obj))
+
+    def asdict(self) -> Psd:
+        return asdict(self)
 
 
 @dataclass
@@ -151,6 +163,9 @@ class SkyPatch:
     def from_dict(cls: Type[SkyPatch], obj: dict) -> SkyPatch:
         return cls(**construct_subsection_dict(cls.__match_args__, obj))
 
+    def asdict(self) -> SkyPatch:
+        return asdict(self)
+
 
 @dataclass
 class Output:
@@ -159,6 +174,9 @@ class Output:
     @classmethod
     def from_dict(cls: Type[SkyPatch], obj: dict) -> SkyPatch:
         return cls(**construct_subsection_dict(cls.__match_args__, obj))
+
+    def asdict(self) -> Output:
+        return asdict(self)
 
 
 @dataclass
@@ -182,6 +200,9 @@ class InjectionParameters:
     @classmethod
     def from_dict(cls: Type[InjectionParameters], obj: dict) -> InjectionParameters:
         return cls(**construct_subsection_dict(cls.__match_args__, obj))
+
+    def asdict(self) -> InjectionParameters:
+        return asdict(self)
 
 
 @dataclass

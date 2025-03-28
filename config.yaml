@@ -28,7 +28,7 @@ injection:
     upsample_method: "pruned_fft"
     bank_file: "gw170729_single_template.hdf"
     order: -1
-    taper_template: None
+    taper_template: 
     approximant: "IMRPhenomXAS"
     coinc_threshold: 0.0
     do_null_cut: False
@@ -44,11 +44,11 @@ chisq:
     chisq_bins: "0.9*get_freq('fSEOBNRv4Peak',params.mass1,params.mass2,params.spin1z,params.spin2z)**(2./3.)"
     autochi_stride: 0
     autochi_number_points: 0
-    autochi_onesided: None
+    autochi_onesided: 
     autochi_two_phase: False
     autochi_reverse_template: False
     autochi_max_valued: False
-    autochi_max_valued_dof: None
+    autochi_max_valued_dof: 
     chisq_index: 6.0
     chisq_nhigh: 2.0
 

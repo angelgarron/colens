@@ -21,7 +21,7 @@ def construct_subsection_dict(match_args: tuple[str], obj: dict) -> dict:
     unknown_subsections = set(obj) - set(match_args)
     if unknown_subsections:
         raise UnknownSubsectionError(
-            f"The following subsections are not known: {', '.join(unknown_subsections)}"
+            f"The following subsections are not known: {', '.join(sorted(unknown_subsections))}"
         )
     return {key: obj[key] for key in match_args}
 
@@ -220,7 +220,7 @@ class Configuration:
         unknown_sections = set(obj) - set(cls.__match_args__)
         if unknown_sections:
             raise UnknownSectionError(
-                f"The following sections are not known: {', '.join(unknown_sections)}"
+                f"The following sections are not known: {', '.join(sorted(unknown_sections))}"
             )
         return cls(
             data=Data.from_dict(obj["data"]),

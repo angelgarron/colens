@@ -80,7 +80,7 @@ def create_filter_bank(
     """
     with h5py.File(bank_file, "w") as file:
         for key, value in {
-            "appoximant": approximant,
+            "approximant": approximant,
             "f_lower": low_frequency_cutoff,
             "mass1": mass1,
             "mass2": mass2,

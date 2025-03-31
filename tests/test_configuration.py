@@ -1,6 +1,22 @@
 import pytest
 
-from colens.configuration import UnknownSubsectionError, _check_unknown_entries
+from colens.configuration import (
+    UnknownSubsectionError,
+    _check_unknown_entries,
+    _construct_subsection_dict,
+)
+
+
+def test_construct_subsection_dict(capsys):
+    expected = {"arg2": "value2"}
+    assert (
+        _construct_subsection_dict(
+            match_args=("arg1", "arg2", "arg3"), obj={"arg2": "value2"}
+        )
+        == expected
+    )
+    out, err = capsys.readouterr()
+    assert out == "Leaving arg1, arg3 with their default values.\n"
 
 
 def test_check_unknown_entries_subsection_dict_unknown_subsection():

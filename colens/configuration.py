@@ -30,12 +30,14 @@ def _check_unknown_entries(expected, given, error):
 def _construct_subsection_dict(match_args: tuple[str], obj: dict) -> dict:
     _check_unknown_entries(match_args, obj.keys(), UnknownSubsectionError)
     subsection_dict = dict()
+    not_overwritten = []
     for key in match_args:
         try:
             subsection_dict[key] = obj[key]
         except KeyError:
-            print(f"Leaving {key} as default")
+            not_overwritten.append(key)
             continue
+    print(f"Leaving {', '.join(not_overwritten)} with their default values.")
     return subsection_dict
 
 

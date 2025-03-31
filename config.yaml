@@ -57,6 +57,7 @@ psd:
     psd_segment_length_seconds: 32.0
     psd_num_segments: 29
     strain_high_pass_hertz: 25.0
+    psd_estimation: "median"
 
 sky_patch:
     angular_spacing: 1.8

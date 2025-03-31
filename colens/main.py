@@ -2,8 +2,9 @@ import logging
 from functools import partial
 
 import numpy as np
-from pycbc import init_logging, vetoes, waveform
+from pycbc import DYN_RANGE_FAC, init_logging, vetoes, waveform
 from pycbc.filter import MatchedFilterControl
+from pycbc.psd import associate_psds_to_segments
 from pycbc.strain import StrainSegments
 from pycbc.types import complex64, float32, zeros
 
@@ -20,7 +21,6 @@ from colens.injection import (
 )
 from colens.interpolate import get_snr, get_snr_interpolated
 from colens.io import Output, PerDetectorOutput, get_strain_dict_from_files
-from colens.psd import associate_psd_to_segments
 from colens.strain import process_strain_dict
 
 
@@ -153,15 +153,15 @@ def main():
 
     logging.info("Associating PSDs to the fourier segments")
     for ifo in conf.injection.instruments:
-        associate_psd_to_segments(
-            strain_dict[ifo],
+        associate_psds_to_segments(
+            conf.psd,
             segments[ifo],
-            conf.psd.psd_segment_stride_seconds,
-            conf.injection.sample_rate,
-            conf.psd.psd_segment_length_seconds,
-            conf.psd.psd_num_segments,
+            strain_dict[ifo],
             frequency_length,
             delta_f,
+            conf.injection.low_frequency_cutoff,
+            dyn_range_factor=DYN_RANGE_FAC,
+            precision="single",
         )
 
     logging.info("Setting up MatchedFilterControl at each IFO")

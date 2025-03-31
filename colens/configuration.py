@@ -29,7 +29,14 @@ def _check_unknown_entries(expected, given, error):
 
 def _construct_subsection_dict(match_args: tuple[str], obj: dict) -> dict:
     _check_unknown_entries(match_args, obj.keys(), UnknownSubsectionError)
-    return {key: obj[key] for key in match_args}
+    subsection_dict = dict()
+    for key in match_args:
+        try:
+            subsection_dict[key] = obj[key]
+        except KeyError:
+            print(f"Leaving {key} as default")
+            continue
+    return subsection_dict
 
 
 @dataclass
@@ -146,6 +153,18 @@ class Psd:
     psd_segment_length_seconds: float
     psd_num_segments: int
     strain_high_pass_hertz: float
+    psd_model: str = None
+    psd_file: str = None
+    asd_file: str = None
+    psd_estimation: str = None
+    psd_inverse_length: float = None
+    # aliases that pycbc functions will recognize
+    psd_segment_stride: float = field(init=False)
+    psd_segment_length: float = field(init=False)
+
+    def __post_init__(self):
+        self.psd_segment_stride = self.psd_segment_stride_seconds
+        self.psd_segment_length = self.psd_segment_length_seconds
 
     @classmethod
     def from_dict(cls: Type[Psd], obj: dict) -> Psd:

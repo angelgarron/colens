@@ -37,7 +37,8 @@ def _construct_subsection_dict(match_args: tuple[str], obj: dict) -> dict:
         except KeyError:
             not_overwritten.append(key)
             continue
-    print(f"Leaving {', '.join(not_overwritten)} with their default values.")
+    if len(not_overwritten) > 0:
+        print(f"Leaving {', '.join(not_overwritten)} with their default values.")
     return subsection_dict
 
 

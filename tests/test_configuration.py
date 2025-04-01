@@ -18,6 +18,15 @@ def test_construct_subsection_dict(capsys):
     out, err = capsys.readouterr()
     assert out == "Leaving arg1, arg3 with their default values.\n"
 
+    # don't print warning if no argument is left with default value
+    expected = {"arg2": "value2"}
+    assert (
+        _construct_subsection_dict(match_args=("arg2",), obj={"arg2": "value2"})
+        == expected
+    )
+    out, err = capsys.readouterr()
+    assert out == ""
+
 
 def test_check_unknown_entries_subsection_dict_unknown_subsection():
     expected = ("subsection1", "subsection2")

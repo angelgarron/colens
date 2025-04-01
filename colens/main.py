@@ -14,6 +14,7 @@ from colens.bank import MyFilterBank
 from colens.brute_force_filter import brute_force_filter_template
 from colens.configuration import read_configuration_from
 from colens.detector import MyDetector
+from colens.filter import filter_ifos, get_sigmasq
 from colens.fstatistic import get_two_f
 from colens.injection import (
     get_ifos_with_simulated_noise,
@@ -201,13 +202,26 @@ def main():
     logging.info("Starting the filtering...")
     for t_num, template in enumerate(bank):
         logging.info("Filtering template %d/%d", t_num + 1, len(bank))
+        # TODO loop over segments (or maybe we just create a big segment)
+        # get the single detector snrs
+        segment_index = 0
+        sigmasq = get_sigmasq(
+            segments, template, conf.injection.instruments, segment_index
+        )
+        sigma = {ifo: np.sqrt(sigmasq[ifo]) for ifo in conf.injection.instruments}
+
+        snr_dict, norm_dict, corr_dict, idx, snr = filter_ifos(
+            conf.injection.instruments, sigmasq, matched_filter, segment_index
+        )
+
+        for ifo in conf.injection.instruments:
+            output_data.__getattribute__(ifo).sigma.append(sigma[ifo])
+
         brute_force_filter_template(
             lensed_detectors,
             unlensed_detectors,
             segments,
             conf.injection.instruments,
-            template,
-            matched_filter,
             num_slides,
             conf.injection.slide_shift_seconds,
             conf.injection.sample_rate,
@@ -217,6 +231,9 @@ def main():
             get_two_f,
             output_data,
             get_snr_interpolated,
+            sigma,
+            snr_dict,
+            segment_index,
         )
 
     logging.info("Filtering completed")

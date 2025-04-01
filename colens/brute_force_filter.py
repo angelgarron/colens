@@ -12,7 +12,6 @@ from colens.background import (
 from colens.coherent import coherent_statistic_adapter
 from colens.coincident import coincident_snr, get_coinc_indexes
 from colens.detector import calculate_antenna_pattern
-from colens.filter import filter_ifos
 from colens.io import Output
 from colens.sky import SkyGrid
 
@@ -22,8 +21,6 @@ def brute_force_filter_template(
     unlensed_detectors,
     segments,
     instruments,
-    template,
-    matched_filter,
     num_slides,
     SLIDE_SHIFT_SECONDS,
     SAMPLE_RATE,
@@ -33,20 +30,10 @@ def brute_force_filter_template(
     coherent_func,
     output_data: Output,
     get_snr,
+    sigma,
+    snr_dict,
+    segment_index,
 ):
-    # TODO loop over segments (or maybe we just create a big segment)
-    # get the single detector snrs
-    segment_index = 0
-    sigmasq = {
-        ifo: template.sigmasq(segments[ifo][segment_index].psd) for ifo in instruments
-    }
-    sigma = {ifo: np.sqrt(sigmasq[ifo]) for ifo in instruments}
-    snr_dict, norm_dict, corr_dict, idx, snr = filter_ifos(
-        instruments, sigmasq, matched_filter, segment_index
-    )
-
-    for ifo in instruments:
-        output_data.__getattribute__(ifo).sigma.append(sigma[ifo])
     time_slides_seconds = get_time_slides_seconds(
         num_slides,
         SLIDE_SHIFT_SECONDS,

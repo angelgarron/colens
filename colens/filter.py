@@ -7,6 +7,13 @@ from pycbc.events import ranking
 from colens.coincident import get_coinc_indexes
 
 
+def get_sigmasq(segments, template, instruments, segment_index):
+    sigmasq = {
+        ifo: template.sigmasq(segments[ifo][segment_index].psd) for ifo in instruments
+    }
+    return sigmasq
+
+
 def filter_ifos(
     instruments,
     sigmasq,

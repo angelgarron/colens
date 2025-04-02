@@ -1,3 +1,5 @@
+from typing import Iterable, Mapping
+
 import numpy as np
 import pandas as pd
 import scipy
@@ -5,7 +7,9 @@ import scipy
 from colens.transformations import cart_to_spher, spher_to_cart
 
 
-def _voxel_down_sample(points, voxel_size):
+def _voxel_down_sample(
+    points: np.ndarray, voxel_size: int | float | Iterable[int | float]
+) -> np.ndarray:
     if isinstance(voxel_size, (int, float)):
         voxel_size = [voxel_size] * points.shape[
             1
@@ -14,7 +18,7 @@ def _voxel_down_sample(points, voxel_size):
     voxel_indices = np.floor(points / voxel_size).astype(int)
 
     # Create a dictionary to store point indices per voxel
-    voxel_dict = {}
+    voxel_dict: Mapping[tuple[int], list[float]] = {}
     for idx, voxel in enumerate(map(tuple, voxel_indices)):
         if voxel not in voxel_dict:
             voxel_dict[voxel] = []

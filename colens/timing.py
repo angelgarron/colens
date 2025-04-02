@@ -5,6 +5,8 @@ import scipy
 
 from colens.transformations import cart_to_spher, spher_to_cart
 
+TIME_TO_CENTER = 6370e3 / 3e8
+
 
 def _voxel_down_sample(
     points: np.ndarray, voxel_size: int | float | Iterable[int | float]
@@ -52,7 +54,6 @@ def _get_t_prime(t_g, t_g_L, phi, theta):
 
     lensed_hanford_location_cart = hanford_location_cart.copy()
     lensed_livingston_location_cart = livingston_location_cart.copy()
-    time_to_center = 6370e3 / 3e8
 
     new_hanford_location_spher = cart_to_spher(hanford_location_cart)
     new_hanford_location_spher = new_hanford_location_spher + np.moveaxis(
@@ -80,29 +81,18 @@ def _get_t_prime(t_g, t_g_L, phi, theta):
         new_lensed_livingston_location_spher
     )
 
-    # the direction of the gw
-    p = np.moveaxis(
-        np.array(
-            [
-                np.cos(phi) * np.cos(theta),
-                np.sin(phi) * np.cos(theta),
-                np.ones_like(phi) * np.sin(theta),
-            ]
-        ),
-        0,
-        -1,
-    )
+    p = spher_to_cart(np.moveaxis(np.array([phi, theta]), 0, -1))
 
     # times at which compute the coherent snr
-    t_1_prime = np.sum(-p * new_hanford_location_cart, axis=-1) * time_to_center + t_g
+    t_1_prime = np.sum(-p * new_hanford_location_cart, axis=-1) * TIME_TO_CENTER + t_g
     t_2_prime = (
-        np.sum(-p * new_livingston_location_cart, axis=-1) * time_to_center + t_g
+        np.sum(-p * new_livingston_location_cart, axis=-1) * TIME_TO_CENTER + t_g
     )
     t_3_prime = (
-        np.sum(-p * new_lensed_hanford_location_cart, axis=-1) * time_to_center + t_g_L
+        np.sum(-p * new_lensed_hanford_location_cart, axis=-1) * TIME_TO_CENTER + t_g_L
     )
     t_4_prime = (
-        np.sum(-p * new_lensed_livingston_location_cart, axis=-1) * time_to_center
+        np.sum(-p * new_lensed_livingston_location_cart, axis=-1) * TIME_TO_CENTER
         + t_g_L
     )
     return t_1_prime, t_2_prime, t_3_prime, t_4_prime

@@ -15,6 +15,7 @@ def _voxel_down_sample(
             1
         ]  # Uniform voxel size for all dimensions
 
+    voxel_size = np.array(voxel_size)
     voxel_indices = np.floor(points / voxel_size).astype(int)
 
     # Create a dictionary to store point indices per voxel
@@ -24,12 +25,12 @@ def _voxel_down_sample(
             voxel_dict[voxel] = []
         voxel_dict[voxel].append(idx)
 
-    # Take as representative point the one that is closest to the center of the voxel
+    # Take as representative point the one that is closest to the voxel
     downsampled_indices = np.array(
         [
             voxel_dict[voxel][
                 scipy.spatial.KDTree(points[voxel_dict[voxel]]).query(
-                    (np.array([0.5] * points.shape[1]) + voxel) * voxel_size
+                    voxel * voxel_size
                 )[1]
             ]
             for voxel in voxel_dict

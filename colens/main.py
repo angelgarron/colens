@@ -227,8 +227,11 @@ def main():
         df = get_bilby_posteriors(conf.data.posteriors_file)
         timing_iterator = get_timing_iterator(
             df["geocent_time"][10:11].to_numpy(),
-            conf.injection.time_gps_future_seconds,
-            snr_dict["H1"]._delta_t,
+            np.arange(
+                conf.injection.time_gps_future_seconds - 0.001,
+                conf.injection.time_gps_future_seconds + 0.001,
+                snr_dict["H1"]._delta_t,
+            ),
             df["ra"][:2].to_numpy(),
             df["dec"][:2].to_numpy(),
         )

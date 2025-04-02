@@ -1,4 +1,4 @@
-from typing import Iterable, Mapping
+from typing import Iterable, Iterator, Mapping
 
 import numpy as np
 import scipy
@@ -99,13 +99,14 @@ def _get_t_prime(t_g, t_g_L, phi, theta):
 
 
 def get_timing_iterator(
-    time_gps_past_seconds, time_gps_future_seconds, delta_t, ra, dec
-):
+    time_gps_past_seconds: np.ndarray,
+    time_gps_future_seconds: np.ndarray,
+    ra: np.ndarray,
+    dec: np.ndarray,
+) -> Iterator[float]:
     t_g, t_g_L, phi, theta = np.meshgrid(
         time_gps_past_seconds,
-        np.arange(
-            time_gps_future_seconds - 0.001, time_gps_future_seconds + 0.001, delta_t
-        ),
+        time_gps_future_seconds,
         ra,
         dec,
         indexing="ij",

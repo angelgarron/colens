@@ -25,14 +25,13 @@ def brute_force_filter_template(
     SLIDE_SHIFT_SECONDS,
     SAMPLE_RATE,
     GPS_START_SECONDS,
-    TIME_GPS_PAST_SECONDS,
-    TIME_GPS_FUTURE_SECONDS,
     coherent_func,
     output_data: Output,
     get_snr,
     sigma,
     snr_dict,
     segment_index,
+    timing_iterator,
 ):
     time_slides_seconds = get_time_slides_seconds(
         num_slides,
@@ -46,9 +45,7 @@ def brute_force_filter_template(
         lensed_trigger_time_seconds,
         theta,
         phi,
-    ) in timing.get_timing_iterator(
-        TIME_GPS_PAST_SECONDS, TIME_GPS_FUTURE_SECONDS, snr_dict["H1"]._delta_t
-    ):
+    ) in timing_iterator:
         sky_grid = SkyGrid([phi], [theta])
         unlensed_antenna_pattern = calculate_antenna_pattern(
             unlensed_detectors,

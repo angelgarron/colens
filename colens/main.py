@@ -23,6 +23,7 @@ from colens.injection import (
 from colens.interpolate import get_snr, get_snr_interpolated
 from colens.io import Output, PerDetectorOutput, get_strain_dict_from_files
 from colens.strain import process_strain_dict
+from colens.timing import get_timing_iterator
 
 
 def create_template_bank(
@@ -217,6 +218,11 @@ def main():
         for ifo in conf.injection.instruments:
             output_data.__getattribute__(ifo).sigma.append(sigma[ifo])
 
+        timing_iterator = get_timing_iterator(
+            conf.injection.time_gps_past_seconds,
+            conf.injection.time_gps_future_seconds,
+            snr_dict["H1"]._delta_t,
+        )
         brute_force_filter_template(
             lensed_detectors,
             unlensed_detectors,
@@ -226,14 +232,13 @@ def main():
             conf.injection.slide_shift_seconds,
             conf.injection.sample_rate,
             conf.injection.gps_start_seconds,
-            conf.injection.time_gps_past_seconds,
-            conf.injection.time_gps_future_seconds,
             get_two_f,
             output_data,
             get_snr_interpolated,
             sigma,
             snr_dict,
             segment_index,
+            timing_iterator,
         )
 
     logging.info("Filtering completed")

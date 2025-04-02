@@ -2,8 +2,11 @@
 
 import json
 from dataclasses import asdict, dataclass, field
+from pathlib import Path
 
 import h5py
+import numpy as np
+import pandas as pd
 from pycbc.frame import read_frame
 
 from colens.data import NumpyArrayEncoder
@@ -86,3 +89,8 @@ def create_filter_bank(
             file.create_dataset(
                 key, data=[value], compression="gzip", compression_opts=9, shuffle=True
             )
+
+
+def get_bilby_posteriors(filename: Path) -> pd.DataFrame:
+    with h5py.File(filename) as file:
+        return pd.DataFrame(np.array(file["C01:IMRPhenomXPHM"]["posterior_samples"]))

@@ -9,6 +9,7 @@ data:
         L1: "L1:GWOSC-4KHZ_R1_STRAIN"
         H1_lensed: "H1:GWOSC-4KHZ_R1_STRAIN"
         L1_lensed: "L1:GWOSC-4KHZ_R1_STRAIN" 
+    posteriors_file: "../../Documents/pycbc_checks/IGWN-GWTC2p1-v2-GW170729_185629_PEDataRelease_mixed_cosmo.h5"
 
 injection:
     time_gps_past_seconds: 1185389807.298705

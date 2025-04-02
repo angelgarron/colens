@@ -102,9 +102,7 @@ def get_timing_iterator(
     time_gps_past_seconds, time_gps_future_seconds, delta_t, ra, dec
 ):
     t_g, t_g_L, phi, theta = np.meshgrid(
-        np.arange(
-            time_gps_past_seconds - 0.001, time_gps_past_seconds + 0.001, delta_t
-        ),
+        time_gps_past_seconds,
         np.arange(
             time_gps_future_seconds - 0.001, time_gps_future_seconds + 0.001, delta_t
         ),

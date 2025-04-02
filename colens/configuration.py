@@ -46,6 +46,7 @@ def _construct_subsection_dict(match_args: tuple[str], obj: dict) -> dict:
 class Data:
     frame_files: dict
     channels: dict
+    posteriors_file: str
 
     @classmethod
     def from_dict(cls: Type[Data], obj: dict) -> Data:

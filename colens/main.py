@@ -22,7 +22,12 @@ from colens.injection import (
     get_strain_list_from_bilby_simulation,
 )
 from colens.interpolate import get_snr, get_snr_interpolated
-from colens.io import Output, PerDetectorOutput, get_strain_dict_from_files
+from colens.io import (
+    Output,
+    PerDetectorOutput,
+    get_bilby_posteriors,
+    get_strain_dict_from_files,
+)
 from colens.strain import process_strain_dict
 from colens.timing import get_timing_iterator
 
@@ -219,9 +224,9 @@ def main():
         for ifo in conf.injection.instruments:
             output_data.__getattribute__(ifo).sigma.append(sigma[ifo])
 
-        df = pd.read_csv("./sky_position_and_timing_samples.csv")
+        df = get_bilby_posteriors(conf.data.posteriors_file)
         timing_iterator = get_timing_iterator(
-            conf.injection.time_gps_past_seconds,
+            df["geocent_time"][10:11].to_numpy(),
             conf.injection.time_gps_future_seconds,
             snr_dict["H1"]._delta_t,
             df["ra"][:2].to_numpy(),

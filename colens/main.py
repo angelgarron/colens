@@ -2,6 +2,7 @@ import logging
 from functools import partial
 
 import numpy as np
+import pandas as pd
 from pycbc import DYN_RANGE_FAC, init_logging, vetoes, waveform
 from pycbc.filter import MatchedFilterControl
 from pycbc.psd import associate_psds_to_segments
@@ -218,10 +219,13 @@ def main():
         for ifo in conf.injection.instruments:
             output_data.__getattribute__(ifo).sigma.append(sigma[ifo])
 
+        df = pd.read_csv("./sky_position_and_timing_samples.csv")
         timing_iterator = get_timing_iterator(
             conf.injection.time_gps_past_seconds,
             conf.injection.time_gps_future_seconds,
             snr_dict["H1"]._delta_t,
+            df["ra"][:2].to_numpy(),
+            df["dec"][:2].to_numpy(),
         )
         brute_force_filter_template(
             lensed_detectors,

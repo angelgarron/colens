@@ -109,8 +109,9 @@ def _get_t_prime(t_g, t_g_L, phi, theta):
     return t_1_prime, t_2_prime, t_3_prime, t_4_prime
 
 
-def get_timing_iterator(time_gps_past_seconds, time_gps_future_seconds, delta_t):
-    df = pd.read_csv("./sky_position_and_timing_samples.csv")
+def get_timing_iterator(
+    time_gps_past_seconds, time_gps_future_seconds, delta_t, ra, dec
+):
     t_g, t_g_L, phi, theta = np.meshgrid(
         np.arange(
             time_gps_past_seconds - 0.001, time_gps_past_seconds + 0.001, delta_t
@@ -118,8 +119,8 @@ def get_timing_iterator(time_gps_past_seconds, time_gps_future_seconds, delta_t)
         np.arange(
             time_gps_future_seconds - 0.001, time_gps_future_seconds + 0.001, delta_t
         ),
-        df["ra"][:2].to_numpy(),
-        df["dec"][:2].to_numpy(),
+        ra,
+        dec,
         indexing="ij",
     )
     t_1_prime, t_2_prime, t_3_prime, t_4_prime = _get_t_prime(t_g, t_g_L, phi, theta)

@@ -1,7 +1,6 @@
 from typing import Iterable, Mapping
 
 import numpy as np
-import pandas as pd
 import scipy
 
 from colens.transformations import cart_to_spher, spher_to_cart

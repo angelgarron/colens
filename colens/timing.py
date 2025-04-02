@@ -40,7 +40,7 @@ def _voxel_down_sample(
     return downsampled_indices
 
 
-def get_t_prime(t_g, t_g_L, phi, theta):
+def _get_t_prime(t_g, t_g_L, phi, theta):
     theta_1 = 0.4
     theta_2 = 0.1
     phi_1 = 0.0
@@ -122,7 +122,7 @@ def get_timing_iterator(time_gps_past_seconds, time_gps_future_seconds, delta_t)
         df["dec"][:2].to_numpy(),
         indexing="ij",
     )
-    t_1_prime, t_2_prime, t_3_prime, t_4_prime = get_t_prime(t_g, t_g_L, phi, theta)
+    t_1_prime, t_2_prime, t_3_prime, t_4_prime = _get_t_prime(t_g, t_g_L, phi, theta)
     t_prime_downsampled_indices = _voxel_down_sample(
         np.c_[
             t_1_prime.flatten(),

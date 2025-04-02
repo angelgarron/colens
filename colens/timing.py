@@ -5,13 +5,12 @@ import scipy
 from colens.transformations import cart_to_spher, spher_to_cart
 
 
-def voxel_down_sample(points, voxel_size):
+def _voxel_down_sample(points, voxel_size):
     if isinstance(voxel_size, (int, float)):
         voxel_size = [voxel_size] * points.shape[
             1
         ]  # Uniform voxel size for all dimensions
 
-    # Compute voxel indices
     voxel_indices = np.floor(points / voxel_size).astype(int)
 
     # Create a dictionary to store point indices per voxel
@@ -33,7 +32,7 @@ def voxel_down_sample(points, voxel_size):
         ]
     )
 
-    return downsampled_indices, points[downsampled_indices]
+    return downsampled_indices
 
 
 def get_t_prime(t_g, t_g_L, phi, theta):
@@ -119,7 +118,7 @@ def get_timing_iterator(time_gps_past_seconds, time_gps_future_seconds, delta_t)
         indexing="ij",
     )
     t_1_prime, t_2_prime, t_3_prime, t_4_prime = get_t_prime(t_g, t_g_L, phi, theta)
-    t_prime_downsampled_indices, t_prime_downsampled = voxel_down_sample(
+    t_prime_downsampled_indices = _voxel_down_sample(
         np.c_[
             t_1_prime.flatten(),
             t_2_prime.flatten(),

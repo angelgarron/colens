@@ -41,7 +41,7 @@ def _voxel_down_sample(
     return downsampled_indices
 
 
-def _get_t_prime(t_g, t_g_L, phi, theta):
+def _get_t_prime(t_geocent_original, t_geocent_lensed, phi, theta):
     theta_1 = 0.4
     theta_2 = 0.1
     phi_1 = 0.0
@@ -57,17 +57,17 @@ def _get_t_prime(t_g, t_g_L, phi, theta):
 
     new_hanford_location_spher = cart_to_spher(hanford_location_cart)
     new_hanford_location_spher = new_hanford_location_spher + np.moveaxis(
-        np.array([t_g, np.zeros_like(t_g)]), 0, -1
+        np.array([t_geocent_original, np.zeros_like(t_geocent_original)]), 0, -1
     )
     new_hanford_location_cart = spher_to_cart(new_hanford_location_spher)
     new_livingston_location_spher = cart_to_spher(livingston_location_cart)
     new_livingston_location_spher = new_livingston_location_spher + np.moveaxis(
-        np.array([t_g, np.zeros_like(t_g)]), 0, -1
+        np.array([t_geocent_original, np.zeros_like(t_geocent_original)]), 0, -1
     )
     new_livingston_location_cart = spher_to_cart(new_livingston_location_spher)
     new_lensed_hanford_location_spher = cart_to_spher(lensed_hanford_location_cart)
     new_lensed_hanford_location_spher = new_lensed_hanford_location_spher + np.moveaxis(
-        np.array([t_g_L, np.zeros_like(t_g_L)]), 0, -1
+        np.array([t_geocent_lensed, np.zeros_like(t_geocent_lensed)]), 0, -1
     )
     new_lensed_hanford_location_cart = spher_to_cart(new_lensed_hanford_location_spher)
     new_lensed_livingston_location_spher = cart_to_spher(
@@ -75,7 +75,9 @@ def _get_t_prime(t_g, t_g_L, phi, theta):
     )
     new_lensed_livingston_location_spher = (
         new_lensed_livingston_location_spher
-        + np.moveaxis(np.array([t_g_L, np.zeros_like(t_g_L)]), 0, -1)
+        + np.moveaxis(
+            np.array([t_geocent_lensed, np.zeros_like(t_geocent_lensed)]), 0, -1
+        )
     )
     new_lensed_livingston_location_cart = spher_to_cart(
         new_lensed_livingston_location_spher
@@ -84,16 +86,21 @@ def _get_t_prime(t_g, t_g_L, phi, theta):
     p = spher_to_cart(np.moveaxis(np.array([phi, theta]), 0, -1))
 
     # times at which compute the coherent snr
-    t_1_prime = np.sum(-p * new_hanford_location_cart, axis=-1) * TIME_TO_CENTER + t_g
+    t_1_prime = (
+        np.sum(-p * new_hanford_location_cart, axis=-1) * TIME_TO_CENTER
+        + t_geocent_original
+    )
     t_2_prime = (
-        np.sum(-p * new_livingston_location_cart, axis=-1) * TIME_TO_CENTER + t_g
+        np.sum(-p * new_livingston_location_cart, axis=-1) * TIME_TO_CENTER
+        + t_geocent_original
     )
     t_3_prime = (
-        np.sum(-p * new_lensed_hanford_location_cart, axis=-1) * TIME_TO_CENTER + t_g_L
+        np.sum(-p * new_lensed_hanford_location_cart, axis=-1) * TIME_TO_CENTER
+        + t_geocent_lensed
     )
     t_4_prime = (
         np.sum(-p * new_lensed_livingston_location_cart, axis=-1) * TIME_TO_CENTER
-        + t_g_L
+        + t_geocent_lensed
     )
     return t_1_prime, t_2_prime, t_3_prime, t_4_prime
 
@@ -104,14 +111,16 @@ def get_timing_iterator(
     ra: np.ndarray,
     dec: np.ndarray,
 ) -> Iterator[float]:
-    t_g, t_g_L, phi, theta = np.meshgrid(
+    t_geocent_original, t_geocent_lensed, phi, theta = np.meshgrid(
         time_gps_past_seconds,
         time_gps_future_seconds,
         ra,
         dec,
         indexing="ij",
     )
-    t_1_prime, t_2_prime, t_3_prime, t_4_prime = _get_t_prime(t_g, t_g_L, phi, theta)
+    t_1_prime, t_2_prime, t_3_prime, t_4_prime = _get_t_prime(
+        t_geocent_original, t_geocent_lensed, phi, theta
+    )
     t_prime_downsampled_indices = _voxel_down_sample(
         np.c_[
             t_1_prime.flatten(),
@@ -122,8 +131,8 @@ def get_timing_iterator(
         0.0005,
     )
     for i, j, k, l in zip(
-        t_g.flatten()[t_prime_downsampled_indices][:20],
-        t_g_L.flatten()[t_prime_downsampled_indices][:20],
+        t_geocent_original.flatten()[t_prime_downsampled_indices][:20],
+        t_geocent_lensed.flatten()[t_prime_downsampled_indices][:20],
         theta.flatten()[t_prime_downsampled_indices][:20],
         phi.flatten()[t_prime_downsampled_indices][:20],
     ):

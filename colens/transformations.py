@@ -25,7 +25,7 @@ def cart_to_spher(sky_points):
     """Convert cartesian coordinates to spherical coordinates."""
     shape = sky_points.shape
     if shape[-1] != 3:
-        raise DimensionError("Last dimension should have size 2")
+        raise DimensionError("Last dimension should have size 3")
     spher = np.zeros((*sky_points.shape[:-1], 2))
     spher[..., 0] = np.arctan2(sky_points[..., 1], sky_points[..., 0])
     spher[..., 1] = np.arcsin(sky_points[..., 2])

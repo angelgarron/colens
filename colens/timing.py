@@ -2,10 +2,16 @@ from typing import Iterable, Iterator, Mapping
 
 import numpy as np
 import scipy
+from pycbc.detector import Detector
 
 from colens.transformations import cart_to_spher, spher_to_cart
 
 TIME_TO_CENTER = 6370e3 / 3e8
+
+DETECTOR_H1 = Detector("H1")
+DETECTOR_L1 = Detector("L1")
+HANFORD_LOCATION_SPHER = np.array([DETECTOR_H1.longitude, DETECTOR_H1.latitude])
+LIVINGSTON_LOCATION_SPHER = np.array([DETECTOR_L1.longitude, DETECTOR_L1.latitude])
 
 
 def _voxel_down_sample(
@@ -42,15 +48,8 @@ def _voxel_down_sample(
 
 
 def _get_t_prime(t_geocent_original, t_geocent_lensed, phi, theta):
-    theta_1 = 0.4
-    theta_2 = 0.1
-    phi_1 = 0.0
-    phi_2 = 0.3
-    hanford_location_spher = np.array([[phi_1, theta_1]])
-    livingston_location_spher = np.array([[phi_2, theta_2]])
-
-    hanford_location_cart = spher_to_cart(hanford_location_spher)
-    livingston_location_cart = spher_to_cart(livingston_location_spher)
+    hanford_location_cart = spher_to_cart(HANFORD_LOCATION_SPHER)
+    livingston_location_cart = spher_to_cart(LIVINGSTON_LOCATION_SPHER)
 
     lensed_hanford_location_cart = hanford_location_cart.copy()
     lensed_livingston_location_cart = livingston_location_cart.copy()

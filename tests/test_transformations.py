@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from colens.transformations import DimensionError, spher_to_cart
+from colens.transformations import DimensionError, cart_to_spher, spher_to_cart
 
 
 def test_spher_to_cart_shape_two():
@@ -104,3 +104,24 @@ def test_spher_to_cart_shape_two_two_two():
         ]
     )
     np.testing.assert_equal(spher_to_cart(coordinates_spher), expected_coordinates_cart)
+
+
+rng = np.random.default_rng(1234)
+
+
+@pytest.mark.parametrize(
+    "phi, theta",
+    [
+        *rng.uniform(
+            low=(0, -np.pi / 2),
+            high=(2 * np.pi, np.pi / 2),
+            size=(10, 2),
+        )
+    ],
+)
+def test_identity_spher_to_cart(phi, theta):
+    expected_coordinates_spher = np.array([[phi, theta]])
+    np.testing.assert_almost_equal(
+        cart_to_spher(spher_to_cart(expected_coordinates_spher)),
+        expected_coordinates_spher,
+    )

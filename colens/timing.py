@@ -1,17 +1,18 @@
 from typing import Iterable, Iterator, Mapping
 
+import astropy
 import numpy as np
 import scipy
 from pycbc.detector import Detector
 
 from colens.transformations import spher_to_cart
 
-TIME_TO_CENTER = 6370e3 / 3e8
-
 DETECTOR_H1 = Detector("H1")
 DETECTOR_L1 = Detector("L1")
 HANFORD_LOCATION_SPHER = np.array([DETECTOR_H1.longitude, DETECTOR_H1.latitude])
 LIVINGSTON_LOCATION_SPHER = np.array([DETECTOR_L1.longitude, DETECTOR_L1.latitude])
+TIME_TO_CENTER_H1 = np.linalg.norm(DETECTOR_H1.location) / astropy.constants.c.value
+TIME_TO_CENTER_L1 = np.linalg.norm(DETECTOR_L1.location) / astropy.constants.c.value
 
 
 def _voxel_down_sample(
@@ -69,21 +70,22 @@ def _get_t_prime(t_geocent_original, t_geocent_lensed, phi, theta):
 
     p = spher_to_cart(np.moveaxis(np.array([phi, theta]), 0, -1))
 
-    # times at which compute the coherent snr
+    # Times at which compute the coherent snr
+    # We need to rescale them by TIME_TO_CENTER because p and location vectors are normalized
     t_1_prime = (
-        np.sum(-p * new_hanford_location_cart, axis=-1) * TIME_TO_CENTER
+        np.sum(-p * new_hanford_location_cart, axis=-1) * TIME_TO_CENTER_H1
         + t_geocent_original
     )
     t_2_prime = (
-        np.sum(-p * new_livingston_location_cart, axis=-1) * TIME_TO_CENTER
+        np.sum(-p * new_livingston_location_cart, axis=-1) * TIME_TO_CENTER_L1
         + t_geocent_original
     )
     t_3_prime = (
-        np.sum(-p * new_lensed_hanford_location_cart, axis=-1) * TIME_TO_CENTER
+        np.sum(-p * new_lensed_hanford_location_cart, axis=-1) * TIME_TO_CENTER_H1
         + t_geocent_lensed
     )
     t_4_prime = (
-        np.sum(-p * new_lensed_livingston_location_cart, axis=-1) * TIME_TO_CENTER
+        np.sum(-p * new_lensed_livingston_location_cart, axis=-1) * TIME_TO_CENTER_L1
         + t_geocent_lensed
     )
     return t_1_prime, t_2_prime, t_3_prime, t_4_prime

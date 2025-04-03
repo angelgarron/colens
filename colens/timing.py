@@ -48,7 +48,12 @@ def _voxel_down_sample(
     return downsampled_indices
 
 
-def _get_t_prime(t_geocent_original, t_geocent_lensed, phi, theta):
+def _get_t_prime(
+    t_geocent_original: np.ndarray,
+    t_geocent_lensed: np.ndarray,
+    phi: np.ndarray,
+    theta: np.ndarray,
+) -> tuple[np.ndarray]:
     new_hanford_location_spher = HANFORD_LOCATION_SPHER + np.moveaxis(
         np.array([t_geocent_original, np.zeros_like(t_geocent_original)]), 0, -1
     )  # longitude of detector changes with geocent time

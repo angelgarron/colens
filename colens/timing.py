@@ -4,7 +4,7 @@ import numpy as np
 import scipy
 from pycbc.detector import Detector
 
-from colens.transformations import cart_to_spher, spher_to_cart
+from colens.transformations import spher_to_cart
 
 TIME_TO_CENTER = 6370e3 / 3e8
 
@@ -48,35 +48,20 @@ def _voxel_down_sample(
 
 
 def _get_t_prime(t_geocent_original, t_geocent_lensed, phi, theta):
-    hanford_location_cart = spher_to_cart(HANFORD_LOCATION_SPHER)
-    livingston_location_cart = spher_to_cart(LIVINGSTON_LOCATION_SPHER)
-
-    lensed_hanford_location_cart = hanford_location_cart.copy()
-    lensed_livingston_location_cart = livingston_location_cart.copy()
-
-    new_hanford_location_spher = cart_to_spher(hanford_location_cart)
-    new_hanford_location_spher = new_hanford_location_spher + np.moveaxis(
+    new_hanford_location_spher = HANFORD_LOCATION_SPHER + np.moveaxis(
         np.array([t_geocent_original, np.zeros_like(t_geocent_original)]), 0, -1
-    )
+    )  # longitude of detector changes with geocent time
     new_hanford_location_cart = spher_to_cart(new_hanford_location_spher)
-    new_livingston_location_spher = cart_to_spher(livingston_location_cart)
-    new_livingston_location_spher = new_livingston_location_spher + np.moveaxis(
+    new_livingston_location_spher = LIVINGSTON_LOCATION_SPHER + np.moveaxis(
         np.array([t_geocent_original, np.zeros_like(t_geocent_original)]), 0, -1
     )
     new_livingston_location_cart = spher_to_cart(new_livingston_location_spher)
-    new_lensed_hanford_location_spher = cart_to_spher(lensed_hanford_location_cart)
-    new_lensed_hanford_location_spher = new_lensed_hanford_location_spher + np.moveaxis(
+    new_lensed_hanford_location_spher = HANFORD_LOCATION_SPHER + np.moveaxis(
         np.array([t_geocent_lensed, np.zeros_like(t_geocent_lensed)]), 0, -1
     )
     new_lensed_hanford_location_cart = spher_to_cart(new_lensed_hanford_location_spher)
-    new_lensed_livingston_location_spher = cart_to_spher(
-        lensed_livingston_location_cart
-    )
-    new_lensed_livingston_location_spher = (
-        new_lensed_livingston_location_spher
-        + np.moveaxis(
-            np.array([t_geocent_lensed, np.zeros_like(t_geocent_lensed)]), 0, -1
-        )
+    new_lensed_livingston_location_spher = LIVINGSTON_LOCATION_SPHER + np.moveaxis(
+        np.array([t_geocent_lensed, np.zeros_like(t_geocent_lensed)]), 0, -1
     )
     new_lensed_livingston_location_cart = spher_to_cart(
         new_lensed_livingston_location_spher

@@ -27,7 +27,7 @@ def _voxel_down_sample(
     voxel_indices = np.floor(points / voxel_size).astype(int)
 
     # Create a dictionary to store point indices per voxel
-    voxel_dict: Mapping[tuple[int], list[float]] = {}
+    voxel_dict: Mapping[tuple[int], list[int]] = {}
     for idx, voxel in enumerate(map(tuple, voxel_indices)):
         if voxel not in voxel_dict:
             voxel_dict[voxel] = []

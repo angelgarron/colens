@@ -54,10 +54,10 @@ def _voxel_down_sample(
 
 
 def geographical_to_celestial(geographical, gps_time):
-    return (
-        np.moveaxis(np.array([gmst_accurate(gps_time), np.zeros_like(gps_time)]), 0, -1)
-        + geographical
-    )
+    celestial = np.zeros((*gps_time.shape, 2))
+    celestial[..., 0] = longitude_to_ra(geographical[0], gps_time)
+    celestial[..., 1] = geographical[1]
+    return celestial
 
 
 def _get_t_prime(

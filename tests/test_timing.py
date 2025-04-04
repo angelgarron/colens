@@ -1,6 +1,8 @@
 import numpy as np
+import pytest
+from pycbc.detector import gmst_accurate
 
-from colens.timing import _voxel_down_sample
+from colens.timing import _voxel_down_sample, geographical_to_celestial
 
 
 def test_recover_initial_points():
@@ -107,3 +109,26 @@ def test_one_dimensional_initial_points():
     expected = np.array([-1, 0, 2]).reshape(-1, 1)
     mask = _voxel_down_sample(initial_points, 2)
     np.testing.assert_equal(initial_points[mask], expected)
+
+
+rng = np.random.default_rng(1234)
+
+
+def test_geographical_to_celestial_grid():
+    longitude, latitude, t_gps = rng.uniform(
+        low=(0, -np.pi / 2, 0),
+        high=(2 * np.pi, np.pi / 2, 10000),
+        size=(5 * 7 * 13, 3),
+    ).T
+    geographical = np.zeros((5, 7, 13, 2))
+    geographical[..., 0] = longitude.reshape(5, 7, 13)
+    geographical[..., 1] = latitude.reshape(5, 7, 13)
+
+    expected = np.zeros((5, 7, 13, 2))
+    expected[..., 0] = longitude.reshape(5, 7, 13) + gmst_accurate(
+        t_gps.reshape(5, 7, 13)
+    )
+    expected[..., 1] = latitude.reshape(5, 7, 13)
+    result = geographical_to_celestial(geographical, t_gps.reshape(5, 7, 13))
+    assert result.shape == expected.shape
+    np.testing.assert_allclose(result, expected)

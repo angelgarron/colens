@@ -3,9 +3,14 @@ from typing import Iterable, Iterator, Mapping
 import astropy
 import numpy as np
 import scipy
-from pycbc.detector import Detector
+from pycbc.detector import Detector, gmst_accurate
 
-from colens.transformations import longitude_to_ra, ra_to_longitude, spher_to_cart
+from colens.transformations import (
+    DimensionError,
+    longitude_to_ra,
+    ra_to_longitude,
+    spher_to_cart,
+)
 
 DETECTOR_H1 = Detector("H1")
 DETECTOR_L1 = Detector("L1")
@@ -48,42 +53,33 @@ def _voxel_down_sample(
     return downsampled_indices
 
 
+def geographical_to_celestial(geographical, gps_time):
+    return (
+        np.moveaxis(np.array([gmst_accurate(gps_time), np.zeros_like(gps_time)]), 0, -1)
+        + geographical
+    )
+
+
 def _get_t_prime(
     grid_time_gps_past_seconds: np.ndarray,
     grid_time_gps_future_seconds: np.ndarray,
     grid_ra: np.ndarray,
     grid_dec: np.ndarray,
 ) -> tuple[np.ndarray]:
-    new_hanford_location_spher = HANFORD_LOCATION_SPHER + np.moveaxis(
-        np.array(
-            [grid_time_gps_past_seconds, np.zeros_like(grid_time_gps_past_seconds)]
-        ),
-        0,
-        -1,
+    new_hanford_location_spher = geographical_to_celestial(
+        HANFORD_LOCATION_SPHER, grid_time_gps_past_seconds
     )  # longitude of detector changes with geocent time
     new_hanford_location_cart = spher_to_cart(new_hanford_location_spher)
-    new_livingston_location_spher = LIVINGSTON_LOCATION_SPHER + np.moveaxis(
-        np.array(
-            [grid_time_gps_past_seconds, np.zeros_like(grid_time_gps_past_seconds)]
-        ),
-        0,
-        -1,
+    new_livingston_location_spher = geographical_to_celestial(
+        LIVINGSTON_LOCATION_SPHER, grid_time_gps_past_seconds
     )
     new_livingston_location_cart = spher_to_cart(new_livingston_location_spher)
-    new_lensed_hanford_location_spher = HANFORD_LOCATION_SPHER + np.moveaxis(
-        np.array(
-            [grid_time_gps_future_seconds, np.zeros_like(grid_time_gps_future_seconds)]
-        ),
-        0,
-        -1,
+    new_lensed_hanford_location_spher = geographical_to_celestial(
+        HANFORD_LOCATION_SPHER, grid_time_gps_future_seconds
     )
     new_lensed_hanford_location_cart = spher_to_cart(new_lensed_hanford_location_spher)
-    new_lensed_livingston_location_spher = LIVINGSTON_LOCATION_SPHER + np.moveaxis(
-        np.array(
-            [grid_time_gps_future_seconds, np.zeros_like(grid_time_gps_future_seconds)]
-        ),
-        0,
-        -1,
+    new_lensed_livingston_location_spher = geographical_to_celestial(
+        LIVINGSTON_LOCATION_SPHER, grid_time_gps_future_seconds
     )
     new_lensed_livingston_location_cart = spher_to_cart(
         new_lensed_livingston_location_spher

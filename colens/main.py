@@ -224,16 +224,16 @@ def main():
         for ifo in conf.injection.instruments:
             output_data.__getattribute__(ifo).sigma.append(sigma[ifo])
 
-        df = get_bilby_posteriors(conf.data.posteriors_file)
+        df = get_bilby_posteriors(conf.data.posteriors_file)[1000:1100]
         timing_iterator = get_timing_iterator(
-            df["geocent_time"][10:11].to_numpy(),
+            df["geocent_time"].to_numpy(),
             np.arange(
-                conf.injection.time_gps_future_seconds - 0.001,
-                conf.injection.time_gps_future_seconds + 0.001,
+                conf.injection.time_gps_future_seconds - 1.0,
+                conf.injection.time_gps_future_seconds + 1.0,
                 snr_dict["H1"]._delta_t,
             ),
-            df["ra"][:2].to_numpy(),
-            df["dec"][:2].to_numpy(),
+            df["ra"].to_numpy(),
+            df["dec"].to_numpy(),
         )
         brute_force_filter_template(
             lensed_detectors,

@@ -115,20 +115,11 @@ rng = np.random.default_rng(1234)
 
 
 def test_geographical_to_celestial_grid():
-    longitude, latitude, t_gps = rng.uniform(
-        low=(0, -np.pi / 2, 0),
-        high=(2 * np.pi, np.pi / 2, 10000),
-        size=(5 * 7 * 13, 3),
-    ).T
-    geographical = np.zeros((5, 7, 13, 2))
-    geographical[..., 0] = longitude.reshape(5, 7, 13)
-    geographical[..., 1] = latitude.reshape(5, 7, 13)
+    t_gps = rng.uniform(low=0, high=10000, size=(5, 7, 13))
+    geographical = np.array([1.1, 2.2])
 
     expected = np.zeros((5, 7, 13, 2))
-    expected[..., 0] = longitude.reshape(5, 7, 13) + gmst_accurate(
-        t_gps.reshape(5, 7, 13)
-    )
-    expected[..., 1] = latitude.reshape(5, 7, 13)
-    result = geographical_to_celestial(geographical, t_gps.reshape(5, 7, 13))
-    assert result.shape == expected.shape
+    expected[..., 0] = np.ones((5, 7, 13)) * geographical[0] + gmst_accurate(t_gps)
+    expected[..., 1] = np.ones((5, 7, 13)) * geographical[1]
+    result = geographical_to_celestial(geographical, t_gps)
     np.testing.assert_allclose(result, expected)

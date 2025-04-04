@@ -1,7 +1,13 @@
 import numpy as np
 import pytest
+from pycbc.detector import gmst_accurate
 
-from colens.transformations import DimensionError, cart_to_spher, spher_to_cart
+from colens.transformations import (
+    DimensionError,
+    cart_to_spher,
+    geographical_to_celestial,
+    spher_to_cart,
+)
 
 
 def test_spher_to_cart_shape_two():
@@ -125,3 +131,14 @@ def test_identity_spher_to_cart(phi, theta):
         cart_to_spher(spher_to_cart(expected_coordinates_spher)),
         expected_coordinates_spher,
     )
+
+
+def test_geographical_to_celestial_grid():
+    t_gps = rng.uniform(low=0, high=10000, size=(5, 7, 13))
+    geographical = np.array([1.1, 2.2])
+
+    expected = np.zeros((5, 7, 13, 2))
+    expected[..., 0] = np.ones((5, 7, 13)) * geographical[0] + gmst_accurate(t_gps)
+    expected[..., 1] = np.ones((5, 7, 13)) * geographical[1]
+    result = geographical_to_celestial(geographical, t_gps)
+    np.testing.assert_allclose(result, expected)

@@ -91,6 +91,6 @@ def create_filter_bank(
             )
 
 
-def get_bilby_posteriors(filename: Path) -> pd.DataFrame:
+def get_bilby_posteriors(filename: Path | str) -> pd.DataFrame:
     with h5py.File(filename) as file:
         return pd.DataFrame(np.array(file["C01:IMRPhenomXPHM"]["posterior_samples"]))

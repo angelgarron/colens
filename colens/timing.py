@@ -5,7 +5,7 @@ import numpy as np
 import scipy
 from pycbc.detector import Detector
 
-from colens.transformations import spher_to_cart
+from colens.transformations import longitude_to_ra, ra_to_longitude, spher_to_cart
 
 DETECTOR_H1 = Detector("H1")
 DETECTOR_L1 = Detector("L1")
@@ -49,49 +49,65 @@ def _voxel_down_sample(
 
 
 def _get_t_prime(
-    t_geocent_original: np.ndarray,
-    t_geocent_lensed: np.ndarray,
-    phi: np.ndarray,
-    theta: np.ndarray,
+    grid_time_gps_past_seconds: np.ndarray,
+    grid_time_gps_future_seconds: np.ndarray,
+    grid_ra: np.ndarray,
+    grid_dec: np.ndarray,
 ) -> tuple[np.ndarray]:
     new_hanford_location_spher = HANFORD_LOCATION_SPHER + np.moveaxis(
-        np.array([t_geocent_original, np.zeros_like(t_geocent_original)]), 0, -1
+        np.array(
+            [grid_time_gps_past_seconds, np.zeros_like(grid_time_gps_past_seconds)]
+        ),
+        0,
+        -1,
     )  # longitude of detector changes with geocent time
     new_hanford_location_cart = spher_to_cart(new_hanford_location_spher)
     new_livingston_location_spher = LIVINGSTON_LOCATION_SPHER + np.moveaxis(
-        np.array([t_geocent_original, np.zeros_like(t_geocent_original)]), 0, -1
+        np.array(
+            [grid_time_gps_past_seconds, np.zeros_like(grid_time_gps_past_seconds)]
+        ),
+        0,
+        -1,
     )
     new_livingston_location_cart = spher_to_cart(new_livingston_location_spher)
     new_lensed_hanford_location_spher = HANFORD_LOCATION_SPHER + np.moveaxis(
-        np.array([t_geocent_lensed, np.zeros_like(t_geocent_lensed)]), 0, -1
+        np.array(
+            [grid_time_gps_future_seconds, np.zeros_like(grid_time_gps_future_seconds)]
+        ),
+        0,
+        -1,
     )
     new_lensed_hanford_location_cart = spher_to_cart(new_lensed_hanford_location_spher)
     new_lensed_livingston_location_spher = LIVINGSTON_LOCATION_SPHER + np.moveaxis(
-        np.array([t_geocent_lensed, np.zeros_like(t_geocent_lensed)]), 0, -1
+        np.array(
+            [grid_time_gps_future_seconds, np.zeros_like(grid_time_gps_future_seconds)]
+        ),
+        0,
+        -1,
     )
     new_lensed_livingston_location_cart = spher_to_cart(
         new_lensed_livingston_location_spher
     )
 
-    p = spher_to_cart(np.moveaxis(np.array([phi, theta]), 0, -1))
+    p = spher_to_cart(np.moveaxis(np.array([grid_ra, grid_dec]), 0, -1))
 
     # Times at which compute the coherent snr
     # We need to rescale them by TIME_TO_CENTER because p and location vectors are normalized
     t_1_prime = (
         np.sum(-p * new_hanford_location_cart, axis=-1) * TIME_TO_CENTER_H1
-        + t_geocent_original
+        + grid_time_gps_past_seconds
     )
     t_2_prime = (
         np.sum(-p * new_livingston_location_cart, axis=-1) * TIME_TO_CENTER_L1
-        + t_geocent_original
+        + grid_time_gps_past_seconds
     )
     t_3_prime = (
         np.sum(-p * new_lensed_hanford_location_cart, axis=-1) * TIME_TO_CENTER_H1
-        + t_geocent_lensed
+        + grid_time_gps_future_seconds
     )
     t_4_prime = (
         np.sum(-p * new_lensed_livingston_location_cart, axis=-1) * TIME_TO_CENTER_L1
-        + t_geocent_lensed
+        + grid_time_gps_future_seconds
     )
     return t_1_prime, t_2_prime, t_3_prime, t_4_prime
 
@@ -102,15 +118,17 @@ def get_timing_iterator(
     ra: np.ndarray,
     dec: np.ndarray,
 ) -> Iterator[float]:
-    t_geocent_original, t_geocent_lensed, phi, theta = np.meshgrid(
-        time_gps_past_seconds,
-        time_gps_future_seconds,
-        ra,
-        dec,
-        indexing="ij",
+    grid_time_gps_past_seconds, grid_time_gps_future_seconds, grid_ra, grid_dec = (
+        np.meshgrid(
+            time_gps_past_seconds,
+            time_gps_future_seconds,
+            ra,
+            dec,
+            indexing="ij",
+        )
     )
     t_1_prime, t_2_prime, t_3_prime, t_4_prime = _get_t_prime(
-        t_geocent_original, t_geocent_lensed, phi, theta
+        grid_time_gps_past_seconds, grid_time_gps_future_seconds, grid_ra, grid_dec
     )
     t_prime_downsampled_indices = _voxel_down_sample(
         np.c_[
@@ -122,9 +140,9 @@ def get_timing_iterator(
         0.0005,
     )
     for i, j, k, l in zip(
-        t_geocent_original.flatten()[t_prime_downsampled_indices][:20],
-        t_geocent_lensed.flatten()[t_prime_downsampled_indices][:20],
-        theta.flatten()[t_prime_downsampled_indices][:20],
-        phi.flatten()[t_prime_downsampled_indices][:20],
+        grid_time_gps_past_seconds.flatten()[t_prime_downsampled_indices][:20],
+        grid_time_gps_future_seconds.flatten()[t_prime_downsampled_indices][:20],
+        grid_dec.flatten()[t_prime_downsampled_indices][:20],
+        grid_ra.flatten()[t_prime_downsampled_indices][:20],
     ):
         yield i, j, k, l

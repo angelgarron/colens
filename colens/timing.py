@@ -3,14 +3,9 @@ from typing import Iterable, Iterator, Mapping
 import astropy
 import numpy as np
 import scipy
-from pycbc.detector import Detector, gmst_accurate
+from pycbc.detector import Detector
 
-from colens.transformations import (
-    DimensionError,
-    longitude_to_ra,
-    ra_to_longitude,
-    spher_to_cart,
-)
+from colens.transformations import geographical_to_celestial, spher_to_cart
 
 DETECTOR_H1 = Detector("H1")
 DETECTOR_L1 = Detector("L1")
@@ -51,13 +46,6 @@ def _voxel_down_sample(
     )
 
     return downsampled_indices
-
-
-def geographical_to_celestial(geographical, gps_time):
-    celestial = np.zeros((*gps_time.shape, 2))
-    celestial[..., 0] = longitude_to_ra(geographical[0], gps_time)
-    celestial[..., 1] = geographical[1]
-    return celestial
 
 
 def _get_t_prime(

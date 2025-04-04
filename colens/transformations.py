@@ -65,6 +65,13 @@ def longitude_to_ra(
     return ra
 
 
+def geographical_to_celestial(geographical, gps_time):
+    celestial = np.zeros((*gps_time.shape, 2))
+    celestial[..., 0] = longitude_to_ra(geographical[0], gps_time)
+    celestial[..., 1] = geographical[1]
+    return celestial
+
+
 def detector_network_to_geographical_coordinates(
     grid: np.ndarray,
     hanford_location_cart: np.ndarray,

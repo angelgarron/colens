@@ -1,8 +1,8 @@
 import numpy as np
-import pytest
 from pycbc.detector import gmst_accurate
 
-from colens.timing import _voxel_down_sample, geographical_to_celestial
+from colens.timing import _voxel_down_sample
+from colens.transformations import geographical_to_celestial
 
 
 def test_recover_initial_points():

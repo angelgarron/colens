@@ -96,6 +96,20 @@ def _get_t_prime(
     return t_1_prime, t_2_prime, t_3_prime, t_4_prime
 
 
+def _get_meshgrid(
+    time_gps_past_seconds,
+    time_gps_future_seconds,
+    ra,
+    dec,
+):
+    grid_time_gps_future_seconds, grid_ra = np.meshgrid(
+        time_gps_future_seconds, ra, indexing="ij"
+    )
+    grid_time_gps_past_seconds = np.broadcast_to(time_gps_past_seconds, grid_ra.shape)
+    grid_dec = np.broadcast_to(dec, grid_ra.shape)
+    return grid_time_gps_past_seconds, grid_time_gps_future_seconds, grid_ra, grid_dec
+
+
 def get_timing_iterator(
     time_gps_past_seconds: np.ndarray,
     time_gps_future_seconds: np.ndarray,
@@ -103,12 +117,11 @@ def get_timing_iterator(
     dec: np.ndarray,
 ) -> Iterator[float]:
     grid_time_gps_past_seconds, grid_time_gps_future_seconds, grid_ra, grid_dec = (
-        np.meshgrid(
+        _get_meshgrid(
             time_gps_past_seconds,
             time_gps_future_seconds,
             ra,
             dec,
-            indexing="ij",
         )
     )
     t_1_prime, t_2_prime, t_3_prime, t_4_prime = _get_t_prime(

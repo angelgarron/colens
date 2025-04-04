@@ -1,6 +1,6 @@
 import numpy as np
 
-from colens.timing import _voxel_down_sample
+from colens.timing import _get_meshgrid, _voxel_down_sample
 
 
 def test_recover_initial_points():
@@ -109,4 +109,51 @@ def test_one_dimensional_initial_points():
     np.testing.assert_equal(initial_points[mask], expected)
 
 
-rng = np.random.default_rng(1234)
+def test_get_grid_mesh():
+    time_past = np.array([10, 11, 12, 13])
+    time_future = np.array([20, 21, 22, 23, 24])
+    ra = np.array([1, 3, 5, 7])
+    dec = np.array([2, 4, 6, 8])
+    grid_time_past, grid_time_future, grid_ra, grid_dec = _get_meshgrid(
+        time_past, time_future, ra, dec
+    )
+    grid_time_past_expected = np.array(
+        [
+            [10, 11, 12, 13],
+            [10, 11, 12, 13],
+            [10, 11, 12, 13],
+            [10, 11, 12, 13],
+            [10, 11, 12, 13],
+        ]
+    )
+    grid_time_future_expected = np.array(
+        [
+            [20, 20, 20, 20],
+            [21, 21, 21, 21],
+            [22, 22, 22, 22],
+            [23, 23, 23, 23],
+            [24, 24, 24, 24],
+        ]
+    )
+    grid_ra_expected = np.array(
+        [
+            [1, 3, 5, 7],
+            [1, 3, 5, 7],
+            [1, 3, 5, 7],
+            [1, 3, 5, 7],
+            [1, 3, 5, 7],
+        ]
+    )
+    grid_dec_expected = np.array(
+        [
+            [2, 4, 6, 8],
+            [2, 4, 6, 8],
+            [2, 4, 6, 8],
+            [2, 4, 6, 8],
+            [2, 4, 6, 8],
+        ]
+    )
+    np.testing.assert_allclose(grid_time_past, grid_time_past_expected)
+    np.testing.assert_allclose(grid_time_future, grid_time_future_expected)
+    np.testing.assert_allclose(grid_ra, grid_ra_expected)
+    np.testing.assert_allclose(grid_dec, grid_dec_expected)

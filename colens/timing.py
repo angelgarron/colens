@@ -44,7 +44,6 @@ def _voxel_down_sample(
             for voxel in voxel_dict
         ]
     )
-
     return downsampled_indices
 
 

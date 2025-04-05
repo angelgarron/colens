@@ -208,7 +208,6 @@ def main():
 
     logging.info("Starting the filtering...")
     for t_num, template in enumerate(bank):
-        logging.info("Filtering template %d/%d", t_num + 1, len(bank))
         # TODO loop over segments (or maybe we just create a big segment)
         # get the single detector snrs
         segment_index = 0
@@ -225,6 +224,7 @@ def main():
             output_data.__getattribute__(ifo).sigma.append(sigma[ifo])
 
         df = get_bilby_posteriors(conf.data.posteriors_file)[1000:1005]
+        logging.info("Generating timing iterator")
         timing_iterator = get_timing_iterator(
             df["geocent_time"].to_numpy(),
             np.arange(
@@ -235,6 +235,7 @@ def main():
             df["ra"].to_numpy(),
             df["dec"].to_numpy(),
         )
+        logging.info("Filtering template %d/%d", t_num + 1, len(bank))
         brute_force_filter_template(
             lensed_detectors,
             unlensed_detectors,

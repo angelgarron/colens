@@ -137,9 +137,9 @@ def get_timing_iterator(
         0.0005,
     )
     for i, j, k, l in zip(
-        grid_time_gps_past_seconds.flatten()[t_prime_downsampled_indices][:20],
-        grid_time_gps_future_seconds.flatten()[t_prime_downsampled_indices][:20],
-        grid_dec.flatten()[t_prime_downsampled_indices][:20],
-        grid_ra.flatten()[t_prime_downsampled_indices][:20],
+        grid_time_gps_past_seconds.flatten()[t_prime_downsampled_indices],
+        grid_time_gps_future_seconds.flatten()[t_prime_downsampled_indices],
+        grid_dec.flatten()[t_prime_downsampled_indices],
+        grid_ra.flatten()[t_prime_downsampled_indices],
     ):
         yield i, j, k, l

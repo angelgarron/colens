@@ -53,7 +53,7 @@ def _get_t_prime(
     grid_time_gps_future_seconds: np.ndarray,
     grid_ra: np.ndarray,
     grid_dec: np.ndarray,
-) -> tuple[np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     new_hanford_location_spher = geographical_to_celestial(
         HANFORD_LOCATION_SPHER, grid_time_gps_past_seconds
     )  # longitude of detector changes with geocent time

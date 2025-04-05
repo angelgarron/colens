@@ -114,8 +114,8 @@ def test_get_grid_mesh():
     time_future = np.array([20, 21, 22, 23, 24])
     ra = np.array([1, 3, 5, 7])
     dec = np.array([2, 4, 6, 8])
-    grid_time_past, grid_time_future, grid_ra, grid_dec = _get_meshgrid(
-        time_past, time_future, ra, dec
+    grid_time_future, grid_time_past, grid_ra, grid_dec = _get_meshgrid(
+        time_future, np.array([time_past, ra, dec]).T
     )
     grid_time_past_expected = np.array(
         [

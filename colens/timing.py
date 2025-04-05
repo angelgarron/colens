@@ -96,18 +96,21 @@ def _get_t_prime(
     return t_1_prime, t_2_prime, t_3_prime, t_4_prime
 
 
-def _get_meshgrid(
-    time_gps_past_seconds,
-    time_gps_future_seconds,
-    ra,
-    dec,
-):
-    grid_time_gps_future_seconds, grid_ra = np.meshgrid(
-        time_gps_future_seconds, ra, indexing="ij"
-    )
-    grid_time_gps_past_seconds = np.broadcast_to(time_gps_past_seconds, grid_ra.shape)
-    grid_dec = np.broadcast_to(dec, grid_ra.shape)
-    return grid_time_gps_past_seconds, grid_time_gps_future_seconds, grid_ra, grid_dec
+def _get_meshgrid(*xi: np.ndarray) -> list[np.ndarray]:
+    """Adapted from `np.meshgrid` to work when one of the
+    arrays passed has dimension greater than 1. In that case,
+    each column of that array will contribute as a coordiante vector,
+    but without addind extra dimensions to the coordinate matrices returned.
+    """
+    s0 = (1,) * len(xi)
+    output = []
+    for i, x in enumerate(xi):
+        if x.ndim > 1:
+            for y in x.T:
+                output.append(np.asanyarray(y).reshape(s0[:i] + (-1,) + s0[i + 1 :]))
+        else:
+            output.append(np.asanyarray(x).reshape(s0[:i] + (-1,) + s0[i + 1 :]))
+    return np.broadcast_arrays(*output, subok=True)
 
 
 def get_timing_iterator(
@@ -116,12 +119,10 @@ def get_timing_iterator(
     ra: np.ndarray,
     dec: np.ndarray,
 ) -> Iterator[float]:
-    grid_time_gps_past_seconds, grid_time_gps_future_seconds, grid_ra, grid_dec = (
+    grid_time_gps_future_seconds, grid_time_gps_past_seconds, grid_ra, grid_dec = (
         _get_meshgrid(
-            time_gps_past_seconds,
             time_gps_future_seconds,
-            ra,
-            dec,
+            np.array([time_gps_past_seconds, ra, dec]).T,
         )
     )
     t_1_prime, t_2_prime, t_3_prime, t_4_prime = _get_t_prime(

@@ -1,11 +1,11 @@
 import numpy as np
 
 
-def _interpolate_timeseries_at(time, timeseries, index, margin):
+def _interpolate_timeseries_at(time, timeseries, index):
     return np.interp(
         time,
-        np.array(timeseries.sample_times)[index - margin : index + margin],
-        np.array(timeseries)[index - margin : index + margin],
+        np.array(timeseries.sample_times)[index - 2 : index + 2],
+        np.array(timeseries)[index - 2 : index + 2],
     )
 
 
@@ -71,6 +71,5 @@ def get_snr_interpolated(
         - gps_start_seconds,
         timeseries=timeseries,
         index=index_trigger,
-        margin=margin,
     )
     return snr_at_trigger

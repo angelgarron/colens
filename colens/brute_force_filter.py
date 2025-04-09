@@ -94,7 +94,6 @@ def brute_force_filter_template(
                 ]["H1"],
                 cumulative_index=segments["H1"][segment_index].cumulative_index,
                 time_slides_seconds=time_slides_seconds["H1"][time_slide_index],
-                margin=10,
             )
             snr_L1_at_trigger_original = get_snr(
                 time_delay_zerolag_seconds=unlensed_time_delay_zerolag_seconds[
@@ -109,7 +108,6 @@ def brute_force_filter_template(
                 ]["L1"],
                 cumulative_index=segments["L1"][segment_index].cumulative_index,
                 time_slides_seconds=time_slides_seconds["L1"][time_slide_index],
-                margin=10,
             )
             snr_H1_at_trigger_lensed = get_snr(
                 time_delay_zerolag_seconds=lensed_time_delay_zerolag_seconds[
@@ -124,7 +122,6 @@ def brute_force_filter_template(
                 ]["H1_lensed"],
                 cumulative_index=segments["H1_lensed"][segment_index].cumulative_index,
                 time_slides_seconds=time_slides_seconds["H1_lensed"][time_slide_index],
-                margin=10,
             )
             snr_L1_at_trigger_lensed = get_snr(
                 time_delay_zerolag_seconds=lensed_time_delay_zerolag_seconds[
@@ -139,7 +136,6 @@ def brute_force_filter_template(
                 ]["L1_lensed"],
                 cumulative_index=segments["L1_lensed"][segment_index].cumulative_index,
                 time_slides_seconds=time_slides_seconds["L1_lensed"][time_slide_index],
-                margin=10,
             )
 
             fp = {

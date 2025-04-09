@@ -214,14 +214,18 @@ def main():
         sigmasq = get_sigmasq(
             segments, template, conf.injection.instruments, segment_index
         )
-        sigma = {ifo: np.sqrt(sigmasq[ifo]) for ifo in conf.injection.instruments}
+        sigma = [np.sqrt(sigmasq[ifo]) for ifo in conf.injection.lensed_instruments]
+        sigma += [np.sqrt(sigmasq[ifo]) for ifo in conf.injection.unlensed_instruments]
 
         snr_dict, norm_dict, corr_dict, idx, snr = filter_ifos(
             conf.injection.instruments, sigmasq, matched_filter, segment_index
         )
 
-        for ifo in conf.injection.instruments:
-            output_data.__getattribute__(ifo).sigma.append(sigma[ifo])
+        for i, ifo in enumerate(conf.injection.lensed_instruments):
+            output_data.__getattribute__(ifo).sigma.append(sigma[i])
+
+        for i, ifo in enumerate(conf.injection.unlensed_instruments):
+            output_data.__getattribute__(ifo).sigma.append(sigma[i + 2])
 
         df = get_bilby_posteriors(conf.data.posteriors_file)[1000:1005]
         logging.info("Generating timing iterator")
@@ -240,7 +244,6 @@ def main():
             lensed_detectors,
             unlensed_detectors,
             segments,
-            conf.injection.instruments,
             num_slides,
             conf.injection.slide_shift_seconds,
             conf.injection.sample_rate,

@@ -43,16 +43,6 @@ def test_coherent_statistic_adapter():
         - fc[3] * snr_at_trigger[3].imag * sigma[3],
     ]
 
-    instruments = ["H1", "H1_lensed", "L1", "L1_lensed"]
-    M_mu_nu, x_mu = coherent_statistic_adapter(
-        snr_at_trigger[0],
-        snr_at_trigger[2],
-        snr_at_trigger[1],
-        snr_at_trigger[3],
-        {ifo: sigma[i] for i, ifo in enumerate(instruments)},
-        {ifo: fp[i] for i, ifo in enumerate(instruments)},
-        {ifo: fc[i] for i, ifo in enumerate(instruments)},
-        instruments,
-    )
+    M_mu_nu, x_mu = coherent_statistic_adapter(snr_at_trigger, sigma, fp, fc)
     np.testing.assert_equal(M_mu_nu, expected_M_mu_nu)
     np.testing.assert_equal(x_mu, expected_x_mu)

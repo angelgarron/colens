@@ -23,25 +23,13 @@ def coherent_snr(
     return rho_coh
 
 
-def coherent_statistic_adapter(
-    snr_H1_at_trigger_original,
-    snr_L1_at_trigger_original,
-    snr_H1_at_trigger_lensed,
-    snr_L1_at_trigger_lensed,
-    sigma,
-    fp,
-    fc,
-    instruments,
-):
-    snr_dict_at_trigger = {
-        "H1": snr_H1_at_trigger_original,
-        "H1_lensed": snr_H1_at_trigger_lensed,
-        "L1": snr_L1_at_trigger_original,
-        "L1_lensed": snr_L1_at_trigger_lensed,
-    }
-
-    w_p = np.array([sigma[ifo] * fp[ifo] for ifo in instruments])
-    w_c = np.array([sigma[ifo] * fc[ifo] for ifo in instruments])
+def coherent_statistic_adapter(snr_at_trigger, sigma, fp, fc):
+    snr_at_trigger = np.asarray(snr_at_trigger)
+    sigma = np.asarray(sigma)
+    fp = np.asarray(fp)
+    fc = np.asarray(fc)
+    w_p = sigma * fp
+    w_c = sigma * fc
 
     A = np.dot(w_p, w_p)
     B = np.dot(w_c, w_c)
@@ -55,17 +43,10 @@ def coherent_statistic_adapter(
         ]
     )
 
-    x_mu = np.zeros(4)
-    x_mu[0] = sum(
-        [fp[ifo] * snr_dict_at_trigger[ifo].real * sigma[ifo] for ifo in instruments]
-    )
-    x_mu[1] = sum(
-        [fc[ifo] * snr_dict_at_trigger[ifo].real * sigma[ifo] for ifo in instruments]
-    )
-    x_mu[2] = -sum(
-        [fp[ifo] * snr_dict_at_trigger[ifo].imag * sigma[ifo] for ifo in instruments]
-    )
-    x_mu[3] = -sum(
-        [fc[ifo] * snr_dict_at_trigger[ifo].imag * sigma[ifo] for ifo in instruments]
-    )
+    x_mu = [
+        sum(w_p * snr_at_trigger.real),
+        sum(w_c * snr_at_trigger.real),
+        -sum(w_p * snr_at_trigger.imag),
+        -sum(w_c * snr_at_trigger.imag),
+    ]
     return M_mu_nu, x_mu

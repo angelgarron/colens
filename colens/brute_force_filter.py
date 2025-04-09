@@ -42,10 +42,10 @@ def brute_force_filter_template(
     for (
         original_trigger_time_seconds,
         lensed_trigger_time_seconds,
-        theta,
-        phi,
+        ra,
+        dec,
     ) in timing_iterator:
-        sky_grid = SkyGrid([phi], [theta])
+        sky_grid = SkyGrid([ra], [dec])
         sky_position_index = 0
         unlensed_antenna_pattern = calculate_antenna_pattern(
             unlensed_detectors,

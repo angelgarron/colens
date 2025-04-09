@@ -3,7 +3,7 @@ import numpy as np
 from colens.coincident import coincident_snr
 
 
-def test():
+def test_coincident_snr():
     expected = (2**2 + 3**2 + 5**2 + 7**2) ** 0.5
     np.testing.assert_equal(coincident_snr([2 + 3j, 5 + 7j]), expected)
     expected = (

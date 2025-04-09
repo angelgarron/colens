@@ -13,7 +13,6 @@ from colens.coherent import coherent_statistic_adapter
 from colens.coincident import coincident_snr, get_coinc_indexes
 from colens.detector import calculate_antenna_pattern
 from colens.io import Output
-from colens.sky import SkyGrid
 
 
 def brute_force_filter_template(
@@ -45,16 +44,17 @@ def brute_force_filter_template(
         ra,
         dec,
     ) in timing_iterator:
-        sky_grid = SkyGrid([ra], [dec])
         sky_position_index = 0
         unlensed_antenna_pattern = calculate_antenna_pattern(
             unlensed_detectors,
-            sky_grid,
+            ra,
+            dec,
             original_trigger_time_seconds,
         )
         unlensed_time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
             original_trigger_time_seconds,
-            sky_grid,
+            ra,
+            dec,
             unlensed_detectors,
         )
         unlensed_time_delay_idx = get_time_delay_indices(
@@ -64,12 +64,14 @@ def brute_force_filter_template(
         )
         lensed_antenna_pattern = calculate_antenna_pattern(
             lensed_detectors,
-            sky_grid,
+            ra,
+            dec,
             lensed_trigger_time_seconds,
         )
         lensed_time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
             lensed_trigger_time_seconds,
-            sky_grid,
+            ra,
+            dec,
             lensed_detectors,
         )
         lensed_time_delay_idx = get_time_delay_indices(
@@ -151,8 +153,8 @@ def brute_force_filter_template(
             )
             output_data.lensed_trigger_time_seconds.append(lensed_trigger_time_seconds)
             output_data.time_slide_index.append(time_slide_index)
-            output_data.ra.append(sky_grid[sky_position_index].ra)
-            output_data.dec.append(sky_grid[sky_position_index].dec)
+            output_data.ra.append(ra)
+            output_data.dec.append(dec)
             output_data.H1.snr_real.append(float(snr_at_trigger_original[0].real))
             output_data.H1.snr_imag.append(float(snr_at_trigger_original[0].imag))
             output_data.L1.snr_real.append(float(snr_at_trigger_original[1].real))

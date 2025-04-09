@@ -1,5 +1,6 @@
 """Code related to the detectors."""
 
+import numpy as np
 from pycbc import detector
 from pycbc.detector import (
     _ground_detectors,
@@ -8,8 +9,6 @@ from pycbc.detector import (
     meter,
 )
 from pycbc.libutils import import_optional
-
-from colens.sky import SkyGrid
 
 
 class MyDetector(detector.Detector):
@@ -55,22 +54,21 @@ class MyDetector(detector.Detector):
         self.gmst_reference = None
 
 
-def calculate_antenna_pattern(detectors, sky_grid: SkyGrid, trigger_time: float):
+def calculate_antenna_pattern(detectors, ras, decs, trigger_time: float):
     """Calculate the antenna pattern functions for all detectors and sky positions.
 
     Args:
-        sky_grid (SkyGrid): Sky grid with all the sky positions for which we want to calculate the antenna patterns.
         trigger_time (float): Time at which the antenna patterns should be computed.
     """
     antenna_pattern = {}
     for ifo in detectors:
         curr_det = detectors[ifo]
         antenna_pattern[ifo] = []
-        for sky_position in sky_grid:
+        for ra, dec in zip(np.atleast_1d(ras), np.atleast_1d(decs)):
             antenna_pattern[ifo].append(
                 curr_det.antenna_pattern(
-                    sky_position.ra,
-                    sky_position.dec,
+                    ra,
+                    dec,
                     polarization=0,
                     t_gps=trigger_time,
                 )

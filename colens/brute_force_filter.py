@@ -139,13 +139,7 @@ def brute_force_filter_template(
             rho_coinc = coincident_snr(snr_at_trigger)
 
             M_mu_nu, x_mu = coherent_statistic_adapter(snr_at_trigger, sigma, fp, fc)
-            rho_coh = (
-                coherent_func(
-                    M_mu_nu,
-                    x_mu,
-                )
-                ** 0.5
-            )
+            rho_coh = coherent_func(M_mu_nu, x_mu) ** 0.5
 
             # writting output
             output_data.original_trigger_time_seconds.append(

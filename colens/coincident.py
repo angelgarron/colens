@@ -36,19 +36,7 @@ def get_coinc_indexes(idx_dict, time_delay_idx, instruments):
     return coinc_idx
 
 
-def coincident_snr(
-    snr_H1_at_trigger_original,
-    snr_L1_at_trigger_original,
-    snr_H1_at_trigger_lensed,
-    snr_L1_at_trigger_lensed,
-):
-    snr_array = np.array(
-        [
-            [snr_H1_at_trigger_original],
-            [snr_H1_at_trigger_lensed],
-            [snr_L1_at_trigger_original],
-            [snr_L1_at_trigger_lensed],
-        ]
-    )
-    rho_coinc = abs(np.sqrt(np.sum(snr_array * snr_array.conj(), axis=0)))
+def coincident_snr(snr_array):
+    rho_coinc = np.sum(np.absolute(np.atleast_2d(snr_array)) ** 2, axis=1) ** 0.5
+
     return rho_coinc

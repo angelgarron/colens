@@ -160,10 +160,12 @@ def brute_force_filter_template(
             )
 
             rho_coinc = coincident_snr(
-                snr_H1_at_trigger_original,
-                snr_L1_at_trigger_original,
-                snr_H1_at_trigger_lensed,
-                snr_L1_at_trigger_lensed,
+                [
+                    snr_H1_at_trigger_original,
+                    snr_L1_at_trigger_original,
+                    snr_H1_at_trigger_lensed,
+                    snr_L1_at_trigger_lensed,
+                ]
             )
 
             M_mu_nu, x_mu = coherent_statistic_adapter(

@@ -14,6 +14,9 @@ LIVINGSTON_LOCATION_SPHER = np.array([DETECTOR_L1.longitude, DETECTOR_L1.latitud
 TIME_TO_CENTER_H1 = np.linalg.norm(DETECTOR_H1.location) / astropy.constants.c.value
 TIME_TO_CENTER_L1 = np.linalg.norm(DETECTOR_L1.location) / astropy.constants.c.value
 
+# resolution for moving in the time grid
+TIME_RESOLUTION = 2 / 4096  # approximately 0.5 ms
+
 
 def _voxel_down_sample(
     points: np.ndarray, voxel_size: int | float | Iterable[int | float]
@@ -117,6 +120,7 @@ def get_timing_iterator(
     time_gps_future_seconds: np.ndarray,
     ra: np.ndarray,
     dec: np.ndarray,
+    time_resolution: float = TIME_RESOLUTION,
 ) -> Iterator[float]:
     grid_time_gps_future_seconds, grid_time_gps_past_seconds, grid_ra, grid_dec = (
         _get_meshgrid(
@@ -134,7 +138,7 @@ def get_timing_iterator(
             t_3_prime.flatten(),
             t_4_prime.flatten(),
         ],
-        0.0005,
+        time_resolution,
     )
     return zip(
         grid_time_gps_past_seconds.flatten()[t_prime_downsampled_indices],

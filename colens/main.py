@@ -227,13 +227,13 @@ def main():
         for i, ifo in enumerate(conf.injection.unlensed_instruments):
             output_data.__getattribute__(ifo).sigma.append(sigma[i + 2])
 
-        df = get_bilby_posteriors(conf.data.posteriors_file)[1000:1005]
+        df = get_bilby_posteriors(conf.data.posteriors_file)[1000:1100]
         logging.info("Generating timing iterator")
         timing_iterator = get_timing_iterator(
             df["geocent_time"].to_numpy(),
             np.arange(
-                conf.injection.time_gps_future_seconds - 0.01,
-                conf.injection.time_gps_future_seconds + 0.01,
+                conf.injection.time_gps_future_seconds - 0.1,
+                conf.injection.time_gps_future_seconds + 0.1,
                 snr_dict["H1"]._delta_t,
             ),
             df["ra"].to_numpy(),
@@ -250,7 +250,7 @@ def main():
             conf.injection.gps_start_seconds,
             get_two_f,
             output_data,
-            get_snr_interpolated,
+            get_snr,
             sigma,
             snr_dict,
             segment_index,

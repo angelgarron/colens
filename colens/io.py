@@ -9,7 +9,12 @@ import numpy as np
 import pandas as pd
 from pycbc.frame import read_frame
 
-from colens.data import NumpyArrayEncoder
+
+class NumpyArrayEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
 
 
 @dataclass

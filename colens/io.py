@@ -23,10 +23,10 @@ class PerDetectorOutput:
 
 @dataclass
 class Output:
-    H1: PerDetectorOutput
-    L1: PerDetectorOutput
-    H1_lensed: PerDetectorOutput
-    L1_lensed: PerDetectorOutput
+    H1: PerDetectorOutput = PerDetectorOutput()
+    H1_lensed: PerDetectorOutput = PerDetectorOutput()
+    L1: PerDetectorOutput = PerDetectorOutput()
+    L1_lensed: PerDetectorOutput = PerDetectorOutput()
     original_trigger_time_seconds: list = field(default_factory=list)
     lensed_trigger_time_seconds: list = field(default_factory=list)
     time_slide_index: list = field(default_factory=list)

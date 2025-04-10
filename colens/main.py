@@ -103,12 +103,7 @@ def create_injections(
 def main():
     init_logging(True)
     conf = read_configuration_from("config.yaml")
-    output_data = Output(
-        H1=PerDetectorOutput(),
-        H1_lensed=PerDetectorOutput(),
-        L1=PerDetectorOutput(),
-        L1_lensed=PerDetectorOutput(),
-    )
+    output_data = Output()
 
     lensed_detectors = {
         ifo: MyDetector(ifo) for ifo in conf.injection.lensed_instruments

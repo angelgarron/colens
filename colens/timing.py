@@ -47,7 +47,7 @@ def _voxel_down_sample(
             for voxel in voxel_dict
         ]
     )
-    return downsampled_indices
+    return np.sort(downsampled_indices)
 
 
 def _get_t_prime(

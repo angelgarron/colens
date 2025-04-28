@@ -75,6 +75,26 @@ def test_not_uniform_voxel_size():
     np.testing.assert_equal(mask, expected_mask)
 
 
+def test_recover_sorted_indices():
+    """Should recover the indices sorted even if the point kept for the first voxel
+    is the last point in `initial_points`.
+    """
+    initial_points = np.array(
+        [
+            [-0.7, 1],
+            [0, 1],
+            [1, 1],
+            [-1, 0],
+            [0, 0],
+            [1, 0],
+            [-1, 1],  # this point is closer to the voxel (-1, 1) than the first point
+        ]
+    )
+    mask = _voxel_down_sample(initial_points, 1)
+    expected_mask = np.array([1, 2, 3, 4, 5, 6])
+    np.testing.assert_equal(mask, expected_mask)
+
+
 def test_one_dimensional_initial_points():
     initial_points = np.array([-1, 0, 1, 2]).reshape(-1, 1)
     expected = np.array([-1, 0, 2]).reshape(-1, 1)

@@ -31,18 +31,9 @@ def test_recover_initial_points_except_one_in_the_middle():
             [1, 0],
         ]
     )
-    expected = np.array(
-        [
-            [-1, 1],
-            [0, 1],
-            [1, 1],
-            [-1, 0],
-            [0, 0],
-            [1, 0],
-        ]
-    )
     mask = _voxel_down_sample(initial_points, 1)
-    np.testing.assert_equal(initial_points[mask], expected)
+    expected_mask = np.array([0, 2, 3, 4, 5, 6])
+    np.testing.assert_equal(mask, expected_mask)
 
 
 def test_recover_even_if_not_fall_in_voxel():
@@ -59,18 +50,9 @@ def test_recover_even_if_not_fall_in_voxel():
             [1, 0],
         ]
     )
-    expected = np.array(
-        [
-            [-0.9, 1],
-            [0, 1],
-            [1, 1],
-            [-1, 0],
-            [0, 0],
-            [1, 0],
-        ]
-    )
     mask = _voxel_down_sample(initial_points, 1)
-    np.testing.assert_equal(initial_points[mask], expected)
+    expected_mask = np.array([0, 2, 3, 4, 5, 6])
+    np.testing.assert_equal(mask, expected_mask)
 
 
 def test_not_uniform_voxel_size():
@@ -88,18 +70,9 @@ def test_not_uniform_voxel_size():
             [2, 0],
         ]
     )
-    expected = np.array(
-        [
-            [-2, 1],
-            [0, 1],
-            [2, 1],
-            [-2, 0],
-            [0, 0],
-            [2, 0],
-        ]
-    )
     mask = _voxel_down_sample(initial_points, (2, 1))
-    np.testing.assert_equal(initial_points[mask], expected)
+    expected_mask = np.array([0, 2, 4, 5, 7, 9])
+    np.testing.assert_equal(mask, expected_mask)
 
 
 def test_one_dimensional_initial_points():

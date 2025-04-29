@@ -9,7 +9,7 @@ from pycbc.types import complex64, float32, zeros
 
 from colens import configuration
 from colens.bank import MyFilterBank
-from colens.filter import filter_ifos, get_sigmasq
+from colens.filter import filter_ifos
 from colens.injection import (
     get_ifos_with_simulated_noise,
     get_strain_list_from_bilby_simulation,
@@ -112,20 +112,20 @@ class DataLoader:
         template = bank[0]
         # TODO loop over segments (or maybe we just create a big segment)
         self.segment_index = 0
-        sigmasq = get_sigmasq(
-            self.segments, template, conf.injection.instruments, self.segment_index
-        )
         self.sigma = []
-        for instruments in [
-            conf.injection.unlensed_instruments,
-            conf.injection.lensed_instruments,
-        ]:
-            self.sigma += self.get_sigma(sigmasq, instruments)
-            for i, ifo in enumerate(instruments):
-                output_data.__getattribute__(ifo).sigma.append(self.sigma[i])
+        sigmasq_dict = dict()
+        for ifo in (
+            conf.injection.unlensed_instruments + conf.injection.lensed_instruments
+        ):
+
+            sigmasq = template.sigmasq(self.segments[ifo][self.segment_index].psd)
+            sigmasq_dict[ifo] = sigmasq
+            sigma = np.sqrt(sigmasq)
+            self.sigma.append(sigma)
+            output_data.__getattribute__(ifo).sigma.append(sigma)
 
         self.snr_dict, norm_dict, corr_dict, idx, snr = filter_ifos(
-            conf.injection.instruments, sigmasq, matched_filter, self.segment_index
+            conf.injection.instruments, sigmasq_dict, matched_filter, self.segment_index
         )
         self.get_timing_iterator(conf)
 
@@ -193,9 +193,6 @@ class DataLoader:
             )
             for ifo in conf.injection.instruments
         }
-
-    def get_sigma(self, sigmasq, instruments):
-        return [np.sqrt(sigmasq[ifo]) for ifo in instruments]
 
     def get_timing_iterator(self, conf):
         df = get_bilby_posteriors(conf.data.posteriors_file)[1000:1100]

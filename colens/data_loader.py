@@ -100,9 +100,6 @@ class DataLoader:
         )  # number of samples of the fourier transform of each segment
         self.get_segments(conf, strain_dict, frequency_length, delta_f)
         template_mem = zeros(segment_length, dtype=complex64)
-        matched_filter = self.get_matched_filter(
-            conf, template_mem, segment_length, delta_f
-        )
         logging.info("Read in template bank")
         bank = _create_template_bank(
             conf.injection, template_mem, frequency_length, delta_f
@@ -116,16 +113,18 @@ class DataLoader:
         for ifo in (
             conf.injection.unlensed_instruments + conf.injection.lensed_instruments
         ):
-
+            matched_filter = self.get_matched_filter(
+                conf, template_mem, segment_length, delta_f, self.segments[ifo]
+            )
             sigmasq = template.sigmasq(self.segments[ifo][self.segment_index].psd)
             sigma = np.sqrt(sigmasq)
             self.sigma.append(sigma)
             output_data.__getattribute__(ifo).sigma.append(sigma)
-            snr_ts, norm, corr, ind, snrv = matched_filter[
-                ifo
-            ].matched_filter_and_cluster(self.segment_index, sigmasq, window=0)
+            snr_ts, norm, corr, ind, snrv = matched_filter.matched_filter_and_cluster(
+                self.segment_index, sigmasq, window=0
+            )
             self.snr_dict[ifo] = (
-                snr_ts[matched_filter[ifo].segments[self.segment_index].analyze] * norm
+                snr_ts[matched_filter.segments[self.segment_index].analyze] * norm
             )
 
         self.get_timing_iterator(conf)
@@ -175,25 +174,21 @@ class DataLoader:
             for seg in self.segments[ifo]:
                 seg /= seg.psd
 
-    def get_matched_filter(self, conf, template_mem, segment_length, delta_f):
-        logging.info("Setting up MatchedFilterControl at each IFO")
-        return {
-            ifo: MatchedFilterControl(
-                conf.injection.low_frequency_cutoff,
-                None,
-                conf.injection.sngl_snr_threshold,
-                segment_length,
-                delta_f,
-                complex64,
-                self.segments[ifo],
-                template_mem,
-                use_cluster=False,
-                downsample_factor=conf.injection.downsample_factor,
-                upsample_threshold=conf.injection.upsample_threshold,
-                upsample_method=conf.injection.upsample_method,
-            )
-            for ifo in conf.injection.instruments
-        }
+    def get_matched_filter(self, conf, template_mem, segment_length, delta_f, segment):
+        return MatchedFilterControl(
+            conf.injection.low_frequency_cutoff,
+            None,
+            conf.injection.sngl_snr_threshold,
+            segment_length,
+            delta_f,
+            complex64,
+            segment,
+            template_mem,
+            use_cluster=False,
+            downsample_factor=conf.injection.downsample_factor,
+            upsample_threshold=conf.injection.upsample_threshold,
+            upsample_method=conf.injection.upsample_method,
+        )
 
     def get_timing_iterator(self, conf):
         df = get_bilby_posteriors(conf.data.posteriors_file)[1000:1100]

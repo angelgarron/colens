@@ -89,16 +89,55 @@ def _create_injections(
 
 class DataLoader:
     def __init__(self, conf, output_data):
+        strain_dict = self.get_strain_dict(conf)
+        delta_f = (
+            1.0 / conf.injection.segment_length_seconds
+        )  # frequency step of the fourier transform of each segment
+        segment_length = int(
+            conf.injection.segment_length_seconds * conf.injection.sample_rate
+        )  # number of samples of each segment
+        frequency_length = int(
+            segment_length // 2 + 1
+        )  # number of samples of the fourier transform of each segment
+        self.get_segments(conf, strain_dict, frequency_length, delta_f)
+        template_mem = zeros(segment_length, dtype=complex64)
+        matched_filter = self.get_matched_filter(
+            conf, template_mem, segment_length, delta_f
+        )
+        logging.info("Read in template bank")
+        bank = _create_template_bank(
+            conf.injection, template_mem, frequency_length, delta_f
+        )
+        logging.info("Full template bank size: %d", len(bank))
+        template = bank[0]
+        # TODO loop over segments (or maybe we just create a big segment)
+        self.segment_index = 0
+        sigmasq = get_sigmasq(
+            self.segments, template, conf.injection.instruments, self.segment_index
+        )
+        self.sigma = self.get_sigma(sigmasq, conf.injection.unlensed_instruments)
+        self.sigma += self.get_sigma(sigmasq, conf.injection.lensed_instruments)
+        self.snr_dict, norm_dict, corr_dict, idx, snr = filter_ifos(
+            conf.injection.instruments, sigmasq, matched_filter, self.segment_index
+        )
+        for i, ifo in enumerate(conf.injection.lensed_instruments):
+            output_data.__getattribute__(ifo).sigma.append(self.sigma[i])
+        for i, ifo in enumerate(conf.injection.unlensed_instruments):
+            output_data.__getattribute__(ifo).sigma.append(self.sigma[i + 2])
+        self.get_timing_iterator(conf)
+
+    def get_strain_dict(self, conf):
         logging.info("Injecting simulated signals on gaussian noise")
         strain_dict = _create_injections(conf.injection_parameters, conf.injection)
-
         process_strain_dict(
             strain_dict,
             conf.psd.strain_high_pass_hertz,
             conf.injection.sample_rate,
             conf.injection.pad_seconds,
         )
+        return strain_dict
 
+    def get_segments(self, conf, strain_dict, frequency_length, delta_f):
         # Create a dictionary of Python slice objects that indicate where the segments
         # start and end for each detector timeseries.
         self.segments = dict()
@@ -114,16 +153,6 @@ class DataLoader:
                 allow_zero_padding=False,
             ).fourier_segments()
 
-        delta_f = (
-            1.0 / conf.injection.segment_length_seconds
-        )  # frequency step of the fourier transform of each segment
-        segment_length = int(
-            conf.injection.segment_length_seconds * conf.injection.sample_rate
-        )  # number of samples of each segment
-        frequency_length = int(
-            segment_length // 2 + 1
-        )  # number of samples of the fourier transform of each segment
-
         logging.info("Associating PSDs to the fourier segments")
         for ifo in conf.injection.instruments:
             associate_psds_to_segments(
@@ -137,10 +166,14 @@ class DataLoader:
                 precision="single",
             )
 
-        logging.info("Setting up MatchedFilterControl at each IFO")
-        template_mem = zeros(segment_length, dtype=complex64)
+        logging.info("Overwhitening frequency-domain data segments")
+        for ifo in conf.injection.instruments:
+            for seg in self.segments[ifo]:
+                seg /= seg.psd
 
-        matched_filter = {
+    def get_matched_filter(self, conf, template_mem, segment_length, delta_f):
+        logging.info("Setting up MatchedFilterControl at each IFO")
+        return {
             ifo: MatchedFilterControl(
                 conf.injection.low_frequency_cutoff,
                 None,
@@ -158,41 +191,10 @@ class DataLoader:
             for ifo in conf.injection.instruments
         }
 
-        logging.info("Overwhitening frequency-domain data segments")
-        for ifo in conf.injection.instruments:
-            for seg in self.segments[ifo]:
-                seg /= seg.psd
+    def get_sigma(self, sigmasq, instruments):
+        return [np.sqrt(sigmasq[ifo]) for ifo in instruments]
 
-        logging.info("Read in template bank")
-        bank = _create_template_bank(
-            conf.injection, template_mem, frequency_length, delta_f
-        )
-
-        logging.info("Full template bank size: %d", len(bank))
-
-        template = bank[0]
-        # TODO loop over segments (or maybe we just create a big segment)
-        self.segment_index = 0
-        sigmasq = get_sigmasq(
-            self.segments, template, conf.injection.instruments, self.segment_index
-        )
-        self.sigma = [
-            np.sqrt(sigmasq[ifo]) for ifo in conf.injection.lensed_instruments
-        ]
-        self.sigma += [
-            np.sqrt(sigmasq[ifo]) for ifo in conf.injection.unlensed_instruments
-        ]
-
-        self.snr_dict, norm_dict, corr_dict, idx, snr = filter_ifos(
-            conf.injection.instruments, sigmasq, matched_filter, self.segment_index
-        )
-
-        for i, ifo in enumerate(conf.injection.lensed_instruments):
-            output_data.__getattribute__(ifo).sigma.append(self.sigma[i])
-
-        for i, ifo in enumerate(conf.injection.unlensed_instruments):
-            output_data.__getattribute__(ifo).sigma.append(self.sigma[i + 2])
-
+    def get_timing_iterator(self, conf):
         df = get_bilby_posteriors(conf.data.posteriors_file)[1000:1100]
         logging.info("Generating timing iterator")
         self.timing_iterator = get_timing_iterator(

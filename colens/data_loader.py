@@ -115,15 +115,18 @@ class DataLoader:
         sigmasq = get_sigmasq(
             self.segments, template, conf.injection.instruments, self.segment_index
         )
-        self.sigma = self.get_sigma(sigmasq, conf.injection.unlensed_instruments)
-        self.sigma += self.get_sigma(sigmasq, conf.injection.lensed_instruments)
+        self.sigma = []
+        for instruments in [
+            conf.injection.unlensed_instruments,
+            conf.injection.lensed_instruments,
+        ]:
+            self.sigma += self.get_sigma(sigmasq, instruments)
+            for i, ifo in enumerate(instruments):
+                output_data.__getattribute__(ifo).sigma.append(self.sigma[i])
+
         self.snr_dict, norm_dict, corr_dict, idx, snr = filter_ifos(
             conf.injection.instruments, sigmasq, matched_filter, self.segment_index
         )
-        for i, ifo in enumerate(conf.injection.lensed_instruments):
-            output_data.__getattribute__(ifo).sigma.append(self.sigma[i])
-        for i, ifo in enumerate(conf.injection.unlensed_instruments):
-            output_data.__getattribute__(ifo).sigma.append(self.sigma[i + 2])
         self.get_timing_iterator(conf)
 
     def get_strain_dict(self, conf):

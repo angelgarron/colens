@@ -9,7 +9,6 @@ from pycbc.types import complex64, float32, zeros
 
 from colens import configuration
 from colens.bank import MyFilterBank
-from colens.filter import filter_ifos
 from colens.injection import (
     get_ifos_with_simulated_noise,
     get_strain_list_from_bilby_simulation,
@@ -113,20 +112,22 @@ class DataLoader:
         # TODO loop over segments (or maybe we just create a big segment)
         self.segment_index = 0
         self.sigma = []
-        sigmasq_dict = dict()
+        self.snr_dict = dict()
         for ifo in (
             conf.injection.unlensed_instruments + conf.injection.lensed_instruments
         ):
 
             sigmasq = template.sigmasq(self.segments[ifo][self.segment_index].psd)
-            sigmasq_dict[ifo] = sigmasq
             sigma = np.sqrt(sigmasq)
             self.sigma.append(sigma)
             output_data.__getattribute__(ifo).sigma.append(sigma)
+            snr_ts, norm, corr, ind, snrv = matched_filter[
+                ifo
+            ].matched_filter_and_cluster(self.segment_index, sigmasq, window=0)
+            self.snr_dict[ifo] = (
+                snr_ts[matched_filter[ifo].segments[self.segment_index].analyze] * norm
+            )
 
-        self.snr_dict, norm_dict, corr_dict, idx, snr = filter_ifos(
-            conf.injection.instruments, sigmasq_dict, matched_filter, self.segment_index
-        )
         self.get_timing_iterator(conf)
 
     def get_strain_dict(self, conf):

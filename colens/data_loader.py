@@ -88,7 +88,6 @@ def _create_injections(
 
 class DataLoader:
     def __init__(self, conf, output_data):
-        strain_dict = self.get_strain_dict(conf)
         delta_f = (
             1.0 / conf.injection.segment_length_seconds
         )  # frequency step of the fourier transform of each segment
@@ -98,7 +97,6 @@ class DataLoader:
         frequency_length = int(
             segment_length // 2 + 1
         )  # number of samples of the fourier transform of each segment
-        self.get_segments(conf, strain_dict, frequency_length, delta_f)
         template_mem = zeros(segment_length, dtype=complex64)
         logging.info("Read in template bank")
         bank = _create_template_bank(
@@ -108,11 +106,16 @@ class DataLoader:
         template = bank[0]
         # TODO loop over segments (or maybe we just create a big segment)
         self.segment_index = 0
+        strain_dict = self.get_strain_dict(conf)
         self.sigma = []
         self.snr_dict = dict()
+        self.segments = dict()
         for ifo in (
             conf.injection.unlensed_instruments + conf.injection.lensed_instruments
         ):
+            self.segments[ifo] = self.get_segments(
+                conf, strain_dict[ifo], frequency_length, delta_f, ifo
+            )
             matched_filter = self.get_matched_filter(
                 conf, template_mem, segment_length, delta_f, self.segments[ifo]
             )
@@ -140,39 +143,33 @@ class DataLoader:
         )
         return strain_dict
 
-    def get_segments(self, conf, strain_dict, frequency_length, delta_f):
-        # Create a dictionary of Python slice objects that indicate where the segments
-        # start and end for each detector timeseries.
-        self.segments = dict()
-        for ifo in conf.injection.instruments:
-            self.segments[ifo] = StrainSegments(
-                strain_dict[ifo],
-                segment_length=conf.injection.segment_length_seconds,
-                segment_start_pad=conf.injection.segment_start_pad_seconds,
-                segment_end_pad=conf.injection.segment_end_pad_seconds,
-                trigger_start=conf.injection.trig_start_time_seconds[ifo],
-                trigger_end=conf.injection.trig_end_time_seconds[ifo],
-                filter_inj_only=False,
-                allow_zero_padding=False,
-            ).fourier_segments()
+    def get_segments(self, conf, strain, frequency_length, delta_f, ifo):
+        segments = StrainSegments(
+            strain,
+            segment_length=conf.injection.segment_length_seconds,
+            segment_start_pad=conf.injection.segment_start_pad_seconds,
+            segment_end_pad=conf.injection.segment_end_pad_seconds,
+            trigger_start=conf.injection.trig_start_time_seconds[ifo],
+            trigger_end=conf.injection.trig_end_time_seconds[ifo],
+            filter_inj_only=False,
+            allow_zero_padding=False,
+        ).fourier_segments()
 
-        logging.info("Associating PSDs to the fourier segments")
-        for ifo in conf.injection.instruments:
-            associate_psds_to_segments(
-                conf.psd,
-                self.segments[ifo],
-                strain_dict[ifo],
-                frequency_length,
-                delta_f,
-                conf.injection.low_frequency_cutoff,
-                dyn_range_factor=DYN_RANGE_FAC,
-                precision="single",
-            )
+        associate_psds_to_segments(
+            conf.psd,
+            segments,
+            strain,
+            frequency_length,
+            delta_f,
+            conf.injection.low_frequency_cutoff,
+            dyn_range_factor=DYN_RANGE_FAC,
+            precision="single",
+        )
 
-        logging.info("Overwhitening frequency-domain data segments")
-        for ifo in conf.injection.instruments:
-            for seg in self.segments[ifo]:
-                seg /= seg.psd
+        for seg in segments:
+            seg /= seg.psd
+
+        return segments
 
     def get_matched_filter(self, conf, template_mem, segment_length, delta_f, segment):
         return MatchedFilterControl(

@@ -1,9 +1,7 @@
 import logging
 
 import numpy as np
-from pycbc.events import ranking
 
-from colens import timing
 from colens.background import (
     get_time_delay_at_zerolag_seconds,
     get_time_delay_indices,
@@ -18,7 +16,6 @@ from colens.io import Output
 def brute_force_filter_template(
     lensed_detectors,
     unlensed_detectors,
-    segments,
     num_slides,
     SLIDE_SHIFT_SECONDS,
     SAMPLE_RATE,
@@ -26,10 +23,7 @@ def brute_force_filter_template(
     coherent_func,
     output_data: Output,
     get_snr,
-    sigma,
-    snr_dict,
-    segment_index,
-    timing_iterator,
+    data_loader,
 ):
     time_slides_seconds = get_time_slides_seconds(
         num_slides,
@@ -43,7 +37,7 @@ def brute_force_filter_template(
         lensed_trigger_time_seconds,
         ra,
         dec,
-    ) in timing_iterator:
+    ) in data_loader.timing_iterator:
         sky_position_index = 0
         unlensed_antenna_pattern = calculate_antenna_pattern(
             unlensed_detectors,
@@ -87,14 +81,16 @@ def brute_force_filter_template(
                     time_delay_zerolag_seconds=unlensed_time_delay_zerolag_seconds[
                         sky_position_index
                     ][ifo],
-                    timeseries=snr_dict[ifo],
+                    timeseries=data_loader.snr_dict[ifo],
                     trigger_time_seconds=original_trigger_time_seconds,
                     gps_start_seconds=GPS_START_SECONDS[ifo],
                     sample_rate=SAMPLE_RATE,
                     time_delay_idx=unlensed_time_delay_idx[time_slide_index][
                         sky_position_index
                     ][ifo],
-                    cumulative_index=segments[ifo][segment_index].cumulative_index,
+                    cumulative_index=data_loader.segments[ifo][
+                        data_loader.segment_index
+                    ].cumulative_index,
                     time_slides_seconds=time_slides_seconds[ifo][time_slide_index],
                 )
                 for ifo in unlensed_detectors
@@ -104,14 +100,16 @@ def brute_force_filter_template(
                     time_delay_zerolag_seconds=lensed_time_delay_zerolag_seconds[
                         sky_position_index
                     ][ifo],
-                    timeseries=snr_dict[ifo],
+                    timeseries=data_loader.snr_dict[ifo],
                     trigger_time_seconds=lensed_trigger_time_seconds,
                     gps_start_seconds=GPS_START_SECONDS[ifo],
                     sample_rate=SAMPLE_RATE,
                     time_delay_idx=lensed_time_delay_idx[time_slide_index][
                         sky_position_index
                     ][ifo],
-                    cumulative_index=segments[ifo][segment_index].cumulative_index,
+                    cumulative_index=data_loader.segments[ifo][
+                        data_loader.segment_index
+                    ].cumulative_index,
                     time_slides_seconds=time_slides_seconds[ifo][time_slide_index],
                 )
                 for ifo in lensed_detectors
@@ -138,7 +136,9 @@ def brute_force_filter_template(
 
             rho_coinc = coincident_snr(snr_at_trigger)
 
-            M_mu_nu, x_mu = coherent_statistic_adapter(snr_at_trigger, sigma, fp, fc)
+            M_mu_nu, x_mu = coherent_statistic_adapter(
+                snr_at_trigger, data_loader.sigma, fp, fc
+            )
             rho_coh = coherent_func(M_mu_nu, x_mu) ** 0.5
 
             # writting output

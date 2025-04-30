@@ -7,7 +7,6 @@ from colens.background import slide_limiter
 from colens.brute_force_filter import brute_force_filter_template
 from colens.configuration import read_configuration_from
 from colens.data_loader import DataLoader
-from colens.detector import MyDetector
 from colens.fstatistic import get_two_f
 from colens.interpolate import get_snr, get_snr_interpolated
 from colens.io import Output
@@ -17,13 +16,6 @@ def main():
     init_logging(True)
     conf = read_configuration_from("config.yaml")
     output_data = Output()
-
-    lensed_detectors = {
-        ifo: MyDetector(ifo) for ifo in conf.injection.lensed_instruments
-    }
-    unlensed_detectors = {
-        ifo: MyDetector(ifo) for ifo in conf.injection.unlensed_instruments
-    }
 
     num_slides = slide_limiter(
         conf.injection.segment_length_seconds,
@@ -36,8 +28,6 @@ def main():
 
     logging.info("Starting the filtering...")
     brute_force_filter_template(
-        lensed_detectors,
-        unlensed_detectors,
         num_slides,
         conf.injection.slide_shift_seconds,
         conf.injection.sample_rate,

@@ -3,6 +3,7 @@ from copy import copy
 
 import numpy as np
 from pycbc import DYN_RANGE_FAC
+from pycbc.detector import Detector
 from pycbc.filter import MatchedFilterControl
 from pycbc.psd import associate_psds_to_segments
 from pycbc.strain import StrainSegments
@@ -42,10 +43,14 @@ class DataLoader:
         self.snr_dict = dict()
         self.segments = dict()
         self.injection_parameters = copy(conf.injection_parameters)
+        self.unlensed_detectors = dict()
+        self.lensed_detectors = dict()
         for ifo in conf.injection.unlensed_instruments:
             self.single_detector_setup(ifo, False)
+            self.unlensed_detectors[ifo] = Detector(ifo)
         for ifo in conf.injection.lensed_instruments:
             self.single_detector_setup(ifo, True)
+            self.lensed_detectors[ifo] = Detector(ifo[:2])
         self.get_timing_iterator()
 
     def single_detector_setup(self, ifo, lensed):

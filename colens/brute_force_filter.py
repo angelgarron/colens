@@ -14,8 +14,6 @@ from colens.io import Output
 
 
 def brute_force_filter_template(
-    lensed_detectors,
-    unlensed_detectors,
     num_slides,
     SLIDE_SHIFT_SECONDS,
     SAMPLE_RATE,
@@ -28,8 +26,8 @@ def brute_force_filter_template(
     time_slides_seconds = get_time_slides_seconds(
         num_slides,
         SLIDE_SHIFT_SECONDS,
-        list(unlensed_detectors),
-        list(lensed_detectors),
+        list(data_loader.unlensed_detectors),
+        list(data_loader.lensed_detectors),
     )
 
     for (
@@ -40,7 +38,7 @@ def brute_force_filter_template(
     ) in data_loader.timing_iterator:
         sky_position_index = 0
         unlensed_antenna_pattern = calculate_antenna_pattern(
-            unlensed_detectors,
+            data_loader.unlensed_detectors,
             ra,
             dec,
             original_trigger_time_seconds,
@@ -49,7 +47,7 @@ def brute_force_filter_template(
             original_trigger_time_seconds,
             ra,
             dec,
-            unlensed_detectors,
+            data_loader.unlensed_detectors,
         )
         unlensed_time_delay_idx = get_time_delay_indices(
             SAMPLE_RATE,
@@ -57,7 +55,7 @@ def brute_force_filter_template(
             time_slides_seconds,
         )
         lensed_antenna_pattern = calculate_antenna_pattern(
-            lensed_detectors,
+            data_loader.lensed_detectors,
             ra,
             dec,
             lensed_trigger_time_seconds,
@@ -66,7 +64,7 @@ def brute_force_filter_template(
             lensed_trigger_time_seconds,
             ra,
             dec,
-            lensed_detectors,
+            data_loader.lensed_detectors,
         )
         lensed_time_delay_idx = get_time_delay_indices(
             SAMPLE_RATE,
@@ -93,7 +91,7 @@ def brute_force_filter_template(
                     ].cumulative_index,
                     time_slides_seconds=time_slides_seconds[ifo][time_slide_index],
                 )
-                for ifo in unlensed_detectors
+                for ifo in data_loader.unlensed_detectors
             ]
             snr_at_trigger_lensed = [
                 get_snr(
@@ -112,26 +110,26 @@ def brute_force_filter_template(
                     ].cumulative_index,
                     time_slides_seconds=time_slides_seconds[ifo][time_slide_index],
                 )
-                for ifo in lensed_detectors
+                for ifo in data_loader.lensed_detectors
             ]
 
             snr_at_trigger = snr_at_trigger_original + snr_at_trigger_lensed
 
             fp = [
                 unlensed_antenna_pattern[ifo][sky_position_index][0]
-                for ifo in unlensed_detectors
+                for ifo in data_loader.unlensed_detectors
             ]
             fc = [
                 unlensed_antenna_pattern[ifo][sky_position_index][1]
-                for ifo in unlensed_detectors
+                for ifo in data_loader.unlensed_detectors
             ]
             fp += [
                 lensed_antenna_pattern[ifo][sky_position_index][0]
-                for ifo in lensed_detectors
+                for ifo in data_loader.lensed_detectors
             ]
             fc += [
                 lensed_antenna_pattern[ifo][sky_position_index][1]
-                for ifo in lensed_detectors
+                for ifo in data_loader.lensed_detectors
             ]
 
             rho_coinc = coincident_snr(snr_at_trigger)

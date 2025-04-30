@@ -3,7 +3,6 @@ import logging
 import numpy as np
 from pycbc import init_logging
 
-from colens.background import slide_limiter
 from colens.brute_force_filter import brute_force_filter_template
 from colens.configuration import read_configuration_from
 from colens.data_loader import DataLoader
@@ -17,19 +16,10 @@ def main():
     conf = read_configuration_from("config.yaml")
     output_data = Output()
 
-    num_slides = slide_limiter(
-        conf.injection.segment_length_seconds,
-        conf.injection.slide_shift_seconds,
-        len(conf.injection.lensed_instruments),
-    )
-    num_slides = 1
-
     data_loader = DataLoader(conf, output_data)
 
     logging.info("Starting the filtering...")
     brute_force_filter_template(
-        num_slides,
-        conf.injection.slide_shift_seconds,
         conf.injection.sample_rate,
         conf.injection.gps_start_seconds,
         get_two_f,

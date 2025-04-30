@@ -9,6 +9,7 @@ from pycbc.psd import associate_psds_to_segments
 from pycbc.strain import StrainSegments
 from pycbc.types import complex64, float32, zeros
 
+from colens.background import get_time_slides_seconds
 from colens.bank import MyFilterBank
 from colens.injection import (
     get_ifos_with_simulated_noise,
@@ -52,6 +53,18 @@ class DataLoader:
             self.single_detector_setup(ifo, True)
             self.lensed_detectors[ifo] = Detector(ifo[:2])
         self.get_timing_iterator()
+        # self.num_slides = slide_limiter(
+        #     conf.injection.segment_length_seconds,
+        #     conf.injection.slide_shift_seconds,
+        #     len(conf.injection.lensed_instruments),
+        # )
+        self.num_slides = 1
+        self.time_slides_seconds = get_time_slides_seconds(
+            self.num_slides,
+            self.conf.injection.slide_shift_seconds,
+            list(self.unlensed_detectors),
+            list(self.lensed_detectors),
+        )
 
     def single_detector_setup(self, ifo, lensed):
         if lensed:

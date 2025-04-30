@@ -2,11 +2,7 @@ import logging
 
 import numpy as np
 
-from colens.background import (
-    get_time_delay_at_zerolag_seconds,
-    get_time_delay_indices,
-    get_time_slides_seconds,
-)
+from colens.background import get_time_delay_at_zerolag_seconds, get_time_delay_indices
 from colens.coherent import coherent_statistic_adapter
 from colens.coincident import coincident_snr, get_coinc_indexes
 from colens.detector import calculate_antenna_pattern
@@ -14,8 +10,6 @@ from colens.io import Output
 
 
 def brute_force_filter_template(
-    num_slides,
-    SLIDE_SHIFT_SECONDS,
     SAMPLE_RATE,
     GPS_START_SECONDS,
     coherent_func,
@@ -23,12 +17,6 @@ def brute_force_filter_template(
     get_snr,
     data_loader,
 ):
-    time_slides_seconds = get_time_slides_seconds(
-        num_slides,
-        SLIDE_SHIFT_SECONDS,
-        list(data_loader.unlensed_detectors),
-        list(data_loader.lensed_detectors),
-    )
 
     for (
         original_trigger_time_seconds,
@@ -52,7 +40,7 @@ def brute_force_filter_template(
         unlensed_time_delay_idx = get_time_delay_indices(
             SAMPLE_RATE,
             unlensed_time_delay_zerolag_seconds,
-            time_slides_seconds,
+            data_loader.time_slides_seconds,
         )
         lensed_antenna_pattern = calculate_antenna_pattern(
             data_loader.lensed_detectors,
@@ -69,11 +57,11 @@ def brute_force_filter_template(
         lensed_time_delay_idx = get_time_delay_indices(
             SAMPLE_RATE,
             lensed_time_delay_zerolag_seconds,
-            time_slides_seconds,
+            data_loader.time_slides_seconds,
         )
 
         # Loop over (short) time-slides, staring with the zero-lag
-        for time_slide_index in range(num_slides):
+        for time_slide_index in range(data_loader.num_slides):
             snr_at_trigger_original = [
                 get_snr(
                     time_delay_zerolag_seconds=unlensed_time_delay_zerolag_seconds[
@@ -89,7 +77,9 @@ def brute_force_filter_template(
                     cumulative_index=data_loader.segments[ifo][
                         data_loader.segment_index
                     ].cumulative_index,
-                    time_slides_seconds=time_slides_seconds[ifo][time_slide_index],
+                    time_slides_seconds=data_loader.time_slides_seconds[ifo][
+                        time_slide_index
+                    ],
                 )
                 for ifo in data_loader.unlensed_detectors
             ]
@@ -108,7 +98,9 @@ def brute_force_filter_template(
                     cumulative_index=data_loader.segments[ifo][
                         data_loader.segment_index
                     ].cumulative_index,
-                    time_slides_seconds=time_slides_seconds[ifo][time_slide_index],
+                    time_slides_seconds=data_loader.time_slides_seconds[ifo][
+                        time_slide_index
+                    ],
                 )
                 for ifo in data_loader.lensed_detectors
             ]

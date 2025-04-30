@@ -1,7 +1,7 @@
 import logging
 
 import numpy as np
-from pycbc import DYN_RANGE_FAC, init_logging
+from pycbc import init_logging
 
 from colens.background import slide_limiter
 from colens.brute_force_filter import brute_force_filter_template

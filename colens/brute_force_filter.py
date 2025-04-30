@@ -40,21 +40,12 @@ def brute_force_filter_template(
 
         # Loop over (short) time-slides, staring with the zero-lag
         for time_slide_index in range(data_loader.num_slides):
-            data_loader.get_snr_at_trigger_original(
+            data_loader.get_snr_at_trigger(
                 get_snr,
                 sky_position_index,
                 original_trigger_time_seconds,
-                time_slide_index,
-            )
-            data_loader.get_snr_at_trigger_lensed(
-                get_snr,
-                sky_position_index,
                 lensed_trigger_time_seconds,
                 time_slide_index,
-            )
-
-            snr_at_trigger = (
-                data_loader.snr_at_trigger_original + data_loader.snr_at_trigger_lensed
             )
 
             fp = [
@@ -74,10 +65,10 @@ def brute_force_filter_template(
                 for ifo in data_loader.lensed_detectors
             ]
 
-            rho_coinc = coincident_snr(snr_at_trigger)
+            rho_coinc = coincident_snr(data_loader.snr_at_trigger)
 
             M_mu_nu, x_mu = coherent_statistic_adapter(
-                snr_at_trigger, data_loader.sigma, fp, fc
+                data_loader.snr_at_trigger, data_loader.sigma, fp, fc
             )
             rho_coh = coherent_func(M_mu_nu, x_mu) ** 0.5
 

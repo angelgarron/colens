@@ -69,7 +69,6 @@ class Injection:
     sample_rate: float
     unlensed_instruments: list
     lensed_instruments: list
-    instruments: list = field(init=False)
     segment_length_seconds: float
     slide_shift_seconds: float
     low_frequency_cutoff: float
@@ -93,9 +92,6 @@ class Injection:
     segment_end_pad_seconds: float
 
     def __post_init__(self):
-        self.instruments = self.lensed_instruments + self.unlensed_instruments
-        self.instruments.sort()
-
         trigger_times_seconds = {
             "H1": self.time_gps_past_seconds,
             "L1": self.time_gps_past_seconds,
@@ -104,7 +100,7 @@ class Injection:
         }
         self.gps_start_seconds = dict()
         self.gps_end_seconds = dict()
-        for ifo in self.instruments:
+        for ifo in self.unlensed_instruments + self.lensed_instruments:
             self.gps_start_seconds[ifo] = (
                 int(trigger_times_seconds[ifo]) - 192 - self.pad_seconds
             )
@@ -114,7 +110,7 @@ class Injection:
 
         self.trig_start_time_seconds = dict()
         self.trig_end_time_seconds = dict()
-        for ifo in self.instruments:
+        for ifo in self.unlensed_instruments + self.lensed_instruments:
             self.trig_start_time_seconds[ifo] = (
                 self.gps_start_seconds[ifo] + self.segment_start_pad_seconds
             )

@@ -2,10 +2,8 @@ import logging
 
 import numpy as np
 
-from colens.background import get_time_delay_at_zerolag_seconds, get_time_delay_indices
 from colens.coherent import coherent_statistic_adapter
 from colens.coincident import coincident_snr, get_coinc_indexes
-from colens.detector import calculate_antenna_pattern
 from colens.io import Output
 
 
@@ -25,55 +23,38 @@ def brute_force_filter_template(
         dec,
     ) in data_loader.timing_iterator:
         sky_position_index = 0
-        unlensed_antenna_pattern = calculate_antenna_pattern(
-            data_loader.unlensed_detectors,
+        data_loader.calculate_antenna_pattern(
             ra,
             dec,
             original_trigger_time_seconds,
+            lensed_trigger_time_seconds,
         )
-        unlensed_time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
+        data_loader.get_time_delay_at_zerolag_seconds(
             original_trigger_time_seconds,
-            ra,
-            dec,
-            data_loader.unlensed_detectors,
-        )
-        unlensed_time_delay_idx = get_time_delay_indices(
-            SAMPLE_RATE,
-            unlensed_time_delay_zerolag_seconds,
-            data_loader.time_slides_seconds,
-        )
-        lensed_antenna_pattern = calculate_antenna_pattern(
-            data_loader.lensed_detectors,
-            ra,
-            dec,
-            lensed_trigger_time_seconds,
-        )
-        lensed_time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
             lensed_trigger_time_seconds,
             ra,
             dec,
-            data_loader.lensed_detectors,
         )
-        lensed_time_delay_idx = get_time_delay_indices(
+        data_loader.get_time_delay_indices(
             SAMPLE_RATE,
-            lensed_time_delay_zerolag_seconds,
-            data_loader.time_slides_seconds,
         )
 
         # Loop over (short) time-slides, staring with the zero-lag
         for time_slide_index in range(data_loader.num_slides):
             snr_at_trigger_original = [
                 get_snr(
-                    time_delay_zerolag_seconds=unlensed_time_delay_zerolag_seconds[
+                    time_delay_zerolag_seconds=data_loader.unlensed_time_delay_zerolag_seconds[
                         sky_position_index
-                    ][ifo],
+                    ][
+                        ifo
+                    ],
                     timeseries=data_loader.snr_dict[ifo],
                     trigger_time_seconds=original_trigger_time_seconds,
                     gps_start_seconds=GPS_START_SECONDS[ifo],
                     sample_rate=SAMPLE_RATE,
-                    time_delay_idx=unlensed_time_delay_idx[time_slide_index][
-                        sky_position_index
-                    ][ifo],
+                    time_delay_idx=data_loader.unlensed_time_delay_idx[
+                        time_slide_index
+                    ][sky_position_index][ifo],
                     cumulative_index=data_loader.segments[ifo][
                         data_loader.segment_index
                     ].cumulative_index,
@@ -85,14 +66,16 @@ def brute_force_filter_template(
             ]
             snr_at_trigger_lensed = [
                 get_snr(
-                    time_delay_zerolag_seconds=lensed_time_delay_zerolag_seconds[
+                    time_delay_zerolag_seconds=data_loader.lensed_time_delay_zerolag_seconds[
                         sky_position_index
-                    ][ifo],
+                    ][
+                        ifo
+                    ],
                     timeseries=data_loader.snr_dict[ifo],
                     trigger_time_seconds=lensed_trigger_time_seconds,
                     gps_start_seconds=GPS_START_SECONDS[ifo],
                     sample_rate=SAMPLE_RATE,
-                    time_delay_idx=lensed_time_delay_idx[time_slide_index][
+                    time_delay_idx=data_loader.lensed_time_delay_idx[time_slide_index][
                         sky_position_index
                     ][ifo],
                     cumulative_index=data_loader.segments[ifo][
@@ -108,19 +91,19 @@ def brute_force_filter_template(
             snr_at_trigger = snr_at_trigger_original + snr_at_trigger_lensed
 
             fp = [
-                unlensed_antenna_pattern[ifo][sky_position_index][0]
+                data_loader.unlensed_antenna_pattern[ifo][sky_position_index][0]
                 for ifo in data_loader.unlensed_detectors
             ]
             fc = [
-                unlensed_antenna_pattern[ifo][sky_position_index][1]
+                data_loader.unlensed_antenna_pattern[ifo][sky_position_index][1]
                 for ifo in data_loader.unlensed_detectors
             ]
             fp += [
-                lensed_antenna_pattern[ifo][sky_position_index][0]
+                data_loader.lensed_antenna_pattern[ifo][sky_position_index][0]
                 for ifo in data_loader.lensed_detectors
             ]
             fc += [
-                lensed_antenna_pattern[ifo][sky_position_index][1]
+                data_loader.lensed_antenna_pattern[ifo][sky_position_index][1]
                 for ifo in data_loader.lensed_detectors
             ]
 

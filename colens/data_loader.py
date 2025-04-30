@@ -9,8 +9,13 @@ from pycbc.psd import associate_psds_to_segments
 from pycbc.strain import StrainSegments
 from pycbc.types import complex64, float32, zeros
 
-from colens.background import get_time_slides_seconds
+from colens.background import (
+    get_time_delay_at_zerolag_seconds,
+    get_time_delay_indices,
+    get_time_slides_seconds,
+)
 from colens.bank import MyFilterBank
+from colens.detector import calculate_antenna_pattern
 from colens.injection import (
     get_ifos_with_simulated_noise,
     get_strain_list_from_bilby_simulation,
@@ -189,4 +194,59 @@ class DataLoader:
             phase_order=self.conf.injection.order,
             approximant=self.conf.injection.approximant,
             out=self.template_mem,
+        )
+
+    def calculate_antenna_pattern(
+        self,
+        ra,
+        dec,
+        original_trigger_time_seconds,
+        lensed_trigger_time_seconds,
+    ):
+        self.unlensed_antenna_pattern = calculate_antenna_pattern(
+            self.unlensed_detectors,
+            ra,
+            dec,
+            original_trigger_time_seconds,
+        )
+        self.lensed_antenna_pattern = calculate_antenna_pattern(
+            self.lensed_detectors,
+            ra,
+            dec,
+            lensed_trigger_time_seconds,
+        )
+
+    def get_time_delay_at_zerolag_seconds(
+        self,
+        original_trigger_time_seconds,
+        lensed_trigger_time_seconds,
+        ra,
+        dec,
+    ):
+        self.unlensed_time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
+            original_trigger_time_seconds,
+            ra,
+            dec,
+            self.unlensed_detectors,
+        )
+        self.lensed_time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
+            lensed_trigger_time_seconds,
+            ra,
+            dec,
+            self.lensed_detectors,
+        )
+
+    def get_time_delay_indices(
+        self,
+        SAMPLE_RATE,
+    ):
+        self.unlensed_time_delay_idx = get_time_delay_indices(
+            SAMPLE_RATE,
+            self.unlensed_time_delay_zerolag_seconds,
+            self.time_slides_seconds,
+        )
+        self.lensed_time_delay_idx = get_time_delay_indices(
+            SAMPLE_RATE,
+            self.lensed_time_delay_zerolag_seconds,
+            self.time_slides_seconds,
         )

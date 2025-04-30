@@ -20,7 +20,6 @@ def main():
 
     logging.info("Starting the filtering...")
     brute_force_filter_template(
-        conf.injection.sample_rate,
         get_two_f,
         output_data,
         get_snr,

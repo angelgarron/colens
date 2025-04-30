@@ -8,7 +8,6 @@ from colens.io import Output
 
 
 def brute_force_filter_template(
-    SAMPLE_RATE,
     coherent_func,
     output_data: Output,
     get_snr,
@@ -34,9 +33,7 @@ def brute_force_filter_template(
             ra,
             dec,
         )
-        data_loader.get_time_delay_indices(
-            SAMPLE_RATE,
-        )
+        data_loader.get_time_delay_indices()
 
         # Loop over (short) time-slides, staring with the zero-lag
         for time_slide_index in range(data_loader.num_slides):

@@ -236,17 +236,14 @@ class DataLoader:
             self.lensed_detectors,
         )
 
-    def get_time_delay_indices(
-        self,
-        SAMPLE_RATE,
-    ):
+    def get_time_delay_indices(self):
         self.unlensed_time_delay_idx = get_time_delay_indices(
-            SAMPLE_RATE,
+            self.conf.injection.sample_rate,
             self.unlensed_time_delay_zerolag_seconds,
             self.time_slides_seconds,
         )
         self.lensed_time_delay_idx = get_time_delay_indices(
-            SAMPLE_RATE,
+            self.conf.injection.sample_rate,
             self.lensed_time_delay_zerolag_seconds,
             self.time_slides_seconds,
         )

@@ -41,54 +41,22 @@ def brute_force_filter_template(
 
         # Loop over (short) time-slides, staring with the zero-lag
         for time_slide_index in range(data_loader.num_slides):
-            snr_at_trigger_original = [
-                get_snr(
-                    time_delay_zerolag_seconds=data_loader.unlensed_time_delay_zerolag_seconds[
-                        sky_position_index
-                    ][
-                        ifo
-                    ],
-                    timeseries=data_loader.snr_dict[ifo],
-                    trigger_time_seconds=original_trigger_time_seconds,
-                    gps_start_seconds=GPS_START_SECONDS[ifo],
-                    sample_rate=SAMPLE_RATE,
-                    time_delay_idx=data_loader.unlensed_time_delay_idx[
-                        time_slide_index
-                    ][sky_position_index][ifo],
-                    cumulative_index=data_loader.segments[ifo][
-                        data_loader.segment_index
-                    ].cumulative_index,
-                    time_slides_seconds=data_loader.time_slides_seconds[ifo][
-                        time_slide_index
-                    ],
-                )
-                for ifo in data_loader.unlensed_detectors
-            ]
-            snr_at_trigger_lensed = [
-                get_snr(
-                    time_delay_zerolag_seconds=data_loader.lensed_time_delay_zerolag_seconds[
-                        sky_position_index
-                    ][
-                        ifo
-                    ],
-                    timeseries=data_loader.snr_dict[ifo],
-                    trigger_time_seconds=lensed_trigger_time_seconds,
-                    gps_start_seconds=GPS_START_SECONDS[ifo],
-                    sample_rate=SAMPLE_RATE,
-                    time_delay_idx=data_loader.lensed_time_delay_idx[time_slide_index][
-                        sky_position_index
-                    ][ifo],
-                    cumulative_index=data_loader.segments[ifo][
-                        data_loader.segment_index
-                    ].cumulative_index,
-                    time_slides_seconds=data_loader.time_slides_seconds[ifo][
-                        time_slide_index
-                    ],
-                )
-                for ifo in data_loader.lensed_detectors
-            ]
+            data_loader.get_snr_at_trigger_original(
+                get_snr,
+                sky_position_index,
+                original_trigger_time_seconds,
+                time_slide_index,
+            )
+            data_loader.get_snr_at_trigger_lensed(
+                get_snr,
+                sky_position_index,
+                lensed_trigger_time_seconds,
+                time_slide_index,
+            )
 
-            snr_at_trigger = snr_at_trigger_original + snr_at_trigger_lensed
+            snr_at_trigger = (
+                data_loader.snr_at_trigger_original + data_loader.snr_at_trigger_lensed
+            )
 
             fp = [
                 data_loader.unlensed_antenna_pattern[ifo][sky_position_index][0]
@@ -122,13 +90,29 @@ def brute_force_filter_template(
             output_data.time_slide_index.append(time_slide_index)
             output_data.ra.append(ra)
             output_data.dec.append(dec)
-            output_data.H1.snr_real.append(float(snr_at_trigger_original[0].real))
-            output_data.H1.snr_imag.append(float(snr_at_trigger_original[0].imag))
-            output_data.L1.snr_real.append(float(snr_at_trigger_original[1].real))
-            output_data.L1.snr_imag.append(float(snr_at_trigger_original[1].imag))
-            output_data.H1_lensed.snr_real.append(float(snr_at_trigger_lensed[0].real))
-            output_data.H1_lensed.snr_imag.append(float(snr_at_trigger_lensed[0].imag))
-            output_data.L1_lensed.snr_real.append(float(snr_at_trigger_lensed[1].real))
-            output_data.L1_lensed.snr_imag.append(float(snr_at_trigger_lensed[1].imag))
+            output_data.H1.snr_real.append(
+                float(data_loader.snr_at_trigger_original[0].real)
+            )
+            output_data.H1.snr_imag.append(
+                float(data_loader.snr_at_trigger_original[0].imag)
+            )
+            output_data.L1.snr_real.append(
+                float(data_loader.snr_at_trigger_original[1].real)
+            )
+            output_data.L1.snr_imag.append(
+                float(data_loader.snr_at_trigger_original[1].imag)
+            )
+            output_data.H1_lensed.snr_real.append(
+                float(data_loader.snr_at_trigger_lensed[0].real)
+            )
+            output_data.H1_lensed.snr_imag.append(
+                float(data_loader.snr_at_trigger_lensed[0].imag)
+            )
+            output_data.L1_lensed.snr_real.append(
+                float(data_loader.snr_at_trigger_lensed[1].real)
+            )
+            output_data.L1_lensed.snr_imag.append(
+                float(data_loader.snr_at_trigger_lensed[1].imag)
+            )
             output_data.rho_coinc.append(float(rho_coinc[0]))
             output_data.rho_coh.append(float(rho_coh))

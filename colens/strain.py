@@ -24,11 +24,22 @@ def process_strain_dict(
         end of each timeseries.
     """
     for ifo in strain_dict:
-        strain_tmp = highpass(strain_dict[ifo], frequency=strain_high_pass_hertz)
-        strain_tmp = resample_to_delta_t(strain_tmp, 1.0 / sample_rate, method="ldas")
-        strain_tmp = (strain_tmp * DYN_RANGE_FAC).astype(float32)
-        strain_tmp = highpass(strain_tmp, frequency=strain_high_pass_hertz)
-        start = int(pad_seconds * sample_rate)
-        end = int(len(strain_tmp) - sample_rate * pad_seconds)
-        strain_tmp = strain_tmp[start:end]
-        strain_dict[ifo] = strain_tmp
+        strain_dict[ifo] = process_strain(
+            strain_dict[ifo], strain_high_pass_hertz, sample_rate, pad_seconds
+        )
+
+
+def process_strain(
+    strain,
+    strain_high_pass_hertz: float,
+    sample_rate: int,
+    pad_seconds: float,
+) -> None:
+    strain_tmp = highpass(strain, frequency=strain_high_pass_hertz)
+    strain_tmp = resample_to_delta_t(strain_tmp, 1.0 / sample_rate, method="ldas")
+    strain_tmp = (strain_tmp * DYN_RANGE_FAC).astype(float32)
+    strain_tmp = highpass(strain_tmp, frequency=strain_high_pass_hertz)
+    start = int(pad_seconds * sample_rate)
+    end = int(len(strain_tmp) - sample_rate * pad_seconds)
+    strain_tmp = strain_tmp[start:end]
+    return strain_tmp

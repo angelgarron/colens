@@ -9,7 +9,6 @@ from colens.io import Output
 
 def brute_force_filter_template(
     SAMPLE_RATE,
-    GPS_START_SECONDS,
     coherent_func,
     output_data: Output,
     get_snr,

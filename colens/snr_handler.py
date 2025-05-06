@@ -66,34 +66,6 @@ class SNRHandler:
             [self.first_function, self.second_function],
         )
 
-    def get_snr_at_trigger(
-        self,
-        get_snr,
-        sky_position_index,
-        original_trigger_time_seconds,
-        lensed_trigger_time_seconds,
-        time_slide_index,
-    ):
-        self.snr_at_trigger_original = self._get_snr_at_trigger(
-            get_snr,
-            sky_position_index,
-            original_trigger_time_seconds,
-            time_slide_index,
-            self.unlensed_detectors,
-            self.unlensed_time_delay_zerolag_seconds,
-            self.unlensed_time_delay_idx,
-        )
-        self.snr_at_trigger_lensed = self._get_snr_at_trigger(
-            get_snr,
-            sky_position_index,
-            lensed_trigger_time_seconds,
-            time_slide_index,
-            self.lensed_detectors,
-            self.lensed_time_delay_zerolag_seconds,
-            self.lensed_time_delay_idx,
-        )
-        self.snr_at_trigger = self.snr_at_trigger_original + self.snr_at_trigger_lensed
-
     def _get_snr_at_trigger(
         self,
         get_snr,
@@ -153,13 +125,25 @@ class SNRHandler:
             self.lensed_time_delay_zerolag_seconds,
             self.time_slides_seconds,
         )
-        self.get_snr_at_trigger(
+        self.snr_at_trigger_original = self._get_snr_at_trigger(
             self.get_snr,
             self.sky_position_index,
             self.original_trigger_time_seconds,
+            self.time_slide_index,
+            self.unlensed_detectors,
+            self.unlensed_time_delay_zerolag_seconds,
+            self.unlensed_time_delay_idx,
+        )
+        self.snr_at_trigger_lensed = self._get_snr_at_trigger(
+            self.get_snr,
+            self.sky_position_index,
             self.lensed_trigger_time_seconds,
             self.time_slide_index,
+            self.lensed_detectors,
+            self.lensed_time_delay_zerolag_seconds,
+            self.lensed_time_delay_idx,
         )
+        self.snr_at_trigger = self.snr_at_trigger_original + self.snr_at_trigger_lensed
         self.fp = []
         self.fc = []
         for ifo in self.unlensed_detectors:

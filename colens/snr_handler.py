@@ -66,18 +66,6 @@ class SNRHandler:
             [self.first_function, self.second_function],
         )
 
-    def get_time_delay_indices(self):
-        self.unlensed_time_delay_idx = get_time_delay_indices(
-            self.conf.injection.sample_rate,
-            self.unlensed_time_delay_zerolag_seconds,
-            self.time_slides_seconds,
-        )
-        self.lensed_time_delay_idx = get_time_delay_indices(
-            self.conf.injection.sample_rate,
-            self.lensed_time_delay_zerolag_seconds,
-            self.time_slides_seconds,
-        )
-
     def get_snr_at_trigger(
         self,
         get_snr,
@@ -155,7 +143,16 @@ class SNRHandler:
             self.dec,
             self.lensed_detectors,
         )
-        self.get_time_delay_indices()
+        self.unlensed_time_delay_idx = get_time_delay_indices(
+            self.conf.injection.sample_rate,
+            self.unlensed_time_delay_zerolag_seconds,
+            self.time_slides_seconds,
+        )
+        self.lensed_time_delay_idx = get_time_delay_indices(
+            self.conf.injection.sample_rate,
+            self.lensed_time_delay_zerolag_seconds,
+            self.time_slides_seconds,
+        )
         self.get_snr_at_trigger(
             self.get_snr,
             self.sky_position_index,

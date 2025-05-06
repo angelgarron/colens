@@ -3,7 +3,6 @@ import logging
 import numpy as np
 from pycbc import init_logging
 
-from colens.brute_force_filter import brute_force_filter_template
 from colens.configuration import read_configuration_from
 from colens.data_loader import DataLoader
 from colens.fstatistic import get_two_f

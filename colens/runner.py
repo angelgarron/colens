@@ -1,6 +1,5 @@
 from colens.coherent import coherent_statistic_adapter
 from colens.coincident import coincident_snr
-from colens.data_loader import DataLoader
 
 
 class Runner:

@@ -141,8 +141,7 @@ def get_timing_iterator(
         time_resolution,
     )
     return zip(
-        grid_time_gps_past_seconds.flatten()[t_prime_downsampled_indices],
-        grid_time_gps_future_seconds.flatten()[t_prime_downsampled_indices],
-        grid_ra.flatten()[t_prime_downsampled_indices],
-        grid_dec.flatten()[t_prime_downsampled_indices],
+        *np.unravel_index(
+            t_prime_downsampled_indices, grid_time_gps_future_seconds.shape
+        )
     )

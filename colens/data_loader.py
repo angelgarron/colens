@@ -70,6 +70,7 @@ class DataLoader:
             list(self.unlensed_detectors),
             list(self.lensed_detectors),
         )
+        self.time_slide_index = 0
 
     def single_detector_setup(self, ifo, lensed):
         if lensed:
@@ -149,16 +150,20 @@ class DataLoader:
 
     def get_timing_iterator(self):
         df = get_bilby_posteriors(self.conf.data.posteriors_file)[1000:1100]
+        self.time_gps_past_seconds_for_iterator = df["geocent_time"].to_numpy()
+        self.time_gps_future_seconds_for_iterator = np.arange(
+            self.conf.injection.time_gps_future_seconds - 0.1,
+            self.conf.injection.time_gps_future_seconds + 0.1,
+            self.snr_dict["H1"]._delta_t,
+        )
+        self.ra_for_iterator = df["ra"].to_numpy()
+        self.dec_for_iterator = df["dec"].to_numpy()
         logging.info("Generating timing iterator")
         self.timing_iterator = get_timing_iterator(
-            df["geocent_time"].to_numpy(),
-            np.arange(
-                self.conf.injection.time_gps_future_seconds - 0.1,
-                self.conf.injection.time_gps_future_seconds + 0.1,
-                self.snr_dict["H1"]._delta_t,
-            ),
-            df["ra"].to_numpy(),
-            df["dec"].to_numpy(),
+            self.time_gps_past_seconds_for_iterator,
+            self.time_gps_future_seconds_for_iterator,
+            self.ra_for_iterator,
+            self.dec_for_iterator,
         )
 
     def create_injections(self, ifo_real_name, gps_start_seconds, gps_end_seconds):

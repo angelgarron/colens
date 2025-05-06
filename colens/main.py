@@ -9,6 +9,7 @@ from colens.data_loader import DataLoader
 from colens.fstatistic import get_two_f
 from colens.interpolate import get_snr, get_snr_interpolated
 from colens.io import Output
+from colens.runner import Runner
 
 
 def main():
@@ -19,13 +20,8 @@ def main():
     data_loader = DataLoader(conf, output_data)
 
     logging.info("Starting the filtering...")
-    brute_force_filter_template(
-        get_two_f,
-        output_data,
-        get_snr,
-        data_loader,
-    )
-
+    runner = Runner(get_two_f, get_snr, output_data, data_loader)
+    runner.run()
     logging.info("Filtering completed")
     logging.info(f"Saving results to {conf.output.output_file_name}")
     output_data.write_to_json(conf.output.output_file_name)

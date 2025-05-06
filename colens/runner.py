@@ -34,8 +34,6 @@ class Runner:
         self.data_loader.original_trigger_time_seconds = (
             self.data_loader.time_gps_past_seconds_for_iterator[arg]
         )
-
-    def _run_single(self):
         self.data_loader.calculate_antenna_pattern(
             self.data_loader.ra,
             self.data_loader.dec,
@@ -56,35 +54,35 @@ class Runner:
             self.data_loader.lensed_trigger_time_seconds,
             self.data_loader.time_slide_index,
         )
-        fp = [
+        self.fp = [
             self.data_loader.unlensed_antenna_pattern[ifo][
                 self.data_loader.sky_position_index
             ][0]
             for ifo in self.data_loader.unlensed_detectors
         ]
-        fc = [
+        self.fc = [
             self.data_loader.unlensed_antenna_pattern[ifo][
                 self.data_loader.sky_position_index
             ][1]
             for ifo in self.data_loader.unlensed_detectors
         ]
-        fp += [
+        self.fp += [
             self.data_loader.lensed_antenna_pattern[ifo][
                 self.data_loader.sky_position_index
             ][0]
             for ifo in self.data_loader.lensed_detectors
         ]
-        fc += [
+        self.fc += [
             self.data_loader.lensed_antenna_pattern[ifo][
                 self.data_loader.sky_position_index
             ][1]
             for ifo in self.data_loader.lensed_detectors
         ]
 
+    def _run_single(self):
         self.rho_coinc = coincident_snr(self.data_loader.snr_at_trigger)
-
         M_mu_nu, x_mu = coherent_statistic_adapter(
-            self.data_loader.snr_at_trigger, self.data_loader.sigma, fp, fc
+            self.data_loader.snr_at_trigger, self.data_loader.sigma, self.fp, self.fc
         )
         self.rho_coh = self.coherent_func(M_mu_nu, x_mu) ** 0.5
 

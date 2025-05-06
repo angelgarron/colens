@@ -40,9 +40,7 @@ class DataLoader:
         )  # number of samples of the fourier transform of each segment
         self.template_mem = zeros(self.segment_length, dtype=complex64)
         logging.info("Read in template bank")
-        bank = self.create_template_bank()
-        logging.info("Full template bank size: %d", len(bank))
-        self.template = bank[0]
+        self.template = self.create_template_bank()[0]
         # TODO loop over segments (or maybe we just create a big segment)
         self.segment_index = 0
         self.sigma = []
@@ -127,6 +125,7 @@ class DataLoader:
             precision="single",
         )
 
+        # Overwhiten segments
         for seg in segments:
             seg /= seg.psd
 

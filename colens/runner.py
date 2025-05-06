@@ -4,7 +4,7 @@ from colens.data_loader import DataLoader
 
 
 class Runner:
-    def __init__(self, coherent_func, output_data, snr_handler: DataLoader):
+    def __init__(self, coherent_func, output_data, snr_handler):
         self.output_data = output_data
         self.snr_handler = snr_handler
         self.coherent_func = coherent_func

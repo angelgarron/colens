@@ -66,26 +66,6 @@ class SNRHandler:
             [self.first_function, self.second_function],
         )
 
-    def get_time_delay_at_zerolag_seconds(
-        self,
-        original_trigger_time_seconds,
-        lensed_trigger_time_seconds,
-        ra,
-        dec,
-    ):
-        self.unlensed_time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
-            original_trigger_time_seconds,
-            ra,
-            dec,
-            self.unlensed_detectors,
-        )
-        self.lensed_time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
-            lensed_trigger_time_seconds,
-            ra,
-            dec,
-            self.lensed_detectors,
-        )
-
     def get_time_delay_indices(self):
         self.unlensed_time_delay_idx = get_time_delay_indices(
             self.conf.injection.sample_rate,
@@ -163,11 +143,17 @@ class SNRHandler:
         self.ra = self.ra_array[arg]
         self.dec = self.dec_array[arg]
         self.original_trigger_time_seconds = self.time_gps_past_seconds_array[arg]
-        self.get_time_delay_at_zerolag_seconds(
+        self.unlensed_time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
             self.original_trigger_time_seconds,
+            self.ra,
+            self.dec,
+            self.unlensed_detectors,
+        )
+        self.lensed_time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
             self.lensed_trigger_time_seconds,
             self.ra,
             self.dec,
+            self.lensed_detectors,
         )
         self.get_time_delay_indices()
         self.get_snr_at_trigger(

@@ -67,26 +67,6 @@ class SNRHandler:
             [self.first_function, self.second_function],
         )
 
-    def calculate_antenna_pattern(
-        self,
-        ra,
-        dec,
-        original_trigger_time_seconds,
-        lensed_trigger_time_seconds,
-    ):
-        self.unlensed_antenna_pattern = calculate_antenna_pattern(
-            self.unlensed_detectors,
-            ra,
-            dec,
-            original_trigger_time_seconds,
-        )
-        self.lensed_antenna_pattern = calculate_antenna_pattern(
-            self.lensed_detectors,
-            ra,
-            dec,
-            lensed_trigger_time_seconds,
-        )
-
     def get_time_delay_at_zerolag_seconds(
         self,
         original_trigger_time_seconds,
@@ -184,10 +164,16 @@ class SNRHandler:
         self.ra = self.ra_array[arg]
         self.dec = self.dec_array[arg]
         self.original_trigger_time_seconds = self.time_gps_past_seconds_array[arg]
-        self.calculate_antenna_pattern(
+        self.unlensed_antenna_pattern = calculate_antenna_pattern(
+            self.unlensed_detectors,
             self.ra,
             self.dec,
             self.original_trigger_time_seconds,
+        )
+        self.lensed_antenna_pattern = calculate_antenna_pattern(
+            self.lensed_detectors,
+            self.ra,
+            self.dec,
             self.lensed_trigger_time_seconds,
         )
         self.get_time_delay_at_zerolag_seconds(

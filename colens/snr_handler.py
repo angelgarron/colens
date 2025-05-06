@@ -48,21 +48,21 @@ class SNRHandler:
 
     def get_timing_iterator(self):
         df = get_bilby_posteriors(self.conf.data.posteriors_file)[1000:1100]
-        self.time_gps_past_seconds_for_iterator = df["geocent_time"].to_numpy()
-        self.time_gps_future_seconds_for_iterator = np.arange(
+        self.time_gps_past_seconds_array = df["geocent_time"].to_numpy()
+        self.time_gps_future_seconds_array = np.arange(
             self.conf.injection.time_gps_future_seconds - 0.1,
             self.conf.injection.time_gps_future_seconds + 0.1,
             self.snr_dict["H1"]._delta_t,
         )
-        self.ra_for_iterator = df["ra"].to_numpy()
-        self.dec_for_iterator = df["dec"].to_numpy()
+        self.ra_array = df["ra"].to_numpy()
+        self.dec_array = df["dec"].to_numpy()
         logging.info("Generating timing iterator")
         self.timing_iterator = _create_iterator(
             get_timing_iterator(
-                self.time_gps_past_seconds_for_iterator,
-                self.time_gps_future_seconds_for_iterator,
-                self.ra_for_iterator,
-                self.dec_for_iterator,
+                self.time_gps_past_seconds_array,
+                self.time_gps_future_seconds_array,
+                self.ra_array,
+                self.dec_array,
             ),
             [self.first_function, self.second_function],
         )
@@ -178,16 +178,12 @@ class SNRHandler:
         ]
 
     def first_function(self, arg):
-        self.lensed_trigger_time_seconds = self.time_gps_future_seconds_for_iterator[
-            arg
-        ]
+        self.lensed_trigger_time_seconds = self.time_gps_future_seconds_array[arg]
 
     def second_function(self, arg):
-        self.ra = self.ra_for_iterator[arg]
-        self.dec = self.dec_for_iterator[arg]
-        self.original_trigger_time_seconds = self.time_gps_past_seconds_for_iterator[
-            arg
-        ]
+        self.ra = self.ra_array[arg]
+        self.dec = self.dec_array[arg]
+        self.original_trigger_time_seconds = self.time_gps_past_seconds_array[arg]
         self.calculate_antenna_pattern(
             self.ra,
             self.dec,

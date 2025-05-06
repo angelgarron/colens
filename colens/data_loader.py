@@ -1,5 +1,7 @@
 import logging
 from copy import copy
+from itertools import groupby
+from operator import itemgetter
 
 import numpy as np
 from pycbc import DYN_RANGE_FAC
@@ -26,9 +28,10 @@ from colens.timing import get_timing_iterator
 
 
 class DataLoader:
-    def __init__(self, conf, output_data):
+    def __init__(self, conf, output_data, get_snr):
         self.conf = conf
         self.output_data = output_data
+        self.get_snr = get_snr
         self.delta_f = (
             1.0 / self.conf.injection.segment_length_seconds
         )  # frequency step of the fourier transform of each segment
@@ -43,6 +46,7 @@ class DataLoader:
         self.template = self.create_template_bank()[0]
         # TODO loop over segments (or maybe we just create a big segment)
         self.segment_index = 0
+        self.sky_position_index = 0
         self.sigma = []
         self.snr_dict = dict()
         self.segments = dict()
@@ -158,11 +162,14 @@ class DataLoader:
         self.ra_for_iterator = df["ra"].to_numpy()
         self.dec_for_iterator = df["dec"].to_numpy()
         logging.info("Generating timing iterator")
-        self.timing_iterator = get_timing_iterator(
-            self.time_gps_past_seconds_for_iterator,
-            self.time_gps_future_seconds_for_iterator,
-            self.ra_for_iterator,
-            self.dec_for_iterator,
+        self.timing_iterator = _create_iterator(
+            get_timing_iterator(
+                self.time_gps_past_seconds_for_iterator,
+                self.time_gps_future_seconds_for_iterator,
+                self.ra_for_iterator,
+                self.dec_for_iterator,
+            ),
+            [self.first_function, self.second_function],
         )
 
     def create_injections(self, ifo_real_name, gps_start_seconds, gps_end_seconds):
@@ -309,3 +316,66 @@ class DataLoader:
             )
             for ifo in detectors
         ]
+
+    def first_function(self, arg):
+        self.lensed_trigger_time_seconds = self.time_gps_future_seconds_for_iterator[
+            arg
+        ]
+
+    def second_function(self, arg):
+        self.ra = self.ra_for_iterator[arg]
+        self.dec = self.dec_for_iterator[arg]
+        self.original_trigger_time_seconds = self.time_gps_past_seconds_for_iterator[
+            arg
+        ]
+        self.calculate_antenna_pattern(
+            self.ra,
+            self.dec,
+            self.original_trigger_time_seconds,
+            self.lensed_trigger_time_seconds,
+        )
+        self.get_time_delay_at_zerolag_seconds(
+            self.original_trigger_time_seconds,
+            self.lensed_trigger_time_seconds,
+            self.ra,
+            self.dec,
+        )
+        self.get_time_delay_indices()
+        self.get_snr_at_trigger(
+            self.get_snr,
+            self.sky_position_index,
+            self.original_trigger_time_seconds,
+            self.lensed_trigger_time_seconds,
+            self.time_slide_index,
+        )
+        self.fp = [
+            self.unlensed_antenna_pattern[ifo][self.sky_position_index][0]
+            for ifo in self.unlensed_detectors
+        ]
+        self.fc = [
+            self.unlensed_antenna_pattern[ifo][self.sky_position_index][1]
+            for ifo in self.unlensed_detectors
+        ]
+        self.fp += [
+            self.lensed_antenna_pattern[ifo][self.sky_position_index][0]
+            for ifo in self.lensed_detectors
+        ]
+        self.fc += [
+            self.lensed_antenna_pattern[ifo][self.sky_position_index][1]
+            for ifo in self.lensed_detectors
+        ]
+
+
+def _create_iterator(generator, functions):
+    def inner(gen, func_idx):
+        for i, group in groupby(gen, key=itemgetter(func_idx)):
+            functions[func_idx](i)
+            if func_idx < len(functions) - 2:  # TODO find a better way to do this
+                yield from inner(group, func_idx + 1)
+            else:  # pause iteration on the innermost for loop
+                for i_, group_ in groupby(group, key=itemgetter(func_idx + 1)):
+                    functions[func_idx + 1](i_)
+                    yield
+
+    iterator = inner(generator, 0)
+    return iterator

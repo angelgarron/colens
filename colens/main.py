@@ -16,10 +16,10 @@ def main():
     conf = read_configuration_from("config.yaml")
     output_data = Output()
 
-    data_loader = DataLoader(conf, output_data)
+    data_loader = DataLoader(conf, output_data, get_snr)
 
     logging.info("Starting the filtering...")
-    runner = Runner(get_two_f, get_snr, output_data, data_loader)
+    runner = Runner(get_two_f, output_data, data_loader)
     runner.run()
     logging.info("Filtering completed")
     logging.info(f"Saving results to {conf.output.output_file_name}")

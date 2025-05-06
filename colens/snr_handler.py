@@ -10,7 +10,6 @@ from colens.background import (
     get_time_delay_indices,
     get_time_slides_seconds,
 )
-from colens.detector import calculate_antenna_pattern
 from colens.io import get_bilby_posteriors
 from colens.timing import get_timing_iterator
 
@@ -164,18 +163,6 @@ class SNRHandler:
         self.ra = self.ra_array[arg]
         self.dec = self.dec_array[arg]
         self.original_trigger_time_seconds = self.time_gps_past_seconds_array[arg]
-        self.unlensed_antenna_pattern = calculate_antenna_pattern(
-            self.unlensed_detectors,
-            self.ra,
-            self.dec,
-            self.original_trigger_time_seconds,
-        )
-        self.lensed_antenna_pattern = calculate_antenna_pattern(
-            self.lensed_detectors,
-            self.ra,
-            self.dec,
-            self.lensed_trigger_time_seconds,
-        )
         self.get_time_delay_at_zerolag_seconds(
             self.original_trigger_time_seconds,
             self.lensed_trigger_time_seconds,
@@ -190,22 +177,26 @@ class SNRHandler:
             self.lensed_trigger_time_seconds,
             self.time_slide_index,
         )
-        self.fp = [
-            self.unlensed_antenna_pattern[ifo][self.sky_position_index][0]
-            for ifo in self.unlensed_detectors
-        ]
-        self.fc = [
-            self.unlensed_antenna_pattern[ifo][self.sky_position_index][1]
-            for ifo in self.unlensed_detectors
-        ]
-        self.fp += [
-            self.lensed_antenna_pattern[ifo][self.sky_position_index][0]
-            for ifo in self.lensed_detectors
-        ]
-        self.fc += [
-            self.lensed_antenna_pattern[ifo][self.sky_position_index][1]
-            for ifo in self.lensed_detectors
-        ]
+        self.fp = []
+        self.fc = []
+        for ifo in self.unlensed_detectors:
+            fp, fc = self.unlensed_detectors[ifo].antenna_pattern(
+                self.ra,
+                self.dec,
+                polarization=0,
+                t_gps=self.original_trigger_time_seconds,
+            )
+            self.fp.append(fp)
+            self.fc.append(fc)
+        for ifo in self.lensed_detectors:
+            fp, fc = self.lensed_detectors[ifo].antenna_pattern(
+                self.ra,
+                self.dec,
+                polarization=0,
+                t_gps=self.lensed_trigger_time_seconds,
+            )
+            self.fp.append(fp)
+            self.fc.append(fc)
 
 
 def _create_iterator(generator, functions):

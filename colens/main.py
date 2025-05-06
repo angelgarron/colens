@@ -1,6 +1,5 @@
 import logging
 
-import numpy as np
 from pycbc import init_logging
 
 from colens.configuration import read_configuration_from
@@ -9,6 +8,7 @@ from colens.fstatistic import get_two_f
 from colens.interpolate import get_snr, get_snr_interpolated
 from colens.io import Output
 from colens.runner import Runner
+from colens.snr_handler import SNRHandler
 
 
 def main():
@@ -16,10 +16,13 @@ def main():
     conf = read_configuration_from("config.yaml")
     output_data = Output()
 
-    data_loader = DataLoader(conf, output_data, get_snr)
+    data_loader = DataLoader(conf, output_data)
+    snr_handler = SNRHandler(
+        conf, get_snr, data_loader.sigma, data_loader.snr_dict, data_loader.segments
+    )
 
     logging.info("Starting the filtering...")
-    runner = Runner(get_two_f, output_data, data_loader)
+    runner = Runner(get_two_f, output_data, snr_handler)
     runner.run()
     logging.info("Filtering completed")
     logging.info(f"Saving results to {conf.output.output_file_name}")

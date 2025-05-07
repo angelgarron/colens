@@ -77,7 +77,6 @@ class Injection:
     downsample_factor: int
     upsample_threshold: float
     upsample_method: str
-    bank_file: str
     order: str
     taper_template: bool
     approximant: str

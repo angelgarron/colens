@@ -27,7 +27,6 @@ injection:
     downsample_factor: 1
     upsample_threshold: 0.0
     upsample_method: "pruned_fft"
-    bank_file: "gw170729_single_template.hdf"
     order: -1
     taper_template: 
     approximant: "IMRPhenomXAS"

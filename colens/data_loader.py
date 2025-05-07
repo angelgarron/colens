@@ -35,8 +35,10 @@ class DataLoader:
         # TODO loop over segments (or maybe we just create a big segment)
         self.segment_index = 0
         self.sigma = []
-        self.snr_dict = dict()
-        self.segments = dict()
+        self.snrs_original = []
+        self.snrs_lensed = []
+        self.segments_original = []
+        self.segments_lensed = []
         self.injection_parameters = copy(conf.injection_parameters)
         for ifo in conf.injection.unlensed_instruments:
             self.single_detector_setup(ifo, False)
@@ -62,18 +64,26 @@ class DataLoader:
             self.conf.injection.sample_rate,
             self.conf.injection.pad_seconds,
         )
-        self.segments[ifo] = self.get_segments(strain, ifo)
-        matched_filter = self.get_matched_filter(self.segments[ifo])
-        sigmasq = self.template.sigmasq(self.segments[ifo][self.segment_index].psd)
+
+        segments = self.get_segments(strain, ifo)
+        matched_filter = self.get_matched_filter(segments)
+        sigmasq = self.template.sigmasq(segments[self.segment_index].psd)
         sigma = np.sqrt(sigmasq)
         self.sigma.append(sigma)
         self.output_data.__getattribute__(ifo).sigma.append(sigma)
         snr_ts, norm, corr, ind, snrv = matched_filter.matched_filter_and_cluster(
             self.segment_index, sigmasq, window=0
         )
-        self.snr_dict[ifo] = (
-            snr_ts[matched_filter.segments[self.segment_index].analyze] * norm
-        )
+        if lensed:
+            self.segments_lensed.append(segments)
+            self.snrs_lensed.append(
+                snr_ts[matched_filter.segments[self.segment_index].analyze] * norm
+            )
+        else:
+            self.segments_original.append(segments)
+            self.snrs_original.append(
+                snr_ts[matched_filter.segments[self.segment_index].analyze] * norm
+            )
 
     def get_segments(self, strain, ifo):
         segments = StrainSegments(

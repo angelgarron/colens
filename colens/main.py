@@ -18,7 +18,13 @@ def main():
 
     data_loader = DataLoader(conf, output_data)
     snr_handler = SNRHandler(
-        conf, get_snr, data_loader.sigma, data_loader.snr_dict, data_loader.segments
+        conf,
+        get_snr,
+        data_loader.sigma,
+        data_loader.snrs_lensed,
+        data_loader.snrs_original,
+        data_loader.segments_lensed,
+        data_loader.segments_original,
     )
 
     logging.info("Starting the filtering...")

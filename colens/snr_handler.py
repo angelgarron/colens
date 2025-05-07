@@ -51,7 +51,7 @@ class SNRHandler:
         self.time_gps_future_seconds_array = np.arange(
             self.conf.injection.time_gps_future_seconds - 0.1,
             self.conf.injection.time_gps_future_seconds + 0.1,
-            self.snr_dict["H1"]._delta_t,
+            1 / self.conf.injection.sample_rate,
         )
         self.ra_array = df["ra"].to_numpy()
         self.dec_array = df["dec"].to_numpy()

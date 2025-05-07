@@ -161,8 +161,8 @@ class SNRHandler:
         self.snr_at_trigger = self.snr_at_trigger_original + self.snr_at_trigger_lensed
         self.fp = []
         self.fc = []
-        for ifo in self.unlensed_detectors:
-            fp, fc = self.unlensed_detectors[ifo].antenna_pattern(
+        for detector in self.unlensed_detectors.values():
+            fp, fc = detector.antenna_pattern(
                 self.ra,
                 self.dec,
                 polarization=0,
@@ -170,8 +170,8 @@ class SNRHandler:
             )
             self.fp.append(fp)
             self.fc.append(fc)
-        for ifo in self.lensed_detectors:
-            fp, fc = self.lensed_detectors[ifo].antenna_pattern(
+        for detector in self.lensed_detectors.values():
+            fp, fc = detector.antenna_pattern(
                 self.ra,
                 self.dec,
                 polarization=0,

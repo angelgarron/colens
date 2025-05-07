@@ -6,7 +6,7 @@ from colens.configuration import read_configuration_from
 from colens.data_loader import DataLoader
 from colens.fstatistic import get_two_f
 from colens.interpolate import get_snr, get_snr_interpolated
-from colens.io import Output
+from colens.io import Output, PerDetectorOutput
 from colens.runner import Runner
 from colens.snr_handler import SNRHandler
 
@@ -15,6 +15,10 @@ def main():
     init_logging(True)
     conf = read_configuration_from("config.yaml")
     output_data = Output()
+    for ifo in conf.injection.unlensed_instruments:
+        output_data.original_output.append(PerDetectorOutput())
+    for ifo in conf.injection.lensed_instruments:
+        output_data.lensed_output.append(PerDetectorOutput())
 
     data_loader = DataLoader(conf, output_data)
     snr_handler = SNRHandler(

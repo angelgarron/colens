@@ -33,28 +33,28 @@ class Runner:
         self.output_data.time_slide_index.append(self.snr_handler.time_slide_index)
         self.output_data.ra.append(self.snr_handler.ra)
         self.output_data.dec.append(self.snr_handler.dec)
-        self.output_data.H1.snr_real.append(
+        self.output_data.original_output[0].snr_real.append(
             float(self.snr_handler.snr_at_trigger_original[0].real)
         )
-        self.output_data.H1.snr_imag.append(
+        self.output_data.original_output[0].snr_imag.append(
             float(self.snr_handler.snr_at_trigger_original[0].imag)
         )
-        self.output_data.L1.snr_real.append(
+        self.output_data.original_output[1].snr_real.append(
             float(self.snr_handler.snr_at_trigger_original[1].real)
         )
-        self.output_data.L1.snr_imag.append(
+        self.output_data.original_output[1].snr_imag.append(
             float(self.snr_handler.snr_at_trigger_original[1].imag)
         )
-        self.output_data.H1_lensed.snr_real.append(
+        self.output_data.lensed_output[0].snr_real.append(
             float(self.snr_handler.snr_at_trigger_lensed[0].real)
         )
-        self.output_data.H1_lensed.snr_imag.append(
+        self.output_data.lensed_output[0].snr_imag.append(
             float(self.snr_handler.snr_at_trigger_lensed[0].imag)
         )
-        self.output_data.L1_lensed.snr_real.append(
+        self.output_data.lensed_output[1].snr_real.append(
             float(self.snr_handler.snr_at_trigger_lensed[1].real)
         )
-        self.output_data.L1_lensed.snr_imag.append(
+        self.output_data.lensed_output[1].snr_imag.append(
             float(self.snr_handler.snr_at_trigger_lensed[1].imag)
         )
         self.output_data.rho_coinc.append(float(self.rho_coinc[0]))

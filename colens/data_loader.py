@@ -70,7 +70,14 @@ class DataLoader:
         sigmasq = self.template.sigmasq(segments[self.segment_index].psd)
         sigma = np.sqrt(sigmasq)
         self.sigma.append(sigma)
-        self.output_data.__getattribute__(ifo).sigma.append(sigma)
+        if lensed:
+            self.output_data.lensed_output[
+                self.conf.injection.lensed_instruments.index(ifo)
+            ].sigma.append(sigma)
+        else:
+            self.output_data.original_output[
+                self.conf.injection.unlensed_instruments.index(ifo)
+            ].sigma.append(sigma)
         snr_ts, norm, corr, ind, snrv = matched_filter.matched_filter_and_cluster(
             self.segment_index, sigmasq, window=0
         )

@@ -38,11 +38,14 @@ class DataLoader:
         self.snrs = []
         self.segments = []
         self.injection_parameters = copy(conf.injection_parameters)
-        for ifo in conf.injection.unlensed_instruments:
+        for ifo in conf.injection.lensed_instruments:
             self.single_detector_setup(ifo)
 
     def single_detector_setup(self, ifo):
-        ifo_real_name = ifo
+        self.injection_parameters.geocent_time = (
+            self.conf.injection.time_gps_future_seconds
+        )
+        ifo_real_name = ifo[:2]
         strain = self.create_injections(
             ifo_real_name,
             self.conf.injection.gps_start_seconds[ifo],
@@ -60,8 +63,8 @@ class DataLoader:
         sigmasq = self.template.sigmasq(segments[self.segment_index].psd)
         sigma = np.sqrt(sigmasq)
         self.sigma.append(sigma)
-        self.output_data.original_output[
-            self.conf.injection.unlensed_instruments.index(ifo)
+        self.output_data.lensed_output[
+            self.conf.injection.lensed_instruments.index(ifo)
         ].sigma.append(sigma)
         snr_ts, norm, corr, ind, snrv = matched_filter.matched_filter_and_cluster(
             self.segment_index, sigmasq, window=0

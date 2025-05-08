@@ -29,37 +29,37 @@ class Runner:
 
     def write_output(self):
         self.output_data.original_trigger_time_seconds.append(
-            self.snr_handler.original_trigger_time_seconds
+            self.snr_handler.trigger_time_seconds
         )
         self.output_data.lensed_trigger_time_seconds.append(
-            self.snr_handler_lensed.lensed_trigger_time_seconds
+            self.snr_handler_lensed.trigger_time_seconds
         )
         self.output_data.time_slide_index.append(self.snr_handler.time_slide_index)
         self.output_data.ra.append(self.snr_handler.ra)
         self.output_data.dec.append(self.snr_handler.dec)
         self.output_data.original_output[0].snr_real.append(
-            float(self.snr_handler.snr_at_trigger_original[0].real)
+            float(self.snr_handler.snr_at_trigger[0].real)
         )
         self.output_data.original_output[0].snr_imag.append(
-            float(self.snr_handler.snr_at_trigger_original[0].imag)
+            float(self.snr_handler.snr_at_trigger[0].imag)
         )
         self.output_data.original_output[1].snr_real.append(
-            float(self.snr_handler.snr_at_trigger_original[1].real)
+            float(self.snr_handler.snr_at_trigger[1].real)
         )
         self.output_data.original_output[1].snr_imag.append(
-            float(self.snr_handler.snr_at_trigger_original[1].imag)
+            float(self.snr_handler.snr_at_trigger[1].imag)
         )
         self.output_data.lensed_output[0].snr_real.append(
-            float(self.snr_handler_lensed.snr_at_trigger_lensed[0].real)
+            float(self.snr_handler_lensed.snr_at_trigger[0].real)
         )
         self.output_data.lensed_output[0].snr_imag.append(
-            float(self.snr_handler_lensed.snr_at_trigger_lensed[0].imag)
+            float(self.snr_handler_lensed.snr_at_trigger[0].imag)
         )
         self.output_data.lensed_output[1].snr_real.append(
-            float(self.snr_handler_lensed.snr_at_trigger_lensed[1].real)
+            float(self.snr_handler_lensed.snr_at_trigger[1].real)
         )
         self.output_data.lensed_output[1].snr_imag.append(
-            float(self.snr_handler_lensed.snr_at_trigger_lensed[1].imag)
+            float(self.snr_handler_lensed.snr_at_trigger[1].imag)
         )
         self.output_data.rho_coinc.append(float(self.rho_coinc[0]))
         self.output_data.rho_coh.append(float(self.rho_coh))

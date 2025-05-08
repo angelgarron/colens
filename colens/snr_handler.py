@@ -20,20 +20,24 @@ class SNRHandler:
         conf,
         get_snr,
         sigma,
-        snrs_original,
-        segments_original,
+        snrs,
+        segments,
+        instruments,
+        lensed,
     ):
         self.conf = conf
         self.get_snr = get_snr
+        self.instruments = instruments
+        self.lensed = lensed
         # TODO loop over segments (or maybe we just create a big segment)
         self.segment_index = 0
         self.sky_position_index = 0
         self.sigma = sigma
-        self.snrs_original = snrs_original
-        self.segments_original = segments_original
-        self.unlensed_detectors = dict()
-        for ifo in conf.injection.unlensed_instruments:
-            self.unlensed_detectors[ifo] = Detector(ifo)
+        self.snrs = snrs
+        self.segments = segments
+        self.detectors = dict()
+        for ifo, ifo_real_name in zip(self.instruments, ["H1", "L1"]):
+            self.detectors[ifo] = Detector(ifo_real_name)
         self.get_timing_iterator()
         # self.num_slides = slide_limiter(
         #     conf.injection.segment_length_seconds,
@@ -106,38 +110,40 @@ class SNRHandler:
     def second_function(self, arg):
         self.ra = self.ra_array[arg]
         self.dec = self.dec_array[arg]
-        self.original_trigger_time_seconds = self.time_gps_past_seconds_array[arg]
-        self.unlensed_time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
-            self.original_trigger_time_seconds,
+        if self.lensed:
+            self.trigger_time_seconds = self.lensed_trigger_time_seconds
+        else:
+            self.trigger_time_seconds = self.time_gps_past_seconds_array[arg]
+        self.time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
+            self.trigger_time_seconds,
             self.ra,
             self.dec,
-            self.unlensed_detectors,
+            self.detectors,
         )
-        self.unlensed_time_delay_idx = get_time_delay_indices(
+        self.time_delay_idx = get_time_delay_indices(
             self.conf.injection.sample_rate,
-            self.unlensed_time_delay_zerolag_seconds,
+            self.time_delay_zerolag_seconds,
             self.time_slides_seconds,
         )
-        self.snr_at_trigger_original = self._get_snr_at_trigger(
+        self.snr_at_trigger = self._get_snr_at_trigger(
             self.get_snr,
             self.sky_position_index,
-            self.original_trigger_time_seconds,
+            self.trigger_time_seconds,
             self.time_slide_index,
-            self.unlensed_detectors,
-            self.unlensed_time_delay_zerolag_seconds,
-            self.unlensed_time_delay_idx,
-            self.snrs_original,
-            self.segments_original,
+            self.detectors,
+            self.time_delay_zerolag_seconds,
+            self.time_delay_idx,
+            self.snrs,
+            self.segments,
         )
-        self.snr_at_trigger = self.snr_at_trigger_original
         self.fp = []
         self.fc = []
-        for detector in self.unlensed_detectors.values():
+        for detector in self.detectors.values():
             fp, fc = detector.antenna_pattern(
                 self.ra,
                 self.dec,
                 polarization=0,
-                t_gps=self.original_trigger_time_seconds,
+                t_gps=self.trigger_time_seconds,
             )
             self.fp.append(fp)
             self.fc.append(fc)

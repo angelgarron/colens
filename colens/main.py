@@ -9,7 +9,6 @@ from colens.interpolate import get_snr, get_snr_interpolated
 from colens.io import Output, PerDetectorOutput
 from colens.runner import Runner
 from colens.snr_handler import SNRHandler
-from colens.snr_handler_lensed import SNRHandler as SNRHandler_lensed
 
 
 def main():
@@ -41,13 +40,17 @@ def main():
         data_loader.sigma,
         data_loader.snrs,
         data_loader.segments,
+        conf.injection.unlensed_instruments,
+        False,
     )
-    snr_handler_lensed = SNRHandler_lensed(
+    snr_handler_lensed = SNRHandler(
         conf,
         get_snr,
         data_loader_lensed.sigma,
         data_loader_lensed.snrs,
         data_loader_lensed.segments,
+        conf.injection.lensed_instruments,
+        True,
     )
 
     logging.info("Starting the filtering...")

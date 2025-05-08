@@ -4,7 +4,6 @@ from pycbc import init_logging
 
 from colens.configuration import read_configuration_from
 from colens.data_loader import DataLoader
-from colens.data_loader_lensed import DataLoader as DataLoader_lensed
 from colens.fstatistic import get_two_f
 from colens.interpolate import get_snr, get_snr_interpolated
 from colens.io import Output, PerDetectorOutput
@@ -21,8 +20,20 @@ def main():
     for ifo in conf.injection.lensed_instruments:
         output_data.lensed_output.append(PerDetectorOutput())
 
-    data_loader = DataLoader(conf, output_data)
-    data_loader_lensed = DataLoader_lensed(conf, output_data)
+    data_loader = DataLoader(
+        conf,
+        output_data,
+        conf.injection.unlensed_instruments,
+        output_data.original_output,
+        conf.injection.time_gps_past_seconds,
+    )
+    data_loader_lensed = DataLoader(
+        conf,
+        output_data,
+        conf.injection.lensed_instruments,
+        output_data.lensed_output,
+        conf.injection.time_gps_future_seconds,
+    )
     snr_handler = SNRHandler(
         conf,
         get_snr,

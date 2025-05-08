@@ -17,9 +17,19 @@ from colens.strain import process_strain, process_strain_dict
 
 
 class DataLoader:
-    def __init__(self, conf, output_data):
+    def __init__(
+        self,
+        conf,
+        output_data,
+        instruments,
+        lensed_or_unlensed_output,
+        time_gps_seconds,
+    ):
         self.conf = conf
         self.output_data = output_data
+        self.instruments = instruments
+        self.lensed_or_unlensed_output = lensed_or_unlensed_output
+        self.time_gps_seconds = time_gps_seconds
         self.delta_f = (
             1.0 / self.conf.injection.segment_length_seconds
         )  # frequency step of the fourier transform of each segment
@@ -38,11 +48,11 @@ class DataLoader:
         self.snrs = []
         self.segments = []
         self.injection_parameters = copy(conf.injection_parameters)
-        for ifo in conf.injection.unlensed_instruments:
-            self.single_detector_setup(ifo)
+        for ifo, ifo_real_name in zip(instruments, ["H1", "L1"]):
+            self.single_detector_setup(ifo, ifo_real_name)
 
-    def single_detector_setup(self, ifo):
-        ifo_real_name = ifo
+    def single_detector_setup(self, ifo, ifo_real_name):
+        self.injection_parameters.geocent_time = self.time_gps_seconds
         strain = self.create_injections(
             ifo_real_name,
             self.conf.injection.gps_start_seconds[ifo],
@@ -60,9 +70,7 @@ class DataLoader:
         sigmasq = self.template.sigmasq(segments[self.segment_index].psd)
         sigma = np.sqrt(sigmasq)
         self.sigma.append(sigma)
-        self.output_data.original_output[
-            self.conf.injection.unlensed_instruments.index(ifo)
-        ].sigma.append(sigma)
+        self.lensed_or_unlensed_output[self.instruments.index(ifo)].sigma.append(sigma)
         snr_ts, norm, corr, ind, snrv = matched_filter.matched_filter_and_cluster(
             self.segment_index, sigmasq, window=0
         )

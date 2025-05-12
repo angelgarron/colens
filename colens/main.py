@@ -57,7 +57,11 @@ def main():
 
     logging.info("Starting the filtering...")
     runner = Runner(
-        get_two_f, output_data, snr_handler, snr_handler_lensed, iterator_handler
+        get_two_f,
+        output_data,
+        snr_handler,
+        snr_handler_lensed,
+        iterator_handler.timing_iterator,
     )
     runner.run()
     logging.info("Filtering completed")

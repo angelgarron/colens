@@ -19,12 +19,10 @@ class SNRHandler:
         snrs,
         segments,
         instruments,
-        lensed,
     ):
         self.conf = conf
         self.get_snr = get_snr
         self.instruments = instruments
-        self.lensed = lensed
         # TODO loop over segments (or maybe we just create a big segment)
         self.segment_index = 0
         self.sky_position_index = 0
@@ -79,15 +77,11 @@ class SNRHandler:
         ]
 
     def first_function(self, time_gps_seconds):
-        self.lensed_trigger_time_seconds = time_gps_seconds
+        self.trigger_time_seconds = time_gps_seconds
 
-    def second_function(self, time_gps_seconds, ra, dec):
+    def second_function(self, ra, dec):
         self.ra = ra
         self.dec = dec
-        if self.lensed:
-            self.trigger_time_seconds = self.lensed_trigger_time_seconds
-        else:
-            self.trigger_time_seconds = time_gps_seconds
         self.time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
             self.trigger_time_seconds,
             self.ra,

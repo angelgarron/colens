@@ -42,17 +42,15 @@ class IteratorHandler:
         )
 
     def first_function(self, arg):
-        self.snr_handler.first_function(self.time_gps_future_seconds_array[arg])
         self.snr_handler_lensed.first_function(self.time_gps_future_seconds_array[arg])
 
     def second_function(self, arg):
+        self.snr_handler.first_function(self.time_gps_past_seconds_array[arg])
         self.snr_handler.second_function(
-            self.time_gps_past_seconds_array[arg],
             self.ra_array[arg],
             self.dec_array[arg],
         )
         self.snr_handler_lensed.second_function(
-            self.time_gps_past_seconds_array[arg],
             self.ra_array[arg],
             self.dec_array[arg],
         )

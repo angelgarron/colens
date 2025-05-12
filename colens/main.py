@@ -42,7 +42,6 @@ def main():
         data_loader.snrs,
         data_loader.segments,
         conf.injection.unlensed_instruments,
-        False,
     )
     snr_handler_lensed = SNRHandler(
         conf,
@@ -51,7 +50,6 @@ def main():
         data_loader_lensed.snrs,
         data_loader_lensed.segments,
         conf.injection.lensed_instruments,
-        True,
     )
     iterator_handler = IteratorHandler(conf, snr_handler, snr_handler_lensed)
 

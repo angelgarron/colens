@@ -24,12 +24,20 @@ class DataLoader:
         instruments,
         lensed_or_unlensed_output,
         time_gps_seconds,
+        gps_start_seconds,
+        gps_end_seconds,
+        trig_start_time_seconds,
+        trig_end_time_seconds,
     ):
         self.conf = conf
         self.output_data = output_data
         self.instruments = instruments
         self.lensed_or_unlensed_output = lensed_or_unlensed_output
         self.time_gps_seconds = time_gps_seconds
+        self.gps_start_seconds = gps_start_seconds
+        self.gps_end_seconds = gps_end_seconds
+        self.trig_start_time_seconds = trig_start_time_seconds
+        self.trig_end_time_seconds = trig_end_time_seconds
         self.delta_f = (
             1.0 / self.conf.injection.segment_length_seconds
         )  # frequency step of the fourier transform of each segment
@@ -48,16 +56,12 @@ class DataLoader:
         self.snrs = []
         self.segments = []
         self.injection_parameters = copy(conf.injection_parameters)
-        for ifo, ifo_real_name in zip(instruments, ["H1", "L1"]):
-            self.single_detector_setup(ifo, ifo_real_name)
+        for ifo in self.instruments:
+            self.single_detector_setup(ifo)
 
-    def single_detector_setup(self, ifo, ifo_real_name):
+    def single_detector_setup(self, ifo):
         self.injection_parameters.geocent_time = self.time_gps_seconds
-        strain = self.create_injections(
-            ifo_real_name,
-            self.conf.injection.gps_start_seconds[ifo],
-            self.conf.injection.gps_end_seconds[ifo],
-        )
+        strain = self.create_injections(ifo)
         strain = process_strain(
             strain,
             self.conf.psd.strain_high_pass_hertz,
@@ -65,7 +69,7 @@ class DataLoader:
             self.conf.injection.pad_seconds,
         )
 
-        segments = self.get_segments(strain, ifo)
+        segments = self.get_segments(strain)
         matched_filter = self.get_matched_filter(segments)
         sigmasq = self.template.sigmasq(segments[self.segment_index].psd)
         sigma = np.sqrt(sigmasq)
@@ -79,14 +83,14 @@ class DataLoader:
             snr_ts[matched_filter.segments[self.segment_index].analyze] * norm
         )
 
-    def get_segments(self, strain, ifo):
+    def get_segments(self, strain):
         segments = StrainSegments(
             strain,
             segment_length=self.conf.injection.segment_length_seconds,
             segment_start_pad=self.conf.injection.segment_start_pad_seconds,
             segment_end_pad=self.conf.injection.segment_end_pad_seconds,
-            trigger_start=self.conf.injection.trig_start_time_seconds[ifo],
-            trigger_end=self.conf.injection.trig_end_time_seconds[ifo],
+            trigger_start=self.trig_start_time_seconds,
+            trigger_end=self.trig_end_time_seconds,
             filter_inj_only=False,
             allow_zero_padding=False,
         ).fourier_segments()
@@ -124,17 +128,17 @@ class DataLoader:
             upsample_method=self.conf.injection.upsample_method,
         )
 
-    def create_injections(self, ifo_real_name, gps_start_seconds, gps_end_seconds):
+    def create_injections(self, ifo):
         # The extra padding we are adding here is going to get removed after highpassing
         return get_strain_list_from_bilby_simulation(
             self.injection_parameters.asdict(),
-            [ifo_real_name],
-            start_time=gps_start_seconds - self.conf.injection.pad_seconds,
-            end_time=gps_end_seconds + self.conf.injection.pad_seconds,
+            [ifo],
+            start_time=self.gps_start_seconds - self.conf.injection.pad_seconds,
+            end_time=self.gps_end_seconds + self.conf.injection.pad_seconds,
             low_frequency_cutoff=self.conf.injection.low_frequency_cutoff,
             reference_frequency=self.conf.injection.reference_frequency,
             sampling_frequency=self.conf.injection.sample_rate,
-            seed=gps_start_seconds,
+            seed=self.gps_start_seconds,
             approximant=self.conf.injection.approximant,
             get_ifos_function=get_ifos_with_simulated_noise,
         )[0]

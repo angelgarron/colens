@@ -28,6 +28,10 @@ def main():
         conf.injection.unlensed_instruments,
         output_data.original_output,
         conf.injection.time_gps_past_seconds,
+        conf.injection.gps_start_seconds["past"],
+        conf.injection.gps_end_seconds["past"],
+        conf.injection.trig_start_time_seconds["past"],
+        conf.injection.trig_end_time_seconds["past"],
     )
     data_loader_lensed = DataLoader(
         conf,
@@ -35,6 +39,10 @@ def main():
         conf.injection.lensed_instruments,
         output_data.lensed_output,
         conf.injection.time_gps_future_seconds,
+        conf.injection.gps_start_seconds["future"],
+        conf.injection.gps_end_seconds["future"],
+        conf.injection.trig_start_time_seconds["future"],
+        conf.injection.trig_end_time_seconds["future"],
     )
     # num_slides = slide_limiter(
     #     conf.injection.segment_length_seconds,
@@ -45,8 +53,8 @@ def main():
     time_slides_seconds = get_time_slides_seconds(
         num_slides,
         conf.injection.slide_shift_seconds,
-        conf.injection.unlensed_instruments,
-        conf.injection.lensed_instruments,
+        ["H1", "L1"],
+        ["H1_lensed", "L1_lensed"],
     )
     snr_handler = SNRHandler(
         conf,
@@ -56,6 +64,7 @@ def main():
         data_loader.segments,
         conf.injection.unlensed_instruments,
         {k: time_slides_seconds[k] for k in ["H1", "L1"]},
+        conf.injection.gps_start_seconds["past"],
     )
     snr_handler_lensed = SNRHandler(
         conf,
@@ -64,7 +73,8 @@ def main():
         data_loader_lensed.snrs,
         data_loader_lensed.segments,
         conf.injection.lensed_instruments,
-        {k: time_slides_seconds[k] for k in ["H1_lensed", "L1_lensed"]},
+        {k[:2]: time_slides_seconds[k] for k in ["H1_lensed", "L1_lensed"]},
+        conf.injection.gps_start_seconds["future"],
     )
     iterator_handler = IteratorHandler(conf, snr_handler, snr_handler_lensed)
 

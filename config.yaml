@@ -18,7 +18,7 @@ injection:
     dec: -1.2
     sample_rate: 4096.0
     unlensed_instruments: ["H1", "L1"]
-    lensed_instruments: ["H1_lensed", "L1_lensed"]
+    lensed_instruments: ["H1", "L1"]
     segment_length_seconds: 256
     slide_shift_seconds: 1
     low_frequency_cutoff: 30.0

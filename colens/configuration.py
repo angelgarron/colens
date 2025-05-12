@@ -91,31 +91,23 @@ class Injection:
     segment_end_pad_seconds: float
 
     def __post_init__(self):
-        trigger_times_seconds = {
-            "H1": self.time_gps_past_seconds,
-            "L1": self.time_gps_past_seconds,
-            "H1_lensed": self.time_gps_future_seconds,
-            "L1_lensed": self.time_gps_future_seconds,
+        self.gps_start_seconds = {
+            "past": int(self.time_gps_past_seconds) - 192 - self.pad_seconds,
+            "future": int(self.time_gps_future_seconds) - 192 - self.pad_seconds,
         }
-        self.gps_start_seconds = dict()
-        self.gps_end_seconds = dict()
-        for ifo in self.unlensed_instruments + self.lensed_instruments:
-            self.gps_start_seconds[ifo] = (
-                int(trigger_times_seconds[ifo]) - 192 - self.pad_seconds
-            )
-            self.gps_end_seconds[ifo] = (
-                int(trigger_times_seconds[ifo]) + 192 + self.pad_seconds
-            )
+        self.gps_end_seconds = {
+            "past": int(self.time_gps_past_seconds) + 192 + self.pad_seconds,
+            "future": int(self.time_gps_future_seconds) + 192 + self.pad_seconds,
+        }
 
-        self.trig_start_time_seconds = dict()
-        self.trig_end_time_seconds = dict()
-        for ifo in self.unlensed_instruments + self.lensed_instruments:
-            self.trig_start_time_seconds[ifo] = (
-                self.gps_start_seconds[ifo] + self.segment_start_pad_seconds
-            )
-            self.trig_end_time_seconds[ifo] = (
-                self.gps_end_seconds[ifo] - self.segment_end_pad_seconds
-            )
+        self.trig_start_time_seconds = {
+            "past": self.gps_start_seconds["past"] + self.segment_start_pad_seconds,
+            "future": self.gps_start_seconds["future"] + self.segment_start_pad_seconds,
+        }
+        self.trig_end_time_seconds = {
+            "past": self.gps_end_seconds["past"] - self.segment_end_pad_seconds,
+            "future": self.gps_end_seconds["future"] - self.segment_end_pad_seconds,
+        }
 
     @classmethod
     def from_dict(cls: Type[Injection], obj: dict) -> Injection:

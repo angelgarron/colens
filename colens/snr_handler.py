@@ -16,11 +16,13 @@ class SNRHandler:
         segments,
         instruments,
         time_slides_seconds,
+        gps_start_seconds,
     ):
         self.conf = conf
         self.get_snr = get_snr
         self.instruments = instruments
         self.time_slides_seconds = time_slides_seconds
+        self.gps_start_seconds = gps_start_seconds
         # TODO loop over segments (or maybe we just create a big segment)
         self.segment_index = 0
         self.sky_position_index = 0
@@ -28,8 +30,8 @@ class SNRHandler:
         self.snrs = snrs
         self.segments = segments
         self.detectors = dict()
-        for ifo, ifo_real_name in zip(self.instruments, ["H1", "L1"]):
-            self.detectors[ifo] = Detector(ifo_real_name)
+        for ifo in self.instruments:
+            self.detectors[ifo] = Detector(ifo)
         self.time_slide_index = 0
 
     def _get_snr_at_trigger(
@@ -51,7 +53,7 @@ class SNRHandler:
                 ][ifo],
                 timeseries=snrs[i],
                 trigger_time_seconds=trigger_time_seconds,
-                gps_start_seconds=self.conf.injection.gps_start_seconds[ifo],
+                gps_start_seconds=self.gps_start_seconds,
                 sample_rate=self.conf.injection.sample_rate,
                 time_delay_idx=time_delay_idx[time_slide_index][sky_position_index][
                     ifo

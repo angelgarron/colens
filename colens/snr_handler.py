@@ -76,7 +76,7 @@ class SNRHandler:
             for i, ifo in enumerate(detectors)
         ]
 
-    def first_function(self, time_gps_seconds):
+    def set_trigger_time(self, time_gps_seconds):
         self.trigger_time_seconds = time_gps_seconds
 
     def second_function(self, ra, dec):

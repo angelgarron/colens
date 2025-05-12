@@ -33,8 +33,8 @@ class IteratorHandler:
         logging.info("Generating timing iterator")
         self.timing_iterator = _create_iterator(
             get_timing_iterator(
-                self.time_gps_past_seconds_array,
                 self.time_gps_future_seconds_array,
+                self.time_gps_past_seconds_array,
                 self.ra_array,
                 self.dec_array,
             ),

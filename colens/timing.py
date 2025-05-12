@@ -116,8 +116,8 @@ def _get_meshgrid(*xi: np.ndarray) -> list[np.ndarray]:
 
 
 def get_timing_iterator(
-    time_gps_past_seconds: np.ndarray,
     time_gps_future_seconds: np.ndarray,
+    time_gps_past_seconds: np.ndarray,
     ra: np.ndarray,
     dec: np.ndarray,
     time_resolution: float = TIME_RESOLUTION,

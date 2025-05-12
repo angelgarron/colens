@@ -2,6 +2,7 @@ import logging
 
 from pycbc import init_logging
 
+from colens.background import get_time_slides_seconds
 from colens.configuration import read_configuration_from
 from colens.data_loader import DataLoader
 from colens.fstatistic import get_two_f
@@ -35,6 +36,18 @@ def main():
         output_data.lensed_output,
         conf.injection.time_gps_future_seconds,
     )
+    # num_slides = slide_limiter(
+    #     conf.injection.segment_length_seconds,
+    #     conf.injection.slide_shift_seconds,
+    #     len(conf.injection.lensed_instruments),
+    # )
+    num_slides = 1
+    time_slides_seconds = get_time_slides_seconds(
+        num_slides,
+        conf.injection.slide_shift_seconds,
+        conf.injection.unlensed_instruments,
+        conf.injection.lensed_instruments,
+    )
     snr_handler = SNRHandler(
         conf,
         get_snr,
@@ -42,6 +55,7 @@ def main():
         data_loader.snrs,
         data_loader.segments,
         conf.injection.unlensed_instruments,
+        {k: time_slides_seconds[k] for k in ["H1", "L1"]},
     )
     snr_handler_lensed = SNRHandler(
         conf,
@@ -50,6 +64,7 @@ def main():
         data_loader_lensed.snrs,
         data_loader_lensed.segments,
         conf.injection.lensed_instruments,
+        {k: time_slides_seconds[k] for k in ["H1_lensed", "L1_lensed"]},
     )
     iterator_handler = IteratorHandler(conf, snr_handler, snr_handler_lensed)
 

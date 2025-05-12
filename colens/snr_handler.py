@@ -3,11 +3,7 @@ import logging
 import numpy as np
 from pycbc.detector import Detector
 
-from colens.background import (
-    get_time_delay_at_zerolag_seconds,
-    get_time_delay_indices,
-    get_time_slides_seconds,
-)
+from colens.background import get_time_delay_at_zerolag_seconds, get_time_delay_indices
 
 
 class SNRHandler:
@@ -19,10 +15,12 @@ class SNRHandler:
         snrs,
         segments,
         instruments,
+        time_slides_seconds,
     ):
         self.conf = conf
         self.get_snr = get_snr
         self.instruments = instruments
+        self.time_slides_seconds = time_slides_seconds
         # TODO loop over segments (or maybe we just create a big segment)
         self.segment_index = 0
         self.sky_position_index = 0
@@ -32,18 +30,6 @@ class SNRHandler:
         self.detectors = dict()
         for ifo, ifo_real_name in zip(self.instruments, ["H1", "L1"]):
             self.detectors[ifo] = Detector(ifo_real_name)
-        # self.num_slides = slide_limiter(
-        #     conf.injection.segment_length_seconds,
-        #     conf.injection.slide_shift_seconds,
-        #     len(conf.injection.lensed_instruments),
-        # )
-        self.num_slides = 1
-        self.time_slides_seconds = get_time_slides_seconds(
-            self.num_slides,
-            self.conf.injection.slide_shift_seconds,
-            conf.injection.unlensed_instruments,
-            conf.injection.lensed_instruments,
-        )
         self.time_slide_index = 0
 
     def _get_snr_at_trigger(

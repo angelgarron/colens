@@ -102,7 +102,7 @@ def _get_meshgrid(*xi: np.ndarray) -> list[np.ndarray]:
     """Adapted from `np.meshgrid` to work when one of the
     arrays passed has dimension greater than 1. In that case,
     each column of that array will contribute as a coordiante vector,
-    but without addind extra dimensions to the coordinate matrices returned.
+    but without adding extra dimensions to the coordinate matrices returned.
     """
     s0 = (1,) * len(xi)
     output = []

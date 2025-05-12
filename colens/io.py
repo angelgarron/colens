@@ -19,6 +19,7 @@ class NumpyArrayEncoder(json.JSONEncoder):
 
 @dataclass
 class PerDetectorOutput:
+    name: str
     snr_real: list = field(default_factory=list)
     snr_imag: list = field(default_factory=list)
     sigma: list = field(default_factory=list)

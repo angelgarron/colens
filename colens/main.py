@@ -17,9 +17,9 @@ def main():
     conf = read_configuration_from("config.yaml")
     output_data = Output()
     for ifo in conf.injection.unlensed_instruments:
-        output_data.original_output.append(PerDetectorOutput())
+        output_data.original_output.append(PerDetectorOutput(ifo))
     for ifo in conf.injection.lensed_instruments:
-        output_data.lensed_output.append(PerDetectorOutput())
+        output_data.lensed_output.append(PerDetectorOutput(ifo))
 
     data_loader = DataLoader(
         conf,

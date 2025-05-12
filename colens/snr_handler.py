@@ -1,6 +1,4 @@
 import logging
-from itertools import groupby
-from operator import itemgetter
 
 import numpy as np
 from pycbc.detector import Detector
@@ -10,8 +8,6 @@ from colens.background import (
     get_time_delay_indices,
     get_time_slides_seconds,
 )
-from colens.io import get_bilby_posteriors
-from colens.timing import get_timing_iterator
 
 
 class SNRHandler:
@@ -38,7 +34,6 @@ class SNRHandler:
         self.detectors = dict()
         for ifo, ifo_real_name in zip(self.instruments, ["H1", "L1"]):
             self.detectors[ifo] = Detector(ifo_real_name)
-        self.get_timing_iterator()
         # self.num_slides = slide_limiter(
         #     conf.injection.segment_length_seconds,
         #     conf.injection.slide_shift_seconds,
@@ -52,27 +47,6 @@ class SNRHandler:
             conf.injection.lensed_instruments,
         )
         self.time_slide_index = 0
-
-    def get_timing_iterator(self):
-        df = get_bilby_posteriors(self.conf.data.posteriors_file)[1000:1100]
-        self.time_gps_past_seconds_array = df["geocent_time"].to_numpy()
-        self.time_gps_future_seconds_array = np.arange(
-            self.conf.injection.time_gps_future_seconds - 0.1,
-            self.conf.injection.time_gps_future_seconds + 0.1,
-            1 / self.conf.injection.sample_rate,
-        )
-        self.ra_array = df["ra"].to_numpy()
-        self.dec_array = df["dec"].to_numpy()
-        logging.info("Generating timing iterator")
-        self.timing_iterator = _create_iterator(
-            get_timing_iterator(
-                self.time_gps_past_seconds_array,
-                self.time_gps_future_seconds_array,
-                self.ra_array,
-                self.dec_array,
-            ),
-            [self.first_function, self.second_function],
-        )
 
     def _get_snr_at_trigger(
         self,
@@ -104,16 +78,16 @@ class SNRHandler:
             for i, ifo in enumerate(detectors)
         ]
 
-    def first_function(self, arg):
-        self.lensed_trigger_time_seconds = self.time_gps_future_seconds_array[arg]
+    def first_function(self, time_gps_seconds):
+        self.lensed_trigger_time_seconds = time_gps_seconds
 
-    def second_function(self, arg):
-        self.ra = self.ra_array[arg]
-        self.dec = self.dec_array[arg]
+    def second_function(self, time_gps_seconds, ra, dec):
+        self.ra = ra
+        self.dec = dec
         if self.lensed:
             self.trigger_time_seconds = self.lensed_trigger_time_seconds
         else:
-            self.trigger_time_seconds = self.time_gps_past_seconds_array[arg]
+            self.trigger_time_seconds = time_gps_seconds
         self.time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
             self.trigger_time_seconds,
             self.ra,
@@ -147,18 +121,3 @@ class SNRHandler:
             )
             self.fp.append(fp)
             self.fc.append(fc)
-
-
-def _create_iterator(generator, functions):
-    def inner(gen, func_idx):
-        for i, group in groupby(gen, key=itemgetter(func_idx)):
-            functions[func_idx](i)
-            if func_idx < len(functions) - 2:  # TODO find a better way to do this
-                yield from inner(group, func_idx + 1)
-            else:  # pause iteration on the innermost for loop
-                for i_, group_ in groupby(group, key=itemgetter(func_idx + 1)):
-                    functions[func_idx + 1](i_)
-                    yield
-
-    iterator = inner(generator, 0)
-    return iterator

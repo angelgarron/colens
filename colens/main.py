@@ -7,6 +7,7 @@ from colens.data_loader import DataLoader
 from colens.fstatistic import get_two_f
 from colens.interpolate import get_snr, get_snr_interpolated
 from colens.io import Output, PerDetectorOutput
+from colens.iterator_handler import IteratorHandler
 from colens.runner import Runner
 from colens.snr_handler import SNRHandler
 
@@ -52,9 +53,12 @@ def main():
         conf.injection.lensed_instruments,
         True,
     )
+    iterator_handler = IteratorHandler(conf, snr_handler, snr_handler_lensed)
 
     logging.info("Starting the filtering...")
-    runner = Runner(get_two_f, output_data, snr_handler, snr_handler_lensed)
+    runner = Runner(
+        get_two_f, output_data, snr_handler, snr_handler_lensed, iterator_handler
+    )
     runner.run()
     logging.info("Filtering completed")
     logging.info(f"Saving results to {conf.output.output_file_name}")

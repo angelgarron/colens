@@ -1,5 +1,6 @@
 import logging
 
+import numpy as np
 from pycbc import init_logging
 
 from colens.background import get_time_slides_seconds
@@ -50,12 +51,14 @@ def main():
     #     len(conf.injection.lensed_instruments),
     # )
     num_slides = 1
-    time_slides_seconds = get_time_slides_seconds(
+    time_slides_seconds_lensed = get_time_slides_seconds(
         num_slides,
         conf.injection.slide_shift_seconds,
-        ["H1", "L1"],
-        ["H1_lensed", "L1_lensed"],
+        conf.injection.lensed_instruments,
     )
+    time_slides_seconds_unlensed = {
+        ifo: np.zeros(num_slides) for ifo in conf.injection.unlensed_instruments
+    }
     snr_handler = SNRHandler(
         conf,
         get_snr,
@@ -63,7 +66,7 @@ def main():
         data_loader.snrs,
         data_loader.segments,
         conf.injection.unlensed_instruments,
-        {k: time_slides_seconds[k] for k in ["H1", "L1"]},
+        time_slides_seconds_unlensed,
         conf.injection.gps_start_seconds["past"],
     )
     snr_handler_lensed = SNRHandler(
@@ -73,7 +76,7 @@ def main():
         data_loader_lensed.snrs,
         data_loader_lensed.segments,
         conf.injection.lensed_instruments,
-        {k[:2]: time_slides_seconds[k] for k in ["H1_lensed", "L1_lensed"]},
+        time_slides_seconds_lensed,
         conf.injection.gps_start_seconds["future"],
     )
     iterator_handler = IteratorHandler(conf, snr_handler, snr_handler_lensed)

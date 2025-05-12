@@ -65,29 +65,20 @@ def get_time_delay_at_zerolag_seconds(
 def get_time_slides_seconds(
     num_slides: int,
     slide_shift_seconds: float,
-    unlensed_instruments: list[str],
-    lensed_instruments: list[str],
+    instruments: list[str],
 ):
     """Create a dictionary of time slide shifts; IFO 0 is unshifted.
-    Just the lensed detectors are shifted.
 
     Args:
         num_slides (int): Number of time slides we wish to compute.
         slide_shift_seconds (float): The time difference (in seconds) between slides.
-        unlensed_instruments (list[str]): List of unlensed instruments.
-        lensed_instruments (list[str]): List of lensed instruments.
+        instruments (list[str]): List of instruments.
     """
     slide_ids = np.arange(num_slides)
     time_slides_seconds = {
         ifo: slide_shift_seconds * slide_ids * ifo_idx
-        for ifo_idx, ifo in enumerate(lensed_instruments)
+        for ifo_idx, ifo in enumerate(instruments)
     }
-    time_slides_seconds.update(
-        {
-            ifo: time_slides_seconds[lensed_instruments[0]]
-            for ifo in unlensed_instruments
-        }
-    )
     return time_slides_seconds
 
 

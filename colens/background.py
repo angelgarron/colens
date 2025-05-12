@@ -35,33 +35,6 @@ def slide_limiter(
     return num_slides
 
 
-def get_time_delay_at_zerolag_seconds(
-    trigger_times_seconds: float,
-    ras,
-    decs,
-    detectors,
-):
-    """Compute the difference of arrival time between the earth center and each one of the `instruments` of a signal
-    coming from each point in `sky_grid`, .i.e. (t_{instrument}-t_{center}).
-
-    Args:
-        trigger_times_seconds (float): Trigger time (in seconds).
-        should be computed.
-    """
-    time_delay_zerolag_seconds = [
-        {
-            ifo: detectors[ifo].time_delay_from_earth_center(
-                ra,
-                dec,
-                trigger_times_seconds,
-            )
-            for ifo in detectors
-        }
-        for ra, dec in zip(np.atleast_1d(ras), np.atleast_1d(decs))
-    ]
-    return time_delay_zerolag_seconds
-
-
 def get_time_slides_seconds(
     num_slides: int,
     slide_shift_seconds: float,
@@ -75,43 +48,7 @@ def get_time_slides_seconds(
         instruments (list[str]): List of instruments.
     """
     slide_ids = np.arange(num_slides)
-    time_slides_seconds = {
-        ifo: slide_shift_seconds * slide_ids * ifo_idx
-        for ifo_idx, ifo in enumerate(instruments)
-    }
-    return time_slides_seconds
-
-
-def get_time_delay_indices(
-    sample_rate: float,
-    time_delay_zerolag_seconds: list[dict[str, float]],
-    time_slides_seconds: dict[str, np.ndarray],
-):
-    """Given the time delays wrt to IFO 0 in time_slides, create a dictionary
-    for time delay indices evaluated wrt the geocenter, in units of samples,
-    i.e. (time delay from geocenter + time slide)*sampling_rate
-
-    Args:
-        sample_rate (float): Sample rate (in Hertz).
-        time_delay_zerolag_seconds (list[dict[str, float]]): Time difference (in seconds) \
-        of arrival time between earth center and instruments of a grid of sky positions.
-        time_slides_seconds (dict[str, np.ndarray]): Time slides (in seconds) for each instrument.
-    """
-    slide_ids = np.arange(len(list(time_slides_seconds.values())[0]))
-    time_delay_idx = [
-        [
-            {
-                ifo: round(
-                    (
-                        time_delay_zerolag_at_sky_position_seconds[ifo]
-                        + time_slides_seconds[ifo][slide]
-                    )
-                    * sample_rate
-                )
-                for ifo in time_delay_zerolag_at_sky_position_seconds
-            }
-            for time_delay_zerolag_at_sky_position_seconds in time_delay_zerolag_seconds
-        ]
-        for slide in slide_ids
+    time_slides_seconds = [
+        slide_shift_seconds * slide_ids * ifo_idx for ifo_idx in range(len(instruments))
     ]
-    return time_delay_idx
+    return time_slides_seconds

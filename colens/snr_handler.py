@@ -3,8 +3,6 @@ import logging
 import numpy as np
 from pycbc.detector import Detector
 
-from colens.background import get_time_delay_at_zerolag_seconds, get_time_delay_indices
-
 
 class SNRHandler:
     def __init__(
@@ -34,64 +32,51 @@ class SNRHandler:
             self.detectors[ifo] = Detector(ifo)
         self.time_slide_index = 0
 
-    def _get_snr_at_trigger(
-        self,
-        get_snr,
-        sky_position_index,
-        trigger_time_seconds,
-        time_slide_index,
-        detectors,
-        time_delay_zerolag_seconds,
-        time_delay_idx,
-        snrs,
-        segments,
-    ):
-        return [
-            get_snr(
-                time_delay_zerolag_seconds=time_delay_zerolag_seconds[
-                    sky_position_index
-                ][ifo],
-                timeseries=snrs[i],
-                trigger_time_seconds=trigger_time_seconds,
+    def _set_snr_at_trigger(self):
+        self.snr_at_trigger = [
+            self.get_snr(
+                time_delay_zerolag_seconds=self.time_delay_zerolag_seconds[i],
+                timeseries=self.snrs[i],
+                trigger_time_seconds=self.trigger_time_seconds,
                 gps_start_seconds=self.gps_start_seconds,
                 sample_rate=self.conf.injection.sample_rate,
-                time_delay_idx=time_delay_idx[time_slide_index][sky_position_index][
-                    ifo
-                ],
-                cumulative_index=segments[i][self.segment_index].cumulative_index,
-                time_slides_seconds=self.time_slides_seconds[ifo][time_slide_index],
+                time_delay_idx=self.time_delay_idx[self.time_slide_index][i],
+                cumulative_index=self.segments[i][self.segment_index].cumulative_index,
+                time_slides_seconds=self.time_slides_seconds[i][self.time_slide_index],
             )
-            for i, ifo in enumerate(detectors)
+            for i in range(len(self.detectors))
         ]
 
-    def set_trigger_time(self, time_gps_seconds):
-        self.trigger_time_seconds = time_gps_seconds
+    def _set_time_delay_at_zerolag_seconds(self):
+        """Compute the difference of arrival time between the earth center and each one of the `instruments` of a signal
+        coming from each point in `sky_grid`, .i.e. (t_{instrument} - t_{center}).
+        """
+        self.time_delay_zerolag_seconds = [
+            detector.time_delay_from_earth_center(
+                self.ra,
+                self.dec,
+                self.trigger_time_seconds,
+            )
+            for detector in self.detectors.values()
+        ]
 
-    def second_function(self, ra, dec):
-        self.ra = ra
-        self.dec = dec
-        self.time_delay_zerolag_seconds = get_time_delay_at_zerolag_seconds(
-            self.trigger_time_seconds,
-            self.ra,
-            self.dec,
-            self.detectors,
-        )
-        self.time_delay_idx = get_time_delay_indices(
-            self.conf.injection.sample_rate,
-            self.time_delay_zerolag_seconds,
-            self.time_slides_seconds,
-        )
-        self.snr_at_trigger = self._get_snr_at_trigger(
-            self.get_snr,
-            self.sky_position_index,
-            self.trigger_time_seconds,
-            self.time_slide_index,
-            self.detectors,
-            self.time_delay_zerolag_seconds,
-            self.time_delay_idx,
-            self.snrs,
-            self.segments,
-        )
+    def _set_time_delay_indices(self):
+        slide_ids = np.arange(len(self.time_slides_seconds[0]))
+        self.time_delay_idx = [
+            [
+                round(
+                    (
+                        self.time_delay_zerolag_seconds[i]
+                        + self.time_slides_seconds[i][slide]
+                    )
+                    * self.conf.injection.sample_rate
+                )
+                for i in range(len(self.time_delay_zerolag_seconds))
+            ]
+            for slide in slide_ids
+        ]
+
+    def _set_antenna_patterns(self):
         self.fp = []
         self.fc = []
         for detector in self.detectors.values():
@@ -103,3 +88,14 @@ class SNRHandler:
             )
             self.fp.append(fp)
             self.fc.append(fc)
+
+    def set_trigger_time(self, time_gps_seconds):
+        self.trigger_time_seconds = time_gps_seconds
+
+    def second_function(self, ra, dec):
+        self.ra = ra
+        self.dec = dec
+        self._set_time_delay_at_zerolag_seconds()
+        self._set_time_delay_indices()
+        self._set_snr_at_trigger()
+        self._set_antenna_patterns()

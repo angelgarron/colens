@@ -56,9 +56,9 @@ def main():
         conf.injection.slide_shift_seconds,
         conf.injection.lensed_instruments,
     )
-    time_slides_seconds_unlensed = {
-        ifo: np.zeros(num_slides) for ifo in conf.injection.unlensed_instruments
-    }
+    time_slides_seconds_unlensed = [
+        np.zeros(num_slides) for _ in conf.injection.unlensed_instruments
+    ]
     snr_handler = SNRHandler(
         conf,
         get_snr,

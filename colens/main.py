@@ -50,7 +50,7 @@ def main():
     #     conf.injection.slide_shift_seconds,
     #     len(conf.injection.lensed_instruments),
     # )
-    num_slides = 2
+    num_slides = 1
     time_slides_seconds_lensed = get_time_slides_seconds(
         num_slides,
         conf.injection.slide_shift_seconds,
@@ -62,9 +62,7 @@ def main():
     snr_handler = SNRHandler(
         conf,
         get_snr,
-        data_loader.sigma,
-        data_loader.snrs,
-        data_loader.segments,
+        data_loader,
         conf.injection.unlensed_instruments,
         time_slides_seconds_unlensed,
         conf.injection.gps_start_seconds["past"],
@@ -72,9 +70,7 @@ def main():
     snr_handler_lensed = SNRHandler(
         conf,
         get_snr,
-        data_loader_lensed.sigma,
-        data_loader_lensed.snrs,
-        data_loader_lensed.segments,
+        data_loader_lensed,
         conf.injection.lensed_instruments,
         time_slides_seconds_lensed,
         conf.injection.gps_start_seconds["future"],

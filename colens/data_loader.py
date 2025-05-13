@@ -52,7 +52,6 @@ class DataLoader:
         self.template = self.create_template_bank()[0]
         # TODO loop over segments (or maybe we just create a big segment)
         self.segment_index = 0
-        self.segments = []
         self.matched_filters = []
         self.injection_parameters = copy(conf.injection_parameters)
         for ifo in self.instruments:
@@ -70,8 +69,8 @@ class DataLoader:
         )
 
         segments = self.get_segments(strain)
-        self.matched_filters.append(self.get_matched_filter(segments))
-        self.segments.append(segments)
+        matched_filter = self.get_matched_filter(segments)
+        self.matched_filters.append(matched_filter)
 
     def single_segment_setup(self):
         self.sigma = []

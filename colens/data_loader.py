@@ -57,7 +57,7 @@ class DataLoader:
         self.injection_parameters = copy(conf.injection_parameters)
         for ifo in self.instruments:
             self.single_detector_setup(ifo)
-        self.segment_setup()
+        self.single_segment_setup()
 
     def single_detector_setup(self, ifo):
         self.injection_parameters.geocent_time = self.time_gps_seconds
@@ -70,11 +70,10 @@ class DataLoader:
         )
 
         segments = self.get_segments(strain)
-        matched_filter = self.get_matched_filter(segments)
-        self.matched_filters.append(matched_filter)
+        self.matched_filters.append(self.get_matched_filter(segments))
         self.segments.append(segments)
 
-    def segment_setup(self):
+    def single_segment_setup(self):
         self.sigma = []
         self.snrs = []
         for i in range(len(self.instruments)):

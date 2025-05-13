@@ -52,12 +52,12 @@ class DataLoader:
         self.template = self.create_template_bank()[0]
         # TODO loop over segments (or maybe we just create a big segment)
         self.segment_index = 0
-        self.sigma = []
-        self.snrs = []
         self.segments = []
+        self.matched_filters = []
         self.injection_parameters = copy(conf.injection_parameters)
         for ifo in self.instruments:
             self.single_detector_setup(ifo)
+        self.segment_setup()
 
     def single_detector_setup(self, ifo):
         self.injection_parameters.geocent_time = self.time_gps_seconds
@@ -71,17 +71,26 @@ class DataLoader:
 
         segments = self.get_segments(strain)
         matched_filter = self.get_matched_filter(segments)
-        sigmasq = self.template.sigmasq(segments[self.segment_index].psd)
-        sigma = np.sqrt(sigmasq)
-        self.sigma.append(sigma)
-        self.lensed_or_unlensed_output[self.instruments.index(ifo)].sigma.append(sigma)
-        snr_ts, norm, corr, ind, snrv = matched_filter.matched_filter_and_cluster(
-            self.segment_index, sigmasq, window=0
-        )
+        self.matched_filters.append(matched_filter)
         self.segments.append(segments)
-        self.snrs.append(
-            snr_ts[matched_filter.segments[self.segment_index].analyze] * norm
-        )
+
+    def segment_setup(self):
+        self.sigma = []
+        self.snrs = []
+        for i in range(len(self.instruments)):
+            sigmasq = self.template.sigmasq(
+                self.matched_filters[i].segments[self.segment_index].psd
+            )
+            sigma = np.sqrt(sigmasq)
+            self.sigma.append(sigma)
+            snr_ts, norm, corr, ind, snrv = self.matched_filters[
+                i
+            ].matched_filter_and_cluster(self.segment_index, sigmasq, window=0)
+            self.snrs.append(
+                snr_ts[self.matched_filters[i].segments[self.segment_index].analyze]
+                * norm
+            )
+            self.lensed_or_unlensed_output[i].sigma.append(sigma)
 
     def get_segments(self, strain):
         segments = StrainSegments(

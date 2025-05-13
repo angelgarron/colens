@@ -9,15 +9,12 @@ from colens.timing import get_timing_iterator
 
 
 class IteratorHandler:
-    def __init__(
-        self,
-        conf,
-        snr_handler,
-        snr_handler_lensed,
-    ):
+    def __init__(self, conf, snr_handler, snr_handler_lensed, num_slides, output_data):
         self.conf = conf
         self.snr_handler = snr_handler
         self.snr_handler_lensed = snr_handler_lensed
+        self.num_slides = num_slides
+        self.output_data = output_data
         self.get_timing_iterator()
 
     def get_timing_iterator(self):
@@ -31,14 +28,24 @@ class IteratorHandler:
         self.ra_array = df["ra"].to_numpy()
         self.dec_array = df["dec"].to_numpy()
         logging.info("Generating timing iterator")
+
+        timing_iterator = get_timing_iterator(
+            self.time_gps_future_seconds_array,
+            self.time_gps_past_seconds_array,
+            self.ra_array,
+            self.dec_array,
+        )
+
+        def new_iterator():
+            for args in timing_iterator:
+                for i in range(self.num_slides):
+                    yield args + (i,)
+
+        timing_iterator_with_slides = new_iterator()
+
         self.timing_iterator = _create_iterator(
-            get_timing_iterator(
-                self.time_gps_future_seconds_array,
-                self.time_gps_past_seconds_array,
-                self.ra_array,
-                self.dec_array,
-            ),
-            [self.first_function, self.second_function],
+            timing_iterator_with_slides,
+            [self.first_function, self.second_function, self.third_function],
         )
 
     def first_function(self, arg):
@@ -47,15 +54,21 @@ class IteratorHandler:
         )
 
     def second_function(self, arg):
+        self.ra = self.ra_array[arg]
+        self.dec = self.dec_array[arg]
         self.snr_handler.set_trigger_time(self.time_gps_past_seconds_array[arg])
-        self.snr_handler.second_function(
-            self.ra_array[arg],
-            self.dec_array[arg],
-        )
-        self.snr_handler_lensed.second_function(
-            self.ra_array[arg],
-            self.dec_array[arg],
-        )
+        self.snr_handler.second_function(self.ra, self.dec)
+        self.snr_handler_lensed.second_function(self.ra, self.dec)
+
+    def third_function(self, arg):
+        self.snr_handler.time_slide_index = arg
+        self.snr_handler_lensed.time_slide_index = arg
+
+        self.write_output()
+
+    def write_output(self):
+        self.output_data.ra.append(self.ra)
+        self.output_data.dec.append(self.dec)
 
 
 def _create_iterator(generator, functions):

@@ -42,8 +42,6 @@ class Runner:
             self.snr_handler_lensed.trigger_time_seconds
         )
         self.output_data.time_slide_index.append(self.snr_handler.time_slide_index)
-        self.output_data.ra.append(self.snr_handler.ra)
-        self.output_data.dec.append(self.snr_handler.dec)
         self.output_data.original_output[0].snr_real.append(
             float(self.snr_handler.snr_at_trigger[0].real)
         )

@@ -47,14 +47,14 @@ class SNRHandler:
             for i in range(len(self.detectors))
         ]
 
-    def _set_time_delay_at_zerolag_seconds(self):
+    def _set_time_delay_at_zerolag_seconds(self, ra, dec):
         """Compute the difference of arrival time between the earth center and each one of the `instruments` of a signal
         coming from each point in `sky_grid`, .i.e. (t_{instrument} - t_{center}).
         """
         self.time_delay_zerolag_seconds = [
             detector.time_delay_from_earth_center(
-                self.ra,
-                self.dec,
+                ra,
+                dec,
                 self.trigger_time_seconds,
             )
             for detector in self.detectors.values()
@@ -76,13 +76,13 @@ class SNRHandler:
             for slide in slide_ids
         ]
 
-    def _set_antenna_patterns(self):
+    def _set_antenna_patterns(self, ra, dec):
         self.fp = []
         self.fc = []
         for detector in self.detectors.values():
             fp, fc = detector.antenna_pattern(
-                self.ra,
-                self.dec,
+                ra,
+                dec,
                 polarization=0,
                 t_gps=self.trigger_time_seconds,
             )
@@ -93,9 +93,7 @@ class SNRHandler:
         self.trigger_time_seconds = time_gps_seconds
 
     def second_function(self, ra, dec):
-        self.ra = ra
-        self.dec = dec
-        self._set_time_delay_at_zerolag_seconds()
+        self._set_time_delay_at_zerolag_seconds(ra, dec)
         self._set_time_delay_indices()
         self._set_snr_at_trigger()
-        self._set_antenna_patterns()
+        self._set_antenna_patterns(ra, dec)

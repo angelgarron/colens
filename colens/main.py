@@ -79,7 +79,9 @@ def main():
         time_slides_seconds_lensed,
         conf.injection.gps_start_seconds["future"],
     )
-    iterator_handler = IteratorHandler(conf, snr_handler, snr_handler_lensed)
+    iterator_handler = IteratorHandler(
+        conf, snr_handler, snr_handler_lensed, num_slides, output_data
+    )
 
     logging.info("Starting the filtering...")
     runner = Runner(

@@ -50,7 +50,7 @@ def main():
     #     conf.injection.slide_shift_seconds,
     #     len(conf.injection.lensed_instruments),
     # )
-    num_slides = 1
+    num_slides = 2
     time_slides_seconds_lensed = get_time_slides_seconds(
         num_slides,
         conf.injection.slide_shift_seconds,

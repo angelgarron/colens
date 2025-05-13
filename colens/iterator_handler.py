@@ -56,13 +56,15 @@ class IteratorHandler:
     def second_function(self, arg):
         self.ra = self.ra_array[arg]
         self.dec = self.dec_array[arg]
+
         self.snr_handler.set_trigger_time(self.time_gps_past_seconds_array[arg])
+
         self.snr_handler.second_function(self.ra, self.dec)
         self.snr_handler_lensed.second_function(self.ra, self.dec)
 
     def third_function(self, arg):
-        self.snr_handler.time_slide_index = arg
-        self.snr_handler_lensed.time_slide_index = arg
+        self.snr_handler.third_function(arg)
+        self.snr_handler_lensed.third_function(arg)
 
         self.write_output()
 

@@ -95,5 +95,8 @@ class SNRHandler:
     def second_function(self, ra, dec):
         self._set_time_delay_at_zerolag_seconds(ra, dec)
         self._set_time_delay_indices()
-        self._set_snr_at_trigger()
         self._set_antenna_patterns(ra, dec)
+
+    def third_function(self, time_slide_index):
+        self.time_slide_index = time_slide_index
+        self._set_snr_at_trigger()

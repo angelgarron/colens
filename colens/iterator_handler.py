@@ -5,7 +5,7 @@ from operator import itemgetter
 import numpy as np
 
 from colens.io import get_bilby_posteriors
-from colens.timing import get_timing_iterator
+from colens.timing import get_iteration_indexes
 
 
 class IteratorHandler:
@@ -28,22 +28,21 @@ class IteratorHandler:
         self.ra_array = df["ra"].to_numpy()
         self.dec_array = df["dec"].to_numpy()
         logging.info("Generating timing iterator")
+        iteration_indexes = get_iteration_indexes(
+            self.time_gps_future_seconds_array,
+            self.time_gps_past_seconds_array,
+            self.ra_array,
+            self.dec_array,
+        )
 
-        def new_iterator():
+        def generator():
             for i in range(2):
-                for args in get_timing_iterator(
-                    self.time_gps_future_seconds_array,
-                    self.time_gps_past_seconds_array,
-                    self.ra_array,
-                    self.dec_array,
-                ):
+                for args in zip(*iteration_indexes):
                     for j in range(self.num_slides):
                         yield (i,) + args + (j,)
 
-        timing_iterator_with_slides = new_iterator()
-
         self.timing_iterator = _create_iterator(
-            timing_iterator_with_slides,
+            generator(),
             [
                 self.fourth_function,
                 self.first_function,

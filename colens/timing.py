@@ -115,7 +115,7 @@ def _get_meshgrid(*xi: np.ndarray) -> list[np.ndarray]:
     return np.broadcast_arrays(*output, subok=True)
 
 
-def get_timing_iterator(
+def get_iteration_indexes(
     time_gps_future_seconds: np.ndarray,
     time_gps_past_seconds: np.ndarray,
     ra: np.ndarray,
@@ -140,8 +140,6 @@ def get_timing_iterator(
         ],
         time_resolution,
     )
-    return zip(
-        *np.unravel_index(
-            t_prime_downsampled_indices, grid_time_gps_future_seconds.shape
-        )
+    return np.unravel_index(
+        t_prime_downsampled_indices, grid_time_gps_future_seconds.shape
     )

@@ -1,9 +1,9 @@
 import numpy as np
 
 
-def _lagrange_interpolate_timeseries_at(time, timeseries, index):
-    x0, x1, x2 = np.array(timeseries.sample_times)[index - 1 : index + 2]
-    y0, y1, y2 = np.array(timeseries)[index - 1 : index + 2]
+def _lagrange_interpolate_timeseries_at(time, x, y, index):
+    x0, x1, x2 = x[index - 1 : index + 2]
+    y0, y1, y2 = y[index - 1 : index + 2]
     return (
         y0 * (time - x1) * (time - x2) / ((x0 - x1) * (x0 - x2))
         + y1 * (time - x0) * (time - x2) / ((x1 - x0) * (x1 - x2))
@@ -69,7 +69,8 @@ def get_snr_interpolated(
         + time_delay_zerolag_seconds
         + time_slides_seconds
         - gps_start_seconds,
-        timeseries=timeseries,
+        x=np.array(timeseries.sample_times),
+        y=np.array(timeseries),
         index=index_trigger,
     )
     return snr_at_trigger

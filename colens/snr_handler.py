@@ -19,12 +19,10 @@ class SNRHandler:
         self.instruments = instruments
         self.time_slides_seconds = time_slides_seconds
         self.gps_start_seconds = gps_start_seconds
-        self.sky_position_index = 0
         self.data_loader = data_loader
         self.detectors = dict()
         for ifo in self.instruments:
             self.detectors[ifo] = Detector(ifo)
-        self.time_slide_index = 0
 
     def segment_setup(self):
         self.data_loader.single_segment_setup(self.segment_index)

@@ -87,7 +87,10 @@ def get_snr_interpolated_numpy(
     time_slides_seconds,
 ):
     return np.interp(
-        trigger_time_seconds,
+        trigger_time_seconds
+        + time_delay_zerolag_seconds
+        + time_slides_seconds
+        - gps_start_seconds,
         np.array(timeseries.sample_times),
         np.array(timeseries),
     )

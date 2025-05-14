@@ -46,13 +46,13 @@ class IteratorHandler:
             generator(),
             [
                 self.on_changed_segment_index,
-                self.first_function,
+                self.on_changed_lensed_time,
                 self.on_changed_posterior,
                 self.third_function,
             ],
         )
 
-    def first_function(self, arg):
+    def on_changed_lensed_time(self, arg):
         self.snr_handler_lensed.set_trigger_time(
             self.time_gps_future_seconds_array[arg]
         )

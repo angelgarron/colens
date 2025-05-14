@@ -16,6 +16,7 @@ class IteratorHandler:
         self.num_slides = num_slides
         self.output_data = output_data
         self.get_timing_iterator()
+        self.snr_handler.fourth_function(0)
 
     def get_timing_iterator(self):
         df = get_bilby_posteriors(self.conf.data.posteriors_file)[1000:1100]
@@ -36,7 +37,7 @@ class IteratorHandler:
         )
 
         def generator():
-            for i in range(2):
+            for i in range(1):
                 for args in zip(*iteration_indexes):
                     for j in range(self.num_slides):
                         yield (i,) + args + (j,)
@@ -72,7 +73,6 @@ class IteratorHandler:
         self.write_output()
 
     def fourth_function(self, arg):
-        self.snr_handler.fourth_function(arg)
         self.snr_handler_lensed.fourth_function(arg)
 
     def write_output(self):

@@ -48,7 +48,7 @@ class IteratorHandler:
                 self.on_changed_segment_index,
                 self.on_changed_lensed_time,
                 self.on_changed_posterior,
-                self.third_function,
+                self.on_changed_time_slide_index,
             ],
         )
 
@@ -66,9 +66,9 @@ class IteratorHandler:
         self.snr_handler.on_changed_posterior(self.ra, self.dec)
         self.snr_handler_lensed.on_changed_posterior(self.ra, self.dec)
 
-    def third_function(self, arg):
-        self.snr_handler.third_function(arg)
-        self.snr_handler_lensed.third_function(arg)
+    def on_changed_time_slide_index(self, arg):
+        self.snr_handler.on_changed_time_slide_index(arg)
+        self.snr_handler_lensed.on_changed_time_slide_index(arg)
 
         self.write_output()
 

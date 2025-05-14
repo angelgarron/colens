@@ -29,23 +29,27 @@ class IteratorHandler:
         self.dec_array = df["dec"].to_numpy()
         logging.info("Generating timing iterator")
 
-        timing_iterator = get_timing_iterator(
-            self.time_gps_future_seconds_array,
-            self.time_gps_past_seconds_array,
-            self.ra_array,
-            self.dec_array,
-        )
-
         def new_iterator():
-            for args in timing_iterator:
-                for i in range(self.num_slides):
-                    yield args + (i,)
+            for i in range(2):
+                for args in get_timing_iterator(
+                    self.time_gps_future_seconds_array,
+                    self.time_gps_past_seconds_array,
+                    self.ra_array,
+                    self.dec_array,
+                ):
+                    for j in range(self.num_slides):
+                        yield (i,) + args + (j,)
 
         timing_iterator_with_slides = new_iterator()
 
         self.timing_iterator = _create_iterator(
             timing_iterator_with_slides,
-            [self.first_function, self.second_function, self.third_function],
+            [
+                self.fourth_function,
+                self.first_function,
+                self.second_function,
+                self.third_function,
+            ],
         )
 
     def first_function(self, arg):
@@ -67,6 +71,10 @@ class IteratorHandler:
         self.snr_handler_lensed.third_function(arg)
 
         self.write_output()
+
+    def fourth_function(self, arg):
+        self.snr_handler.fourth_function(arg)
+        self.snr_handler_lensed.fourth_function(arg)
 
     def write_output(self):
         self.output_data.ra.append(self.ra)

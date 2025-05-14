@@ -19,17 +19,15 @@ class SNRHandler:
         self.instruments = instruments
         self.time_slides_seconds = time_slides_seconds
         self.gps_start_seconds = gps_start_seconds
-        # TODO loop over segments (or maybe we just create a big segment)
-        self.segment_index = 0
         self.sky_position_index = 0
         self.data_loader = data_loader
         self.detectors = dict()
         for ifo in self.instruments:
             self.detectors[ifo] = Detector(ifo)
         self.time_slide_index = 0
-        self.segment_setup()
 
     def segment_setup(self):
+        self.data_loader.single_segment_setup(self.segment_index)
         self.sigma = self.data_loader.sigma
         self.snrs = self.data_loader.snrs
 
@@ -103,3 +101,7 @@ class SNRHandler:
     def third_function(self, time_slide_index):
         self.time_slide_index = time_slide_index
         self._set_snr_at_trigger()
+
+    def fourth_function(self, segment_index):
+        self.segment_index = segment_index
+        self.segment_setup()

@@ -50,13 +50,10 @@ class DataLoader:
         self.template_mem = zeros(self.segment_length, dtype=complex64)
         logging.info("Read in template bank")
         self.template = self.create_template_bank()[0]
-        # TODO loop over segments (or maybe we just create a big segment)
-        self.segment_index = 0
         self.matched_filters = []
         self.injection_parameters = copy(conf.injection_parameters)
         for ifo in self.instruments:
             self.single_detector_setup(ifo)
-        self.single_segment_setup()
 
     def single_detector_setup(self, ifo):
         self.injection_parameters.geocent_time = self.time_gps_seconds
@@ -72,21 +69,20 @@ class DataLoader:
         matched_filter = self.get_matched_filter(segments)
         self.matched_filters.append(matched_filter)
 
-    def single_segment_setup(self):
+    def single_segment_setup(self, segment_index):
         self.sigma = []
         self.snrs = []
         for i in range(len(self.instruments)):
             sigmasq = self.template.sigmasq(
-                self.matched_filters[i].segments[self.segment_index].psd
+                self.matched_filters[i].segments[segment_index].psd
             )
             sigma = np.sqrt(sigmasq)
             self.sigma.append(sigma)
             snr_ts, norm, corr, ind, snrv = self.matched_filters[
                 i
-            ].matched_filter_and_cluster(self.segment_index, sigmasq, window=0)
+            ].matched_filter_and_cluster(segment_index, sigmasq, window=0)
             self.snrs.append(
-                snr_ts[self.matched_filters[i].segments[self.segment_index].analyze]
-                * norm
+                snr_ts[self.matched_filters[i].segments[segment_index].analyze] * norm
             )
             self.lensed_or_unlensed_output[i].sigma.append(sigma)
 

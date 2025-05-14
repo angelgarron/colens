@@ -47,7 +47,7 @@ class IteratorHandler:
             [
                 self.fourth_function,
                 self.first_function,
-                self.second_function,
+                self.on_changed_posterior,
                 self.third_function,
             ],
         )
@@ -57,14 +57,14 @@ class IteratorHandler:
             self.time_gps_future_seconds_array[arg]
         )
 
-    def second_function(self, arg):
+    def on_changed_posterior(self, arg):
         self.ra = self.ra_array[arg]
         self.dec = self.dec_array[arg]
 
         self.snr_handler.set_trigger_time(self.time_gps_past_seconds_array[arg])
 
-        self.snr_handler.second_function(self.ra, self.dec)
-        self.snr_handler_lensed.second_function(self.ra, self.dec)
+        self.snr_handler.on_changed_posterior(self.ra, self.dec)
+        self.snr_handler_lensed.on_changed_posterior(self.ra, self.dec)
 
     def third_function(self, arg):
         self.snr_handler.third_function(arg)

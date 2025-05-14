@@ -91,7 +91,7 @@ class SNRHandler:
     def set_trigger_time(self, time_gps_seconds):
         self.trigger_time_seconds = time_gps_seconds
 
-    def second_function(self, ra, dec):
+    def on_changed_posterior(self, ra, dec):
         self._set_time_delay_at_zerolag_seconds(ra, dec)
         self._set_time_delay_indices()
         self._set_antenna_patterns(ra, dec)

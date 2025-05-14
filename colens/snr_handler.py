@@ -100,6 +100,6 @@ class SNRHandler:
         self.time_slide_index = time_slide_index
         self._set_snr_at_trigger()
 
-    def fourth_function(self, segment_index):
+    def on_changed_segment_index(self, segment_index):
         self.segment_index = segment_index
         self.segment_setup()

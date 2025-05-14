@@ -24,11 +24,6 @@ class SNRHandler:
         for ifo in self.instruments:
             self.detectors[ifo] = Detector(ifo)
 
-    def segment_setup(self):
-        self.data_loader.single_segment_setup(self.segment_index)
-        self.sigma = self.data_loader.sigma
-        self.snrs = self.data_loader.snrs
-
     def _set_snr_at_trigger(self):
         self.snr_at_trigger = [
             self.get_snr(
@@ -102,4 +97,6 @@ class SNRHandler:
 
     def on_changed_segment_index(self, segment_index):
         self.segment_index = segment_index
-        self.segment_setup()
+        self.data_loader.single_segment_setup(self.segment_index)
+        self.sigma = self.data_loader.sigma
+        self.snrs = self.data_loader.snrs

@@ -20,6 +20,7 @@ class IteratorHandler:
 
     def set_gps_future_seconds_array(self, i):
         segment = self.snr_handler_lensed.data_loader.matched_filters[0].segments[i]
+        # FIXME doesn't fully match the analyzable segments duration
         start = (
             segment._epoch.gpsSeconds
             + segment.analyze.start / self.conf.injection.sample_rate

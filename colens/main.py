@@ -25,7 +25,6 @@ def main():
 
     data_loader = DataLoader(
         conf,
-        output_data,
         conf.injection.unlensed_instruments,
         output_data.original_output,
         conf.injection.time_gps_past_seconds,
@@ -36,7 +35,6 @@ def main():
     )
     data_loader_lensed = DataLoader(
         conf,
-        output_data,
         conf.injection.lensed_instruments,
         output_data.lensed_output,
         conf.injection.time_gps_future_seconds,
@@ -76,7 +74,7 @@ def main():
         conf.injection.gps_start_seconds["future"],
     )
     iterator_handler = IteratorHandler(
-        conf, snr_handler, snr_handler_lensed, num_slides, output_data
+        conf, snr_handler, snr_handler_lensed, num_slides
     )
 
     logging.info("Starting the filtering...")
@@ -85,7 +83,7 @@ def main():
         output_data,
         snr_handler,
         snr_handler_lensed,
-        iterator_handler.timing_iterator,
+        iterator_handler,
     )
     runner.run()
     logging.info("Filtering completed")

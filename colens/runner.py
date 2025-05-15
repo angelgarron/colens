@@ -9,16 +9,16 @@ class Runner:
         output_data,
         snr_handler,
         snr_handler_lensed,
-        timing_iterator,
+        iterator_handler,
     ):
         self.output_data = output_data
         self.snr_handler = snr_handler
         self.snr_handler_lensed = snr_handler_lensed
         self.coherent_func = coherent_func
-        self.timing_iterator = timing_iterator
+        self.iterator_handler = iterator_handler
 
     def run(self):
-        for _ in self.timing_iterator:
+        for _ in self.iterator_handler.timing_iterator:
             self._run_single()
             self.write_output()
 
@@ -68,3 +68,5 @@ class Runner:
         )
         self.output_data.rho_coinc.append(float(self.rho_coinc[0]))
         self.output_data.rho_coh.append(float(self.rho_coh))
+        self.output_data.ra.append(self.iterator_handler.ra)
+        self.output_data.dec.append(self.iterator_handler.dec)

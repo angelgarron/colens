@@ -20,7 +20,6 @@ class DataLoader:
     def __init__(
         self,
         conf,
-        output_data,
         instruments,
         lensed_or_unlensed_output,
         time_gps_seconds,
@@ -30,7 +29,6 @@ class DataLoader:
         trig_end_time_seconds,
     ):
         self.conf = conf
-        self.output_data = output_data
         self.instruments = instruments
         self.lensed_or_unlensed_output = lensed_or_unlensed_output
         self.time_gps_seconds = time_gps_seconds

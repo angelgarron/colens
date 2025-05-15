@@ -9,12 +9,11 @@ from colens.timing import get_iteration_indexes
 
 
 class IteratorHandler:
-    def __init__(self, conf, snr_handler, snr_handler_lensed, num_slides, output_data):
+    def __init__(self, conf, snr_handler, snr_handler_lensed, num_slides):
         self.conf = conf
         self.snr_handler = snr_handler
         self.snr_handler_lensed = snr_handler_lensed
         self.num_slides = num_slides
-        self.output_data = output_data
         self.get_timing_iterator()
         self.snr_handler.on_changed_segment_index(0)
 
@@ -90,14 +89,8 @@ class IteratorHandler:
         self.snr_handler.on_changed_time_slide_index(arg)
         self.snr_handler_lensed.on_changed_time_slide_index(arg)
 
-        self.write_output()
-
     def on_changed_segment_index(self, arg):
         self.snr_handler_lensed.on_changed_segment_index(arg)
-
-    def write_output(self):
-        self.output_data.ra.append(self.ra)
-        self.output_data.dec.append(self.dec)
 
 
 def _create_iterator(generator, functions):

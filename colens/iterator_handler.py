@@ -18,27 +18,46 @@ class IteratorHandler:
         self.get_timing_iterator()
         self.snr_handler.on_changed_segment_index(0)
 
+    def set_gps_future_seconds_array(self, i):
+        segment = self.snr_handler_lensed.data_loader.matched_filters[0].segments[i]
+        start = (
+            segment._epoch.gpsSeconds
+            + segment.analyze.start / self.conf.injection.sample_rate
+        )
+        stop = (
+            start
+            + (segment.analyze.stop - segment.analyze.start)
+            / self.conf.injection.sample_rate
+        )
+        # for the moment I don't want to create the array for the whole analyzable segment
+        total = stop - start
+        start = start + total / 2 - 0.1
+        stop = stop - total / 2 + 0.1
+
+        self.time_gps_future_seconds_array = np.arange(
+            start,
+            stop,
+            1 / self.conf.injection.sample_rate,
+        )
+
     def get_timing_iterator(self):
         df = get_bilby_posteriors(self.conf.data.posteriors_file)[1000:1100]
         self.time_gps_past_seconds_array = df["geocent_time"].to_numpy()
-        self.time_gps_future_seconds_array = np.arange(
-            self.conf.injection.time_gps_future_seconds - 0.1,
-            self.conf.injection.time_gps_future_seconds + 0.1,
-            1 / self.conf.injection.sample_rate,
-        )
         self.ra_array = df["ra"].to_numpy()
         self.dec_array = df["dec"].to_numpy()
         logging.info("Generating timing iterator")
-        iteration_indexes = get_iteration_indexes(
-            self.time_gps_future_seconds_array,
-            self.time_gps_past_seconds_array,
-            self.ra_array,
-            self.dec_array,
-        )
 
         def generator():
             for i in range(1):
-                for args in zip(*iteration_indexes):
+                self.set_gps_future_seconds_array(i)
+                for args in zip(
+                    *get_iteration_indexes(
+                        self.time_gps_future_seconds_array,
+                        self.time_gps_past_seconds_array,
+                        self.ra_array,
+                        self.dec_array,
+                    )
+                ):
                     for j in range(self.num_slides):
                         yield (i,) + args + (j,)
 

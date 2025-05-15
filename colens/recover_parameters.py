@@ -15,9 +15,9 @@ class AmplitudeParameters:
     A_c: float
 
 
-def get_A_parameters(sigma, fp, fc, snr_array_at_trigger, instruments):
-    w_p = np.array([sigma[ifo] * fp[ifo] for ifo in instruments])
-    w_c = np.array([sigma[ifo] * fc[ifo] for ifo in instruments])
+def get_A_parameters(sigma, fp, fc, snr_array_at_trigger):
+    w_p = sigma * fp
+    w_c = sigma * fc
     denom = np.dot(w_p, w_p) * np.dot(w_c, w_c) - np.dot(w_p, w_c) ** 2
     Ap = (
         np.dot(w_c, w_c) * np.dot(w_p, snr_array_at_trigger)

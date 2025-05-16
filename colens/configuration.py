@@ -64,8 +64,6 @@ class Injection:
     gps_end_seconds: dict = field(init=False)
     trig_start_time_seconds: dict = field(init=False)
     trig_end_time_seconds: dict = field(init=False)
-    ra: float
-    dec: float
     sample_rate: float
     unlensed_instruments: list
     lensed_instruments: list

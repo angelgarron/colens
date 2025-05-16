@@ -14,8 +14,6 @@ data:
 injection:
     time_gps_past_seconds: 1185389807.298705
     time_gps_future_seconds: 1185437144.7875977
-    ra: 6.0
-    dec: -1.2
     sample_rate: 4096.0
     unlensed_instruments: ["H1", "L1"]
     lensed_instruments: ["H1", "L1"]

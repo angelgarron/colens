@@ -57,10 +57,6 @@ psd:
     strain_high_pass_hertz: 25.0
     psd_estimation: "median"
 
-sky_patch:
-    angular_spacing: 1.8
-    sky_error: 0.1 
-
 output:
     output_file_name: "results.json"
 

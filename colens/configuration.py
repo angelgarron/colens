@@ -164,29 +164,11 @@ class Psd:
 
 
 @dataclass
-class SkyPatch:
-    angular_spacing: float
-    sky_error: float
-
-    def __post_init__(self):
-        # convert from degrees to radians
-        self.angular_spacing *= np.pi / 180
-        self.sky_error *= np.pi / 180
-
-    @classmethod
-    def from_dict(cls: Type[SkyPatch], obj: dict) -> SkyPatch:
-        return cls(**_construct_subsection_dict(cls.__match_args__, obj))
-
-    def asdict(self) -> SkyPatch:
-        return asdict(self)
-
-
-@dataclass
 class Output:
     output_file_name: str
 
     @classmethod
-    def from_dict(cls: Type[SkyPatch], obj: dict) -> SkyPatch:
+    def from_dict(cls: Type[Output], obj: dict) -> Output:
         return cls(**_construct_subsection_dict(cls.__match_args__, obj))
 
     def asdict(self) -> Output:
@@ -225,7 +207,6 @@ class Configuration:
     injection: Injection
     chisq: Chisq
     psd: Psd
-    sky_patch: SkyPatch
     output: Output
     injection_parameters: InjectionParameters
 
@@ -237,7 +218,6 @@ class Configuration:
             injection=Injection.from_dict(obj["injection"]),
             chisq=Chisq.from_dict(obj["chisq"]),
             psd=Psd.from_dict(obj["psd"]),
-            sky_patch=SkyPatch.from_dict(obj["sky_patch"]),
             output=Output.from_dict(obj["output"]),
             injection_parameters=InjectionParameters.from_dict(
                 obj["injection_parameters"]

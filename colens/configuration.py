@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from typing import Iterable, Type
+from typing import Iterable, Type, TypeVar
 
 import numpy as np
 import yaml
@@ -42,22 +42,28 @@ def _construct_subsection_dict(match_args: tuple[str], obj: dict) -> dict:
     return subsection_dict
 
 
-@dataclass
-class Data:
-    frame_files: dict
-    channels: dict
-    posteriors_file: str
+T = TypeVar("T")
 
+
+@dataclass
+class SubsectionConfiguration:
     @classmethod
-    def from_dict(cls: Type[Data], obj: dict) -> Data:
+    def from_dict(cls: Type[T], obj: dict) -> T:
         return cls(**_construct_subsection_dict(cls.__match_args__, obj))
 
-    def asdict(self) -> Data:
+    def asdict(self) -> dict:
         return asdict(self)
 
 
 @dataclass
-class Injection:
+class Data(SubsectionConfiguration):
+    frame_files: dict
+    channels: dict
+    posteriors_file: str
+
+
+@dataclass
+class Injection(SubsectionConfiguration):
     time_gps_past_seconds: float
     time_gps_future_seconds: float
     gps_start_seconds: dict = field(init=False)
@@ -107,16 +113,9 @@ class Injection:
             "future": self.gps_end_seconds["future"] - self.segment_end_pad_seconds,
         }
 
-    @classmethod
-    def from_dict(cls: Type[Injection], obj: dict) -> Injection:
-        return cls(**_construct_subsection_dict(cls.__match_args__, obj))
-
-    def asdict(self) -> Injection:
-        return asdict(self)
-
 
 @dataclass
-class Chisq:
+class Chisq(SubsectionConfiguration):
     chisq_bins: str
     autochi_stride: int
     autochi_number_points: int
@@ -128,16 +127,9 @@ class Chisq:
     chisq_index: float
     chisq_nhigh: float
 
-    @classmethod
-    def from_dict(cls: Type[Chisq], obj: dict) -> Chisq:
-        return cls(**_construct_subsection_dict(cls.__match_args__, obj))
-
-    def asdict(self) -> Chisq:
-        return asdict(self)
-
 
 @dataclass
-class Psd:
+class Psd(SubsectionConfiguration):
     psd_segment_stride_seconds: float
     psd_segment_length_seconds: float
     psd_num_segments: int
@@ -155,28 +147,14 @@ class Psd:
         self.psd_segment_stride = self.psd_segment_stride_seconds
         self.psd_segment_length = self.psd_segment_length_seconds
 
-    @classmethod
-    def from_dict(cls: Type[Psd], obj: dict) -> Psd:
-        return cls(**_construct_subsection_dict(cls.__match_args__, obj))
-
-    def asdict(self) -> Psd:
-        return asdict(self)
-
 
 @dataclass
-class Output:
+class Output(SubsectionConfiguration):
     output_file_name: str
 
-    @classmethod
-    def from_dict(cls: Type[Output], obj: dict) -> Output:
-        return cls(**_construct_subsection_dict(cls.__match_args__, obj))
-
-    def asdict(self) -> Output:
-        return asdict(self)
-
 
 @dataclass
-class InjectionParameters:
+class InjectionParameters(SubsectionConfiguration):
     mass_1: float
     mass_2: float
     a_1: float
@@ -192,13 +170,6 @@ class InjectionParameters:
     geocent_time: float
     ra: float
     dec: float
-
-    @classmethod
-    def from_dict(cls: Type[InjectionParameters], obj: dict) -> InjectionParameters:
-        return cls(**_construct_subsection_dict(cls.__match_args__, obj))
-
-    def asdict(self) -> InjectionParameters:
-        return asdict(self)
 
 
 @dataclass

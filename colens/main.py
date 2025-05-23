@@ -2,8 +2,10 @@ import logging
 
 import numpy as np
 from pycbc import init_logging
+from pycbc.types import complex64, float32, zeros
 
 from colens.background import get_time_slides_seconds
+from colens.bank import MyFilterBank
 from colens.configuration import read_configuration_from
 from colens.data_loader import DataLoader
 from colens.fstatistic import get_two_f
@@ -23,6 +25,35 @@ def main():
     for ifo in conf.injection.lensed_instruments:
         output_data.lensed_output.append(PerDetectorOutput(ifo))
 
+    delta_f = (
+        1.0 / conf.injection.segment_length_seconds
+    )  # frequency step of the fourier transform of each segment
+    segment_length = int(
+        conf.injection.segment_length_seconds * conf.injection.sample_rate
+    )  # number of samples of each segment
+    frequency_length = int(
+        segment_length // 2 + 1
+    )  # number of samples of the fourier transform of each segment
+    template_mem = zeros(segment_length, dtype=complex64)
+    template_parameters = {
+        "mass1": np.array([79.45]),
+        "mass2": np.array([48.50]),
+        "spin1z": np.array([0.60]),
+        "spin2z": np.array([0.05]),
+        "f_final": np.array([2048.0]),
+        "f_ref": np.array([conf.injection.reference_frequency]),
+    }
+    template = MyFilterBank(
+        filter_length=frequency_length,
+        delta_f=delta_f,
+        dtype=complex64,
+        template_parameters=template_parameters,
+        low_frequency_cutoff=conf.injection.low_frequency_cutoff,
+        phase_order=conf.injection.order,
+        approximant=conf.injection.approximant,
+        out=template_mem,
+    )[0]
+
     data_loader = DataLoader(
         conf,
         conf.injection.unlensed_instruments,
@@ -32,6 +63,11 @@ def main():
         conf.injection.gps_end_seconds["past"],
         conf.injection.trig_start_time_seconds["past"],
         conf.injection.trig_end_time_seconds["past"],
+        delta_f,
+        segment_length,
+        frequency_length,
+        template_mem,
+        template,
     )
     data_loader_lensed = DataLoader(
         conf,
@@ -42,6 +78,11 @@ def main():
         conf.injection.gps_end_seconds["future"],
         conf.injection.trig_start_time_seconds["future"],
         conf.injection.trig_end_time_seconds["future"],
+        delta_f,
+        segment_length,
+        frequency_length,
+        template_mem,
+        template,
     )
     # num_slides = slide_limiter(
     #     conf.injection.segment_length_seconds,

@@ -6,9 +6,8 @@ from pycbc import DYN_RANGE_FAC
 from pycbc.filter import MatchedFilterControl
 from pycbc.psd import associate_psds_to_segments
 from pycbc.strain import StrainSegments
-from pycbc.types import complex64, float32, zeros
+from pycbc.types import complex64
 
-from colens.bank import MyFilterBank
 from colens.injection import (
     get_ifos_with_simulated_noise,
     get_strain_list_from_bilby_simulation,
@@ -27,6 +26,11 @@ class DataLoader:
         gps_end_seconds,
         trig_start_time_seconds,
         trig_end_time_seconds,
+        delta_f,
+        segment_length,
+        frequency_length,
+        template_mem,
+        template,
     ):
         self.conf = conf
         self.instruments = instruments
@@ -36,18 +40,11 @@ class DataLoader:
         self.gps_end_seconds = gps_end_seconds
         self.trig_start_time_seconds = trig_start_time_seconds
         self.trig_end_time_seconds = trig_end_time_seconds
-        self.delta_f = (
-            1.0 / self.conf.injection.segment_length_seconds
-        )  # frequency step of the fourier transform of each segment
-        self.segment_length = int(
-            self.conf.injection.segment_length_seconds * self.conf.injection.sample_rate
-        )  # number of samples of each segment
-        self.frequency_length = int(
-            self.segment_length // 2 + 1
-        )  # number of samples of the fourier transform of each segment
-        self.template_mem = zeros(self.segment_length, dtype=complex64)
-        logging.info("Read in template bank")
-        self.template = self.create_template_bank()[0]
+        self.delta_f = delta_f
+        self.segment_length = segment_length
+        self.frequency_length = frequency_length
+        self.template_mem = template_mem
+        self.template = template
         self.matched_filters = []
         self.injection_parameters = copy(conf.injection_parameters)
         for ifo in self.instruments:
@@ -143,23 +140,3 @@ class DataLoader:
             approximant=self.conf.injection.approximant,
             get_ifos_function=get_ifos_with_simulated_noise,
         )[0]
-
-    def create_template_bank(self) -> MyFilterBank:
-        template_parameters = {
-            "mass1": np.array([79.45]),
-            "mass2": np.array([48.50]),
-            "spin1z": np.array([0.60]),
-            "spin2z": np.array([0.05]),
-            "f_final": np.array([2048.0]),
-            "f_ref": np.array([self.conf.injection.reference_frequency]),
-        }
-        return MyFilterBank(
-            filter_length=self.frequency_length,
-            delta_f=self.delta_f,
-            dtype=complex64,
-            template_parameters=template_parameters,
-            low_frequency_cutoff=self.conf.injection.low_frequency_cutoff,
-            phase_order=self.conf.injection.order,
-            approximant=self.conf.injection.approximant,
-            out=self.template_mem,
-        )

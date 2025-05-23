@@ -20,7 +20,7 @@ class DataLoader:
         self,
         conf,
         instruments,
-        lensed_or_unlensed_output,
+        per_detector_output,
         time_gps_seconds,
         gps_start_seconds,
         gps_end_seconds,
@@ -34,7 +34,7 @@ class DataLoader:
     ):
         self.conf = conf
         self.instruments = instruments
-        self.lensed_or_unlensed_output = lensed_or_unlensed_output
+        self.per_detector_output = per_detector_output
         self.time_gps_seconds = time_gps_seconds
         self.gps_start_seconds = gps_start_seconds
         self.gps_end_seconds = gps_end_seconds
@@ -79,7 +79,7 @@ class DataLoader:
             self.snrs.append(
                 snr_ts[self.matched_filters[i].segments[segment_index].analyze] * norm
             )
-            self.lensed_or_unlensed_output[i].sigma.append(sigma)
+            self.per_detector_output[i].sigma.append(sigma)
 
     def get_segments(self, strain):
         segments = StrainSegments(

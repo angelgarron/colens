@@ -83,8 +83,6 @@ class DataLoader:
             segment_length=self.conf.injection.segment_length_seconds,
             segment_start_pad=self.conf.injection.segment_start_pad_seconds,
             segment_end_pad=self.conf.injection.segment_end_pad_seconds,
-            filter_inj_only=False,
-            allow_zero_padding=False,
         ).fourier_segments()
 
         associate_psds_to_segments(

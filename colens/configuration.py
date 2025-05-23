@@ -68,8 +68,6 @@ class Injection(SubsectionConfiguration):
     time_gps_future_seconds: float
     gps_start_seconds: dict = field(init=False)
     gps_end_seconds: dict = field(init=False)
-    trig_start_time_seconds: dict = field(init=False)
-    trig_end_time_seconds: dict = field(init=False)
     sample_rate: float
     unlensed_instruments: list
     lensed_instruments: list
@@ -102,15 +100,6 @@ class Injection(SubsectionConfiguration):
         self.gps_end_seconds = {
             "past": int(self.time_gps_past_seconds) + 192 + self.pad_seconds,
             "future": int(self.time_gps_future_seconds) + 192 + self.pad_seconds,
-        }
-
-        self.trig_start_time_seconds = {
-            "past": self.gps_start_seconds["past"] + self.segment_start_pad_seconds,
-            "future": self.gps_start_seconds["future"] + self.segment_start_pad_seconds,
-        }
-        self.trig_end_time_seconds = {
-            "past": self.gps_end_seconds["past"] - self.segment_end_pad_seconds,
-            "future": self.gps_end_seconds["future"] - self.segment_end_pad_seconds,
         }
 
 

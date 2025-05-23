@@ -24,8 +24,6 @@ class DataLoader:
         time_gps_seconds,
         gps_start_seconds,
         gps_end_seconds,
-        trig_start_time_seconds,
-        trig_end_time_seconds,
         delta_f,
         segment_length,
         frequency_length,
@@ -38,8 +36,6 @@ class DataLoader:
         self.time_gps_seconds = time_gps_seconds
         self.gps_start_seconds = gps_start_seconds
         self.gps_end_seconds = gps_end_seconds
-        self.trig_start_time_seconds = trig_start_time_seconds
-        self.trig_end_time_seconds = trig_end_time_seconds
         self.delta_f = delta_f
         self.segment_length = segment_length
         self.frequency_length = frequency_length
@@ -87,8 +83,6 @@ class DataLoader:
             segment_length=self.conf.injection.segment_length_seconds,
             segment_start_pad=self.conf.injection.segment_start_pad_seconds,
             segment_end_pad=self.conf.injection.segment_end_pad_seconds,
-            trigger_start=self.trig_start_time_seconds,
-            trigger_end=self.trig_end_time_seconds,
             filter_inj_only=False,
             allow_zero_padding=False,
         ).fourier_segments()

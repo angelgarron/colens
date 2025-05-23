@@ -79,6 +79,7 @@ def main():
 
     logging.info("Starting the filtering...")
     runner = Runner(
+        conf,
         get_two_f,
         output_data,
         snr_handler,

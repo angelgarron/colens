@@ -8,12 +8,14 @@ from colens.coincident import coincident_snr
 class Runner:
     def __init__(
         self,
+        conf,
         coherent_func,
         output_data,
         snr_handler,
         snr_handler_lensed,
         iterator_handler,
     ):
+        self.conf = conf
         self.output_data = output_data
         self.snr_handler = snr_handler
         self.snr_handler_lensed = snr_handler_lensed
@@ -94,15 +96,13 @@ class Runner:
             max_rho_indexes.append(
                 np.argmax(self.output_data.rho_coh[start:end]) + start
             )
-        # as was used in the multi_inspiral code
-        cluster_window = 0.1
         clustered_indexes = np.arange(len(max_rho_indexes))[
             findchirp_cluster_over_window(
                 np.arange(
                     len(max_rho_indexes)
                 ),  # FIXME one should only consider the triggers that are over some threshold
                 np.array(self.output_data.rho_coh)[max_rho_indexes],
-                cluster_window * 4096,
+                self.conf.injection.cluster_window * self.conf.injection.sample_rate,
             )
         ]
         self.output_data.original_trigger_time_seconds = np.array(

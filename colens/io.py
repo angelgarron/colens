@@ -63,6 +63,6 @@ def get_strain_dict_from_files(
     return strain_dict
 
 
-def get_bilby_posteriors(filename: Path | str) -> pd.DataFrame:
+def get_bilby_posteriors(filename: Path | str, approximant: str) -> pd.DataFrame:
     with h5py.File(filename) as file:
-        return pd.DataFrame(np.array(file["C01:IMRPhenomXPHM"]["posterior_samples"]))
+        return pd.DataFrame(np.array(file[approximant]["posterior_samples"]))

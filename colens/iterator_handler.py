@@ -41,7 +41,9 @@ class IteratorHandler:
         )
 
     def get_timing_iterator(self):
-        df = get_bilby_posteriors(self.conf.data.posteriors_file)[1000:1100]
+        df = get_bilby_posteriors(self.conf.data.posteriors_file, "C01:IMRPhenomXPHM")[
+            1000:1100
+        ]
         self.time_gps_past_seconds_array = df["geocent_time"].to_numpy()
         self.ra_array = df["ra"].to_numpy()
         self.dec_array = df["dec"].to_numpy()

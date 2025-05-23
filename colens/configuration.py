@@ -173,6 +173,15 @@ class InjectionParameters(SubsectionConfiguration):
 
 
 @dataclass
+class TemplateParameters(SubsectionConfiguration):
+    mass1: float
+    mass2: float
+    spin1z: float
+    spin2z: float
+    f_final: float
+
+
+@dataclass
 class Configuration:
     data: Data
     injection: Injection
@@ -180,6 +189,7 @@ class Configuration:
     psd: Psd
     output: Output
     injection_parameters: InjectionParameters
+    template_parameters: TemplateParameters
 
     @classmethod
     def from_dict(cls: Type[Configuration], obj: dict) -> Configuration:
@@ -192,6 +202,9 @@ class Configuration:
             output=Output.from_dict(obj["output"]),
             injection_parameters=InjectionParameters.from_dict(
                 obj["injection_parameters"]
+            ),
+            template_parameters=TemplateParameters.from_dict(
+                obj["template_parameters"]
             ),
         )
 

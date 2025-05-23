@@ -76,3 +76,10 @@ injection_parameters:
     geocent_time: 1185389807.298705
     ra: 6.0
     dec: -1.2
+
+template_parameters:
+    mass1: 79.45
+    mass2: 48.50
+    spin1z: 0.60
+    spin2z: 0.05
+    f_final: 2048.0

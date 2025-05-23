@@ -36,11 +36,11 @@ def main():
     )  # number of samples of the fourier transform of each segment
     template_mem = zeros(segment_length, dtype=complex64)
     template_parameters = {
-        "mass1": np.array([79.45]),
-        "mass2": np.array([48.50]),
-        "spin1z": np.array([0.60]),
-        "spin2z": np.array([0.05]),
-        "f_final": np.array([2048.0]),
+        "mass1": np.array([conf.template_parameters.mass1]),
+        "mass2": np.array([conf.template_parameters.mass2]),
+        "spin1z": np.array([conf.template_parameters.spin1z]),
+        "spin2z": np.array([conf.template_parameters.spin2z]),
+        "f_final": np.array([conf.template_parameters.f_final]),
         "f_ref": np.array([conf.injection.reference_frequency]),
     }
     template = MyFilterBank(
